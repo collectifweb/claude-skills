@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.~lock.*
+
+# OS
+Thumbs.db
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+
+# Local test artifacts (if you experiment with the skill in this repo)
+docs/reviews/
+/tmp/
+*.log
