@@ -42,12 +42,24 @@ ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.claude/skills/timelog-synthesi
 
 ---
 
+### [humanize](./humanize/)
+
+Rewrites French text to remove LLM writing tics. Detects and corrects 36 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
+
+**Requires:** Claude Code
+
+```bash
+ln -s "$(pwd)/claude-skills/humanize" ~/.claude/skills/humanize
+```
+
+---
+
 ## Install all at once
 
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog-synthesis; do
+for skill in session-review confront-codex timelog-synthesis humanize; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
