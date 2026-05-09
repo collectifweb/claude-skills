@@ -1,38 +1,77 @@
 # humanize
 
-A Claude Code skill that rewrites French text to remove LLM writing tics and make it sound human. Detects and corrects 36 categories of patterns — from em-dashes to hollow intensifiers — without touching the ideas, arguments, or voice.
+A Claude Code skill that rewrites French text to remove LLM writing tics and make it sound human. Pass it any text before it reaches a reader — report, email, article, LinkedIn post — and get back a clean version with a slop score and a list of every fix made.
 
-## Why
+## The problem
 
-Text produced by an LLM has recognizable fingerprints: em-dashes everywhere, capital letters after colons, "massive" and "crucial" modifying everything, transitions that connect nothing. This skill runs a structured pass on any French text before it reaches a human reader.
+LLM-generated French has recognizable fingerprints. Some are glaring, some are subtle, all of them add up:
 
-## What it changes
+> *Dans ce contexte fondamentalement transformateur, il convient de souligner que notre approche — innovante et holistique — permet de mettre en lumière les enjeux cruciaux qui façonnent le paysage actuel. Non seulement elle répond aux défis de notre époque, mais elle offre également des perspectives nouvelles, illustrant ainsi la vitalité de notre démarche.*
 
-Two absolute rules — zero tolerance:
+That's a 56-word sentence with zero content. `humanize` finds every pattern that caused it and fixes them.
 
-- **Em-dash (—)** — the single most visible LLM marker in French. Replaced with a period, comma, colon, or parentheses depending on context.
-- **Capital after colon** — incorrect in French. `Résultat : Les ventes` → `Résultat : les ventes`.
+## What it corrects
 
-Then a full sweep across three levels:
+### Two absolute rules — zero tolerance
 
-| Level | Examples |
+**Em-dash (—)** — the single most visible LLM marker in French. Replaced with a period, comma, colon, or parentheses. One em-dash costs −10 points. Zero tolerance.
+
+**Capital letter after colon** — wrong in French. `Résultat : Les ventes` → `Résultat : les ventes`.
+
+### Errors — always fixed
+
+| Pattern | Examples |
 |---|---|
-| Errors (always fixed) | Hollow intensifiers (massif, crucial, incontournable), dead verbs (permettre de, s'avérer, constituer), dead transitions (il convient de souligner, force est de constater), compulsive summary (en résumé, pour conclure) |
-| Warnings (fixed when they accumulate) | Abstract nouns (paradigme, synergie, levier), Oxford comma, rule of three, systematic bold, systematic lists |
-| Positive injections (added when missing) | Logical connectors, sentence length variation, register breaks, concrete anchors |
+| Hollow intensifiers | massif, crucial, fondamental, incontournable, révolutionnaire, fascinant, véritablement, absolument |
+| Dead verbs | permettre de, s'avérer, constituer, mettre en lumière, jouer un rôle, s'inscrire dans |
+| Dead transitions | il convient de souligner, force est de constater, dans ce contexte, il est important de noter que, cela étant dit |
+| Exploration calques | plonger dans, naviguer dans, explorer ensemble, tisser des liens, une riche tapisserie |
+| Trailing fake analysis | soulignant ainsi l'importance de, illustrant la pertinence de, reflétant les enjeux de |
+| Hollow opening sentences | dans un contexte de, à l'heure où, dans un monde en profonde transformation |
+| Compulsive summary | en résumé, pour conclure, en définitive, au final, on retiendra que |
+| Present participle as main verb | « Utilisant cette approche, l'équipe a progressé » → two proper sentences |
+| Title case | « Les Avantages Du Télétravail » → « Les avantages du télétravail » |
+| Oxford comma | « les pommes, les poires, et les bananes » → no comma before *et* |
+| Emojis in headings and lists | removed unless editorial intent is explicit |
+
+### Warnings — fixed when they accumulate
+
+| Pattern | Threshold |
+|---|---|
+| Abstract nouns (paradigme, synergie, levier, démarche, dispositif…) | flag each occurrence |
+| Corporate adjectives (pertinent, optimal, robuste, innovant, holistique…) | flag each occurrence |
+| Redundant pairs (crucial et essentiel, complet et exhaustif…) | keep one |
+| Sycophantic framing (enjeu majeur pour l'avenir, profondément humaniste…) | flag, ask for evidence |
+| Systematic bold | max 3 per text |
+| Systematic lists | max 2 per text |
+| Rule of three | max 1 per text |
+| Défis/Perspectives couplet | flag the boilerplate close |
+| Artificial thèse/antithèse balance | flag, push for a real position |
+
+### Positive injections — added when missing
+
+| What | Target |
+|---|---|
+| Logical connectors (car, donc, or, pourtant, en revanche…) | ≥ 1 per 4 sentences |
+| Sentence length variation | 60 % long (15+ words) / 40 % short (< 10 words) |
+| Register breaks | ≥ 1 per 400 words |
+| Concrete anchors (date, name, sourced number, situated anecdote) | ≥ 1 per 300-word section |
 
 ## Output format
 
 ```
 **Score slop** : XX/100
-(90-100 = propre, 70-89 = tics mineurs, 50-69 = patterns IA visibles, 0-49 = output IA brut)
+(90-100 = écriture humaine propre · 70-89 = quelques tics mineurs · 50-69 = patterns IA visibles · 0-49 = output IA brut)
 
 **Ce qui a été corrigé** :
-- [original → remplacement, par catégorie]
+- Tiret cadratin × 2 → virgule / point
+- "fondamentalement crucial" → "décisif"
+- Transition morte supprimée : "il convient de souligner que"
+- …
 
 ---
 
-[Le texte réécrit — pas de préambule, juste le texte propre.]
+[Texte réécrit. Pas de préambule.]
 ```
 
 ## Installation
@@ -53,11 +92,11 @@ Verify by opening a Claude Code session — `humanize` should appear in `/help`.
 
 Or paste text directly after the command. Works on the last Claude output if no argument is given.
 
-Also triggers on: "humaniser ce texte", "virer le slop", "nettoyer le style IA", "ça sonne ChatGPT", "rendre ça naturel".
+Also triggers on: "humaniser ce texte", "virer le slop", "nettoyer le style IA", "ça sonne ChatGPT", "rendre ça naturel", "prépare ça pour l'envoyer".
 
-## Reference file
+## Reference
 
-`references/tics-llm.json` contains all 36 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it when a nuanced judgment call is needed.
+`references/tics-llm.json` — 36 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it for nuanced judgment calls on longer texts.
 
 ## License
 
