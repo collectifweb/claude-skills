@@ -1,38 +1,49 @@
 # timelog-synthesis
 
-A Claude Code skill that generates ready-to-paste time log entries for a client project, from git commit history and Claude Code session activity.
+A skill for **Claude Code and Codex CLI** that generates ready-to-paste time log entries for a client project, from git commit history and AI-assistant session activity (both Claude Code *and* Codex sessions are merged into the same timeline).
 
 Run it at the end of the day (or later) from inside a client project repo. It reconstructs the day's work into time blocks — splitting on gaps longer than 90 minutes — and formats the output in a compact, Toggl-ready style.
 
 ## Why
 
-Logging time accurately at the end of a long day is tedious and error-prone. This skill does the reconstruction automatically from two authoritative sources: your git commits (reliable timestamps, scoped to what actually changed) and your Claude Code session transcripts (what you *asked* for, which often captures intent better than commit messages).
+Logging time accurately at the end of a long day is tedious and error-prone. This skill does the reconstruction automatically from three authoritative sources: your git commits (reliable timestamps, scoped to what actually changed), your Claude Code session transcripts and your Codex CLI session transcripts (both capture what you *asked* for, which often beats commit messages for intent).
+
+If you use both Claude Code and Codex throughout the day, the skill fuses both transcript streams into one timeline so a block that spans both agents is logged as a single coherent task.
 
 ## How it works
 
 1. Fetches all git commits for the target date authored by the current git user
-2. Finds Claude Code session files for this project directory
-3. Extracts user message timestamps and content from the session JSONL files
-4. Merges all events into a timeline and splits into blocks at 90-minute gaps
-5. Summarizes each block in the user's style — direct, French, no em dashes, client-readable
+2. Finds Claude Code session files for this project directory (in `~/.claude/projects/<encoded-path>/`)
+3. Finds Codex CLI session files for the target date (in `~/.codex/sessions/YYYY/MM/DD/`) and filters them by `cwd` matching the current project
+4. Extracts user message timestamps and content from all session JSONL files (Claude + Codex), filtering out system/AGENTS injected messages on the Codex side
+5. Merges all events into a timeline and splits into blocks at 90-minute gaps
+6. Summarizes each block in the user's style — direct, French, no em dashes, client-readable
 
 Output is printed directly in the chat, ready to copy-paste into Toggl. No files created.
 
 ## Requirements
 
-- **Claude Code** — this skill runs inside a Claude Code session
+- **Claude Code** *or* **Codex CLI** — this skill runs inside either agent
 - **git** — the project must be a git repository
 - **jq** or **Python 3** — for parsing session JSONL files (usually pre-installed)
 
 ## Installation
 
-### As a personal skill (available across all projects)
+### As a personal skill (available across all projects, both agents)
+
+Clone the monorepo and symlink the skill into each agent's skills directory:
 
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
+# Claude Code
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.claude/skills/timelog-synthesis
+# Codex CLI
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.codex/skills/timelog-synthesis
 ```
+
+After installing into Codex, restart the Codex CLI so it picks up the new skill.
 
 ### As a project skill (committed with a specific project)
 
@@ -43,7 +54,7 @@ git clone https://github.com/collectifweb/claude-skills.git /tmp/claude-skills
 cp -r /tmp/claude-skills/timelog-synthesis .claude/skills/timelog-synthesis
 ```
 
-Verify by opening a Claude Code session and typing `/help` — `timelog-synthesis` should appear in the list.
+Verify by opening a Claude Code session and typing `/help` — `timelog-synthesis` should appear in the list. On Codex, the skill is discovered automatically from `~/.codex/skills/` and surfaced in the AGENTS.md skill index at session start.
 
 ## Usage
 
@@ -75,7 +86,8 @@ One block per line, blocks separated by a blank line. No markdown, no bullets, n
 ## Notes
 
 - Must be run from the root of a client project (git repo). The current directory determines which project's activity is analyzed.
-- If nothing was committed and no Claude Code session exists for the project on the target date, the skill says so plainly rather than inventing activity.
+- Codex sessions are stored by date (not by project), so filtering happens via the `cwd` field in each session's `session_meta` event. Only sessions launched from the current project directory (or a subdirectory) are counted.
+- If nothing was committed and no Claude Code / Codex session exists for the project on the target date, the skill says so plainly rather than inventing activity.
 - The skill writes its output to the chat only — it never creates or modifies project files.
 
 ## License

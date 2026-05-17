@@ -1,11 +1,13 @@
 ---
 name: timelog-synthesis
-description: Génère une synthèse du travail effectué dans la journée pour un projet client, formatée en entrées de log de temps prêtes à être copiées dans Toggl ou un autre outil de time-tracking. Découpe automatiquement la journée en blocs horaires basés sur l'activité (commits git + sessions Claude Code), avec une pause de 90 minutes comme seuil entre deux blocs distincts. Utilise ce skill dès que l'utilisateur demande "log de temps", "synthèse de la journée", "résume ce que j'ai fait aujourd'hui/hier", "timelog", "time tracking", "rapport d'activité", "qu'est-ce que j'ai fait aujourd'hui", ou tape la slash command `/timelog`. À utiliser uniquement à l'intérieur d'un dossier de projet client (le repo courant).
+description: Génère une synthèse du travail effectué dans la journée pour un projet client, formatée en entrées de log de temps prêtes à être copiées dans Toggl ou un autre outil de time-tracking. Découpe automatiquement la journée en blocs horaires basés sur l'activité (commits git + sessions Claude Code + sessions Codex CLI), avec une pause de 90 minutes comme seuil entre deux blocs distincts. Utilise ce skill dès que l'utilisateur demande "log de temps", "synthèse de la journée", "résume ce que j'ai fait aujourd'hui/hier", "timelog", "time tracking", "rapport d'activité", "qu'est-ce que j'ai fait aujourd'hui", ou tape la slash command `/timelog`. À utiliser uniquement à l'intérieur d'un dossier de projet client (le repo courant).
 ---
 
 # Timelog Synthesis
 
-Génère des entrées de log de temps en français pour le projet client courant, à partir de l'activité git et des sessions Claude Code de la journée.
+Génère des entrées de log de temps en français pour le projet client courant, à partir de l'activité git, des sessions Claude Code **et des sessions Codex CLI** de la journée.
+
+**Compatible Claude Code et Codex CLI** : ce skill est installé aux deux endroits (symlinks depuis le monorepo `claude-skills`) et fonctionne identiquement quel que soit l'agent qui le lance. Les deux types de sessions sont fusionnés dans la même timeline.
 
 ## Quand l'utiliser
 
@@ -23,7 +25,7 @@ Si la requête est ambiguë (ex: "fais-moi mon log"), demander brièvement la da
 
 ## Sources de données à inspecter
 
-Deux sources, à combiner :
+Trois sources, à combiner :
 
 ### 1. Historique git du repo courant
 
@@ -92,12 +94,72 @@ Si `jq` n'est pas disponible, utiliser `python3` avec un petit script inline.
 
 Limiter chaque session à environ 30-50 messages utilisateur extraits maximum. Si une session est gigantesque, prendre les premiers messages (qui posent le contexte) et faire un échantillonnage intelligent du reste.
 
+### 3. Sessions Codex CLI du jour
+
+L'utilisateur travaille aussi avec **Codex CLI** (`codex` en ligne de commande). Les sessions Codex sont stockées dans `~/.codex/sessions/YYYY/MM/DD/*.jsonl` (arborescence par année/mois/jour, avec un fichier `.jsonl` par session).
+
+```bash
+DATE_PATH=$(date -d "<date>" "+%Y/%m/%d")   # ex: 2026/05/17
+CODEX_DIR="$HOME/.codex/sessions/$DATE_PATH"
+ls "$CODEX_DIR"/*.jsonl 2>/dev/null
+```
+
+**Important** : contrairement aux sessions Claude Code (déjà rangées par projet via le nom du dossier), les sessions Codex sont rangées **uniquement par date**, pas par projet. Il faut filtrer par `cwd` :
+
+- La **première ligne** de chaque `.jsonl` est un événement `session_meta` dont `payload.cwd` indique le répertoire de travail au lancement de la session.
+- Ne retenir que les sessions dont `payload.cwd == $(pwd)` (ou un sous-dossier).
+
+Exemple Python inline pour filtrer et extraire :
+
+```python
+import json, os
+from pathlib import Path
+
+pwd = os.getcwd()
+session_dir = Path.home() / ".codex/sessions/2026/05/17"
+matching = []
+for jsonl in session_dir.glob("*.jsonl"):
+    with open(jsonl) as f:
+        first = json.loads(f.readline())
+    if first.get("type") == "session_meta":
+        cwd = first["payload"].get("cwd", "")
+        if cwd == pwd or cwd.startswith(pwd + "/"):
+            matching.append(jsonl)
+```
+
+**Format des événements** dans un `.jsonl` Codex :
+- `type: "session_meta"` (1 par fichier, en tête) — métadonnées avec `cwd`, branche git, modèle, etc.
+- `type: "response_item"` avec `payload.type: "message"` et `payload.role: "user"` — messages utilisateur (à extraire)
+- `type: "response_item"` avec `payload.role: "assistant"` — réponses du modèle (à ignorer)
+- `type: "event_msg"` — événements internes (à ignorer)
+
+**Filtrage indispensable des messages user** : les premiers messages user injectés par Codex sont des messages système (instructions AGENTS.md, balises de permissions, etc.) qui commencent par `<` ou `# AGENTS`. Les exclure pour ne garder que les vraies demandes humaines :
+
+```python
+for line in open(jsonl):
+    d = json.loads(line)
+    if d.get("type") != "response_item": continue
+    p = d.get("payload", {})
+    if p.get("type") != "message" or p.get("role") != "user": continue
+    for c in p.get("content", []):
+        txt = c.get("text", "")
+        if not txt or txt.startswith("<") or txt.startswith("# AGENTS"): continue
+        if len(txt) < 5: continue
+        print(d["timestamp"], "|", txt[:200])
+```
+
+**Timestamps Codex aussi en UTC** : même conversion America/Toronto que pour Claude Code (voir code plus haut).
+
+**Indication "via Codex" dans la synthèse** : si une portion notable du travail d'un bloc vient d'une session Codex, le mentionner discrètement si pertinent (ex: `... - debug avec Codex sur la migration Stripe`). Ne pas surcharger : si les deux agents ont travaillé sur le même sujet, fusionner sans préciser l'agent.
+
+Mêmes limites que pour Claude : 30-50 messages user max par session.
+
 ## Détection des blocs horaires
 
 Un **bloc horaire** = une période d'activité continue avec une pause maximale de **90 minutes** entre deux événements consécutifs.
 
 Algorithme :
-1. Rassembler tous les timestamps du jour : commits git + premiers/derniers messages des sessions Claude Code.
+1. Rassembler tous les timestamps du jour : commits git + premiers/derniers messages des sessions Claude Code + premiers/derniers messages user des sessions Codex (filtrées par `cwd`).
 2. Trier chronologiquement.
 3. Parcourir la liste : si l'écart entre deux événements consécutifs dépasse 90 minutes, ouvrir un nouveau bloc.
 4. Pour chaque bloc, retenir l'heure de début (premier événement) et l'heure de fin (dernier événement).
@@ -164,22 +226,25 @@ Remarquer : ton direct, factuel, pas de phrases complètes, séparateurs ` - ` e
 
 3. **Récupérer les commits** du jour pour l'utilisateur courant.
 
-4. **Récupérer les sessions Claude Code** du jour pour ce dossier.
+4. **Récupérer les sessions Claude Code** du jour pour ce dossier (via le chemin encodé dans `~/.claude/projects/`).
 
-5. **Construire la timeline** des événements (commits + bornes des sessions) et détecter les blocs avec le seuil de 90 min.
+5. **Récupérer les sessions Codex CLI** du jour, en filtrant par `cwd == $(pwd)` (les sessions Codex sont rangées par date, pas par projet — il FAUT filtrer).
 
-6. **Pour chaque bloc**, synthétiser ce qui a été fait :
-   - Regarder les messages utilisateur des sessions tombant dans ce bloc (pas l'output assistant — ce qui compte c'est ce que l'utilisateur a demandé/voulu)
+6. **Construire la timeline** des événements (commits + bornes des sessions Claude + bornes des sessions Codex) et détecter les blocs avec le seuil de 90 min.
+
+7. **Pour chaque bloc**, synthétiser ce qui a été fait :
+   - Regarder les messages utilisateur des sessions Claude tombant dans ce bloc
+   - Regarder les messages utilisateur des sessions Codex tombant dans ce bloc (mêmes règles : on regarde ce que l'utilisateur a demandé, pas ce que le modèle a répondu)
    - Regarder les commits du bloc et leur scope (fichiers modifiés)
-   - Reformuler en langage naturel à la sauce de l'utilisateur (voir exemples)
+   - Reformuler en langage naturel à la sauce de l'utilisateur (voir exemples). Fusionner sans distinguer l'agent quand le travail porte sur le même sujet ; mentionner discrètement "avec Codex" seulement si c'est pertinent pour le client.
 
-7. **Présenter** la synthèse dans le chat, prête à copier-coller. Pas de fichier créé.
+8. **Présenter** la synthèse dans le chat, prête à copier-coller. Pas de fichier créé.
 
 ## Règles importantes
 
 - **Jamais d'em dash (`—`)** dans la sortie. L'utilisateur déteste ça. Toujours utiliser le tiret simple `-`.
-- **Ne pas inventer** d'activités. Si une session Claude Code n'est pas claire, mieux vaut un résumé vague ("travail divers sur X") qu'une fabulation détaillée.
-- **Ne pas mentionner Claude** ni "j'ai aidé l'utilisateur à..." dans la synthèse. C'est l'utilisateur qui a fait le travail, point. La synthèse est rédigée à la première personne du singulier implicite (style des exemples).
+- **Ne pas inventer** d'activités. Si une session Claude Code ou Codex n'est pas claire, mieux vaut un résumé vague ("travail divers sur X") qu'une fabulation détaillée.
+- **Ne pas mentionner Claude ni Codex** par défaut, ni "j'ai aidé l'utilisateur à..." dans la synthèse. C'est l'utilisateur qui a fait le travail, point. La synthèse est rédigée à la première personne du singulier implicite (style des exemples). Exception : mention discrète d'un agent si vraiment pertinent pour le contexte client (rare).
 - **Pas de markdown lourd** : pas de `##`, pas de `**bold**`, pas de bullets. Juste du texte plat avec retours à la ligne entre blocs.
 - **Si rien n'a été fait ce jour-là** dans ce projet (pas de commit, pas de session), le dire simplement : "Aucune activité détectée pour ce projet le [date]."
 - **Demander confirmation rapide** si la date est ambiguë, mais ne pas surcharger l'utilisateur de questions — l'objectif est qu'il copie-colle vite.
