@@ -43,6 +43,35 @@ Si l'utilisateur demande un modèle différent, remplace `gpt-5.5` par le modèl
 
 **Note sur `gpt-5.5`** : ce modèle requiert une authentification ChatGPT (pas API key). Si tu obtiens une erreur d'authentification, signale-le à l'utilisateur et propose de basculer sur `gpt-5.4` ou `gpt-5.3-codex` comme fallback.
 
+## Lancement et suivi de codex (RÈGLE CRITIQUE)
+
+**Tous les appels `codex exec` dans ce skill DOIVENT être lancés en arrière-plan** avec `run_in_background: true` sur l'outil Bash. Jamais en foreground.
+
+**Pourquoi** : codex exec prend typiquement 3 à 15 minutes (xhigh raisonne longtemps). Un appel Bash en foreground time out à 2 min par défaut (10 min max), retourne en erreur, et tu crois que codex a échoué alors qu'il tourne toujours. C'est la cause #1 des sessions où je dois être relancé manuellement.
+
+### Protocole de suivi obligatoire
+
+1. **Lancement** : Bash avec `run_in_background: true`. Note le `bash_id` retourné.
+
+2. **Annonce à l'utilisateur** :
+   > "Codex lancé en arrière-plan (round N). Je surveille sa progression et te tiens au courant toutes les 30-60s."
+
+3. **Boucle de polling** (toutes les 30-60 secondes, jamais plus long) :
+   - Vérifie si le fichier de sortie existe : `ls -la {chemin-vers-round-N-codex.md} 2>/dev/null`
+   - Si pas encore là, vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
+   - Lis la sortie stream du bash background (BashOutput sur le bash_id) pour repérer activité, erreurs, ou achèvement
+   - **Donne un status à l'utilisateur à chaque tour** : "Codex tourne toujours, X minutes écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
+
+4. **Critère d'achèvement** : le fichier `round-N-codex.md` existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
+
+5. **Si codex échoue ou disparaît du `pgrep`** sans avoir créé le fichier : lis la sortie bash background, diagnostique (auth, sandbox, modèle indisponible), signale à l'utilisateur et propose un fallback.
+
+### Anti-oubli (très important)
+
+**Tant que le round courant n'a pas son fichier `round-N-codex.md` complet, tu n'as PAS terminé.** Ne passe à aucune autre tâche. Ne réponds à aucune digression. Si l'utilisateur change de sujet pendant l'attente, réponds brièvement puis rappelle : "Codex tourne toujours sur le round N, je reste en surveillance." Le silence prolongé entre lancement et lecture est le bug que ce protocole corrige.
+
+Si tu reviens dans la conversation après une compression de contexte ou un nouveau tour utilisateur, ta première action doit être de vérifier l'état du codex en cours (existence du fichier attendu + `pgrep`) avant de continuer.
+
 ## Structure des fichiers
 
 Tous les échanges vivent dans `docs/` à la racine du projet :
@@ -98,7 +127,7 @@ Une fois `round-1-claude.md` écrit, invoque codex avec le prompt prévu pour ce
 cat references/codex-prompts.md  # Si nécessaire pour récupérer les prompts
 ```
 
-Lance codex en mode non-interactif (avec les flags du modèle, voir section "Choix du modèle codex" plus haut) :
+Lance codex en mode non-interactif **avec `run_in_background: true`** (voir section "Lancement et suivi de codex" — c'est obligatoire) :
 
 ```bash
 codex exec \
@@ -115,7 +144,7 @@ EOF
 )"
 ```
 
-Codex va lire ton plan, écrire son analyse, et terminer. Cette opération peut prendre plusieurs minutes — c'est normal, codex explore le code et raisonne. Ne t'inquiète pas du temps d'attente. Vérifie ensuite que le fichier `round-1-codex.md` a bien été créé.
+Une fois lancé en arrière-plan, applique strictement le **Protocole de suivi obligatoire** (polling 30-60s, status à l'utilisateur, critère d'achèvement). Ne passe au round suivant qu'une fois `round-1-codex.md` complet et stable.
 
 ### Round N (N≥2) : Ta réponse
 
@@ -145,7 +174,7 @@ Lis le fichier de codex du round précédent. Pour chaque point qu'il soulève :
 
 ### Round N : Faire répliquer Codex
 
-Relance codex avec le prompt de round suivant (voir `references/codex-prompts.md`). Codex doit lire le dernier fichier de toi et ses propres analyses précédentes pour rester cohérent.
+Relance codex avec le prompt de round suivant (voir `references/codex-prompts.md`), **toujours avec `run_in_background: true`**. Codex doit lire le dernier fichier de toi et ses propres analyses précédentes pour rester cohérent.
 
 ```bash
 codex exec \
@@ -166,24 +195,45 @@ EOF
 )"
 ```
 
-## Détection du consensus
+Applique de nouveau le **Protocole de suivi obligatoire** pendant l'attente.
 
-Après chaque round de Codex, lis attentivement son fichier et évalue : reste-t-il des désaccords substantiels ?
+## Détection du consensus (BILATÉRAL OBLIGATOIRE)
 
-**Continue les rounds tant que :**
-- Codex désapprouve un élément du plan
-- Codex pointe un manque que tu n'as pas adressé
-- Codex propose une amélioration que tu n'as ni acceptée ni explicitement rejetée avec arguments
+**Règle fondamentale** : tu ne peux JAMAIS déclarer le consensus unilatéralement. Le consensus n'existe que si **Codex ET toi** l'avez explicitement validé dans un même round. Tant que ce n'est pas le cas, les rounds continuent.
 
-**Le consensus est atteint quand :**
-- Codex valide explicitement le plan dans son ensemble
-- OU les seuls points restants sont des préférences stylistiques mineures que les deux camps reconnaissent comme telles
-- OU Codex et toi avez convergé vers une formulation que vous reconnaissez tous deux comme satisfaisante
+### Le token de consensus
 
-**Demande à l'utilisateur d'arbitrer si :**
-- Le débat tourne en rond (3 rounds sans progression réelle)
+À chaque round à partir du round 2, Codex doit terminer son fichier par exactement une de ces deux lignes (les prompts dans `references/codex-prompts.md` l'exigent) :
+
+- `CONSENSUS_ATTEINT` — Codex confirme qu'aucun désaccord substantiel ne subsiste, le plan est validé en l'état.
+- `CONSENSUS_REFUSE` — Au moins un point reste en débat ou un manque subsiste.
+
+Ta première action après lecture du fichier de Codex est de **chercher ce token en fin de document** (`grep -E '^(CONSENSUS_ATTEINT|CONSENSUS_REFUSE)$' round-N-codex.md`). Si le token est absent, le round est invalide et tu dois relancer codex pour qu'il l'ajoute explicitement.
+
+### Détermination du consensus
+
+**Le consensus est atteint UNIQUEMENT si les deux conditions suivantes sont vraies au même round** :
+
+1. Le fichier de codex se termine par `CONSENSUS_ATTEINT`
+2. Tu rédiges un fichier `round-N-claude.md` final (post-codex) où tu écris explicitement : "Je confirme également le consensus, plus aucun désaccord substantiel de mon côté" — avec ta propre revue du plan finalisé.
+
+Tu peux donc avoir trois cas en lisant le `CONSENSUS_ATTEINT` de Codex :
+- **Tu es d'accord** : rédige ton `round-N-claude-confirm.md` confirmant, puis produis le plan final.
+- **Tu n'es pas d'accord** (il te reste des objections que Codex n'a pas adressées) : rédige `round-N+1-claude.md` listant tes points restants, relance un round codex. Le consensus n'est PAS atteint.
+- **Tu hésites** : remonte à l'utilisateur l'écart de perception avant de continuer.
+
+Symétriquement, si Codex écrit `CONSENSUS_REFUSE`, tu continues les rounds même si toi tu pensais qu'on avait fini.
+
+### Continue les rounds tant que :
+- Au moins l'un des deux camps a un `CONSENSUS_REFUSE` ouvert
+- OU Codex désapprouve un élément du plan
+- OU Codex pointe un manque que tu n'as pas adressé
+- OU Codex propose une amélioration que tu n'as ni acceptée ni explicitement rejetée avec arguments
+- OU toi tu identifies un point que Codex n'a pas suffisamment traité
+
+### Demande à l'utilisateur d'arbitrer si :
+- Le débat tourne en rond (3 rounds sans progression réelle sur le ou les mêmes points)
 - Codex et toi êtes en désaccord ferme sur un point structurel sans qu'aucun argument ne semble pouvoir convaincre l'autre
-- Tu as un doute sur la pertinence de continuer
 - **Tu as atteint 5 rounds** : à ce stade, stop systématique. Présente l'état du débat à l'utilisateur et demande comment trancher. Au-delà, le coût (temps, tokens codex) devient disproportionné par rapport au gain marginal.
 
 Quand tu hésites, formule clairement à l'utilisateur :
@@ -208,7 +258,7 @@ Tu n'es pas obligé de demander à chaque round si l'utilisateur veut continuer 
 
 ## Production du plan final consolidé
 
-Une fois le consensus atteint, écris `docs/plan-{slug}.md` (en utilisant le même slug que pour le dossier d'archive). Ce document doit être :
+Une fois le consensus bilatéral confirmé (`CONSENSUS_ATTEINT` côté Codex + confirmation explicite côté Claude dans le `round-N-claude-confirm.md`), écris `docs/plan-{slug}.md` (en utilisant le même slug que pour le dossier d'archive). Ce document doit être :
 
 - **Autonome** : lisible sans connaître l'historique du débat. Quelqu'un qui arrive frais doit pouvoir l'exécuter.
 - **Propre** : pas de "Codex a dit que...", pas de traces du débat. Juste le plan final tel qu'il est maintenant.

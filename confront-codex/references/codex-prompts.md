@@ -25,6 +25,13 @@ Sois catégorique quand tu as des certitudes. Sois nuancé quand le sujet l'est.
 Écris ton analyse dans : {chemin-vers-round-1-codex.md}
 
 Format attendu : Markdown structuré avec les sections ci-dessus. Pas de préambule de courtoisie, va droit au fond.
+
+**Protocole de consensus** : ce débat continuera par rounds jusqu'à consensus bilatéral explicite. Pour ce round 1, tu n'as PAS à émettre de token de consensus — c'est trop tôt, on a besoin d'au moins un aller-retour. À partir du round 2, chacune de tes réponses devra se terminer par exactement une de ces deux lignes (rien d'autre sur la ligne, pas de markdown autour) :
+
+- `CONSENSUS_ATTEINT` — Si après avoir lu la dernière réponse de Claude, tu confirmes qu'aucun désaccord substantiel ne subsiste et que le plan est validé en l'état.
+- `CONSENSUS_REFUSE` — Si au moins un point reste en débat, un manque subsiste, ou tu n'es pas convaincu par les arguments de Claude.
+
+Note ce protocole mentalement pour les rounds suivants.
 ```
 
 ## Round N (N≥2) — Contre-réponse
@@ -49,14 +56,23 @@ Ton job pour ce round :
 
 Sois prêt à changer d'avis si Claude présente un bon argument. Sois prêt à tenir bon si Claude esquive ou si son contre-argument est faible. L'objectif est la qualité du plan final, pas de "gagner" le débat.
 
-Si tu considères qu'on a atteint un consensus (plus de désaccord substantiel), dis-le explicitement en début de réponse.
-
 Écris ta contre-réponse dans : {chemin-vers-round-N-codex.md}
 
 Format :
 - **Points résolus depuis le round précédent**
 - **Points encore en débat** (avec ta position actualisée)
 - **Évaluation globale** : reste-t-il des désaccords ? Le plan est-il prêt ?
+
+**Token de consensus OBLIGATOIRE en fin de fichier** :
+
+Termine ton fichier par exactement une de ces deux lignes, et rien d'autre sur la ligne (pas de markdown, pas de ponctuation autour, pas de texte après) :
+
+- `CONSENSUS_ATTEINT` — Tu confirmes qu'aucun désaccord substantiel ne subsiste, le plan est validé en l'état. Tu acceptes que la session se termine et que Claude produise le plan final consolidé.
+- `CONSENSUS_REFUSE` — Au moins un point reste en débat, un manque subsiste, ou tu n'es pas convaincu par les arguments de Claude. Le débat doit continuer.
+
+Sois rigoureux avec ce token : il déclenche (ou non) la fin de la session. N'émets `CONSENSUS_ATTEINT` que si tu es vraiment d'accord avec le plan dans sa forme actuelle — pas par lassitude, pas pour faire plaisir. Si tu as un doute, c'est `CONSENSUS_REFUSE`.
+
+L'absence du token ou un token mal orthographié est traité comme une erreur et provoquera une relance.
 ```
 
 ## Notes d'utilisation
@@ -78,4 +94,14 @@ codex exec --model gpt-5.5 -c model_reasoning_effort="xhigh" --sandbox workspace
 ```
 
 **Authentification** : `gpt-5.5` requiert une connexion ChatGPT (pas API key). Si codex retourne une erreur d'auth, propose à l'utilisateur de fallback sur `gpt-5.4` ou `gpt-5.3-codex`.
+
+**Lancement en arrière-plan** : tous les `codex exec` doivent être lancés avec `run_in_background: true` sur l'outil Bash. Voir la section "Lancement et suivi de codex" du SKILL.md principal — c'est la règle qui empêche les sessions de planter à 2 minutes.
+
+**Vérification du token de consensus** : après chaque fichier de codex à partir du round 2, vérifie la présence et l'unicité du token avec :
+
+```bash
+tail -5 {chemin-vers-round-N-codex.md} | grep -E '^(CONSENSUS_ATTEINT|CONSENSUS_REFUSE)$'
+```
+
+Si rien ne sort, le token est absent ou mal formé : relance codex en lui rappelant l'obligation de terminer par exactement une de ces deux lignes.
 
