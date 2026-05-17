@@ -63,6 +63,25 @@ Pour chaque session du jour, extraire le contenu pertinent. Les `.jsonl` contien
 - Les messages utilisateur (`type: "user"`) — ils décrivent ce que l'utilisateur a demandé
 - Le premier et le dernier message pour borner la session temporellement (`timestamp`)
 
+**⚠️ Conversion de fuseau horaire obligatoire** : les timestamps dans les `.jsonl` sont en **UTC**. Il faut les convertir en heure locale (America/Toronto = UTC-4 en été, UTC-5 en hiver) avant de calculer les blocs horaires et d'afficher les heures. Les timestamps git (`%ai`) sont eux déjà en heure locale (ils incluent l'offset `-0400` ou `-0500`). Ne jamais afficher une heure UTC brute dans le log — ça décalerait les blocs de 4-5 heures.
+
+Pour convertir proprement en Python :
+
+```python
+from datetime import datetime, timezone, timedelta
+import re
+
+def utc_to_local(ts_str):
+    # Parse ISO 8601 UTC timestamp from .jsonl (e.g. "2026-05-11T18:45:49.560Z")
+    dt = datetime.fromisoformat(ts_str.replace('Z', '+00:00'))
+    # Convert to America/Toronto (approximation: use fixed offset based on DST)
+    # EDT = UTC-4 (mid-March to early Nov), EST = UTC-5 (rest of year)
+    local_offset = timedelta(hours=-4)  # adjust to -5 in winter
+    return dt + local_offset
+```
+
+Ou plus simplement, utiliser `python3 -c "from datetime import datetime, timedelta; ..."` en inline.
+
 Exemple d'extraction rapide avec `jq` :
 
 ```bash
@@ -85,7 +104,11 @@ Algorithme :
 
 Format des heures : `9h-11h30`, `14h-16h45`, etc. Pas de minutes si pile (`9h` plutôt que `9h00`), minutes en suffixe sinon (`11h30`).
 
-Si toute la journée tient en un seul bloc, ne pas insister sur l'horaire — le mentionner brièvement et c'est tout.
+**Toujours afficher la durée du bloc entre parenthèses** juste après la plage horaire, au format `2h17` ou `45min` si moins d'une heure. Exemple : `9h43-12h (2h17) : ...`. Calculer la durée à partir de l'heure de début et de fin du bloc (pas la somme des événements).
+
+À la fin de la sortie, si la journée contient plusieurs blocs, ajouter une ligne `Total journée : XhYY` avec la somme des durées des blocs. Si un seul bloc, pas besoin du total.
+
+Si toute la journée tient en un seul bloc, ne pas insister sur l'horaire — le mentionner brièvement et c'est tout (mais garder la durée entre parenthèses).
 
 ## Format de sortie
 
@@ -100,24 +123,27 @@ L'utilisateur écrit ses logs en français naturel et concis, avec ces caractér
 - **Pas de majuscule systématique** au début de chaque tâche
 - **Concis mais détaillé** : on peut allonger si beaucoup de choses ont été faites dans le bloc
 - **Niveau de langage** : compréhensible par un client non-dev, mais avec assez de termes techniques pour montrer la maîtrise du domaine
+- **Mode "log pour la cliente"** : si l'utilisateur précise que le log est destiné à être lu par la cliente (ex: "le log est pour la cliente", "elle va le lire", "langage simple", "moins de jargon"), pousser la simplification plus loin. Remplacer le jargon technique par des formulations en langage courant que la cliente peut comprendre. Exemples de traductions : "audit hooks" → "vérification des automatisations actives", "canary" → "test à petite échelle / migration d'un petit groupe test", "Stripe-detach" → "sécurisation des cartes de crédit", "doc-sync" → "mise à jour de la docu projet", "confront-codex" → "double-vérification par une seconde IA", "hardening" → "blindage / sécurisation". Garder les noms propres (Stripe, WordPress, etc.) et les concepts métier que la cliente connaît déjà (ex: buy-out, membership, Customer si c'est son vocabulaire).
 
 ### Template par bloc
 
 Pour un seul bloc :
 
 ```
-[heure début]-[heure fin] : tâche 1 - tâche 2 - tâche 3 - ...
+[heure début]-[heure fin] (durée) : tâche 1 - tâche 2 - tâche 3 - ...
 ```
 
 Pour plusieurs blocs dans la journée :
 
 ```
-[heure 1]-[heure 2] : tâche 1 - tâche 2 - ...
+[heure 1]-[heure 2] (durée 1) : tâche 1 - tâche 2 - ...
 
-[heure 3]-[heure 4] : tâche 1 - tâche 2 - ...
+[heure 3]-[heure 4] (durée 2) : tâche 1 - tâche 2 - ...
+
+Total journée : XhYY
 ```
 
-Une ligne vide entre les blocs. Pas de titre, pas de markdown, pas de bullet points. Juste les lignes prêtes à être copiées-collées dans Toggl.
+Une ligne vide entre les blocs. Pas de titre, pas de markdown, pas de bullet points. Juste les lignes prêtes à être copiées-collées dans Toggl. Le total de journée vient en dernier, séparé par une ligne vide.
 
 ### Exemples d'inspiration (style cible)
 
