@@ -176,16 +176,56 @@ Si toute la journée tient en un seul bloc, ne pas insister sur l'horaire — le
 
 ### Style général
 
-L'utilisateur écrit ses logs en français naturel et concis, avec ces caractéristiques :
+Les logs partent dans Toggl et **sont lus par le client final**, qui n'est pas développeur. Le mode par défaut est donc : **langage compréhensible par le client, concis, sans jargon technique**.
 
-- **Séparateur entre tâches** : ` - ` (espace tiret espace), jamais d'em dash (`—`). C'est important : zéro em dash dans la sortie, jamais.
-- **Abréviations naturelles permises mais pas obligatoires** : "Verif", "diagno", "fix", "dev", "config", "MAJ"
-- **Mélange français/anglais technique normal** : "fix", "upload", "deploy", "landing page", "design system" restent en anglais
-- **Noms propres conservés** : prénoms de clients, noms de projets, services tiers (Outlook, DMARC, Telegram, Publer, etc.)
-- **Pas de majuscule systématique** au début de chaque tâche
-- **Concis mais détaillé** : on peut allonger si beaucoup de choses ont été faites dans le bloc
-- **Niveau de langage** : compréhensible par un client non-dev, mais avec assez de termes techniques pour montrer la maîtrise du domaine
-- **Mode "log pour la cliente"** : si l'utilisateur précise que le log est destiné à être lu par la cliente (ex: "le log est pour la cliente", "elle va le lire", "langage simple", "moins de jargon"), pousser la simplification plus loin. Remplacer le jargon technique par des formulations en langage courant que la cliente peut comprendre. Exemples de traductions : "audit hooks" → "vérification des automatisations actives", "canary" → "test à petite échelle / migration d'un petit groupe test", "Stripe-detach" → "sécurisation des cartes de crédit", "doc-sync" → "mise à jour de la docu projet", "confront-codex" → "double-vérification par une seconde IA", "hardening" → "blindage / sécurisation". Garder les noms propres (Stripe, WordPress, etc.) et les concepts métier que la cliente connaît déjà (ex: buy-out, membership, Customer si c'est son vocabulaire).
+#### Mode par défaut : pour le client
+
+**À retirer systématiquement de la sortie** (même si présent dans les sessions ou commits) :
+- **IDs, numéros de phase, références internes** : "Phase 4-4", "item 49", "template 3931", "C4", "C5", "Q1", "round 4", numéros de tickets
+- **Noms de fichiers et scripts** : "qa-item-49-validate.php", "scripts/qa-phase-e-automatable.php"
+- **Noms de fonctions, hooks, méta-clés, paramètres internes** : "token_set_default", "prepare_source", "_ejardin_stripe_account", "list_item"
+- **Noms de skills, outils CLI, agents** : "confront-codex", "doc-sync", "session-review", "Codex", "Claude" — les traduire par leur **intention** ("double-vérification par une seconde IA", "mise à jour de la documentation", "review de session")
+- **Anglicismes techniques opaques pour un non-dev** : "backfill", "cutover", "gate preflight", "snippets", "cluster", "fork", "presentment", "AS", "patches" — traduire en français courant
+
+**À conserver** :
+- Noms propres connus du client : Stripe, PayPal, Telegram, WordPress, Elementor, Outlook, etc.
+- Prénoms des personnes impliquées : Patrick, Marie-Claire, etc.
+- Concepts métier que le client maîtrise : membership, buy-out, Customer, formule, espace étudiant, etc.
+- Termes techniques courts et lisibles intuitivement : "fix", "config", "MAJ", "deploy", "landing page", "design system"
+
+**Exemples de traductions** (avant → après) :
+| Brut technique | Version client |
+|----|----|
+| "13 snippets migrés vers plugin, snippets actifs prod 18→5" | "regroupement de plusieurs bouts de code épars dans une seule extension propre" |
+| "fix sync du template Elementor 3931 live→staging" | "resynchro d'un gabarit de page entre la prod et l'environnement de test" |
+| "validation empirique Q1 (CAD presentment OK sur compte US Standard via test API PaymentIntent)" | "confirmation que les paiements peuvent être facturés en dollars canadiens même depuis le compte américain" |
+| "PayPal globalement off" | "désactivation de PayPal partout" |
+| "backfill C4 _ejardin_stripe_account historique" | "marquage rétroactif des commandes historiques pour identifier leur compte d'origine" |
+| "confront-codex round 4 Phase E pré-QA atteignant consensus absolu" | "double-vérification par une seconde IA en plusieurs passes, consensus atteint" |
+| "3 patches préventifs du fork US issus de Codex" | "3 correctifs préventifs sur le code de paiement modifié" |
+| "doc-sync aligné sur consensus Phase C+D" | "mise à jour de la documentation projet" |
+| "amorce Phase 4-5 cluster ejardin-student-area" | "amorce de la migration suivante : le module \"Espace Étudiant\"" |
+
+#### Concision
+
+**Un bloc Toggl doit rester court et lisible.** Quelques tâches séparées par ` - `, pas une dissertation.
+
+- **Regrouper thématiquement** plutôt que tout énumérer. Trois sous-actions sur le même sujet → une seule mention synthétique.
+- **Ne pas répéter le contexte** entre tâches d'un même bloc : si on dit "préparation des tests Stripe CA→US", ce qui suit est compris comme rattaché à ce contexte.
+- **En cas de doute, plus court vaut mieux que plus long.** Le client préfère lire 2 lignes claires que 6 lignes denses.
+- **Plafond mental** : si un bloc dépasse ~50 mots, c'est probablement à resserrer. Sauf bloc vraiment massif (plusieurs heures avec sujets variés).
+
+#### Format
+
+- **Séparateur entre tâches** : ` - ` (espace tiret espace), jamais d'em dash (`—`). Zéro em dash dans la sortie, jamais.
+- Parfois ` + ` quand le lien entre deux tâches est plus fort (sujets connexes).
+- **Pas de majuscule systématique** au début de chaque tâche.
+- **Première personne implicite** : pas de "j'ai fait", on dit directement "finalisation de X", "mise en place de Y", "préparation de Z".
+- **Pas de markdown**, pas de bullets, pas de bold. Juste du texte plat séparé par ` - `.
+
+#### Mode "technique brut" (exception sur demande)
+
+Si l'utilisateur précise explicitement que le log est **pour lui** ("log technique", "version brute pour moi", "garde les détails techniques", "log dev"), alors garder les IDs, noms de scripts, références de phases, noms de fonctions, etc. **Ce mode reste l'exception, jamais le défaut.**
 
 ### Template par bloc
 
@@ -209,14 +249,33 @@ Une ligne vide entre les blocs. Pas de titre, pas de markdown, pas de bullet poi
 
 ### Exemples d'inspiration (style cible)
 
-Voici des exemples du style de l'utilisateur (à reproduire dans la tonalité, pas à copier verbatim) :
+#### Blocs courts (cas habituel)
 
 - `Verif réglage Hermes et logs suite au down indiqué par Patrick - diagno / correction / updates - montage cron job sur ma machine pour updates lun-mercredi - montage agent Églantine et bot Telegram - configuration du skill Publer`
 - `Finalisation design system - sync des données via github - création d'une landing page et upload pour sur serveur Marie-Claire - envoi`
 - `Travail de TrikTrak : dépannage Outlook et DMARC laklak + travail design system avec Marie-Claire`
 - `Dev App SEO : appel avec Patricia sur les points à améliorer + fix des fields file upload en téléchargement`
 
-Remarquer : ton direct, factuel, pas de phrases complètes, séparateurs ` - ` et parfois ` + `. Reproduire cette énergie.
+#### Bloc long multi-sujets (cas plus rare, grosse session)
+
+Référence pour un bloc qui couvre plusieurs heures avec deux fronts en parallèle (migration de module + intégration Stripe), en langage client :
+
+> `finalisation de la migration en production d'un gros module d'affichage des cours sur ejardin.ca (regroupement de plusieurs bouts de code épars dans une seule extension propre, et resynchro d'un gabarit de page entre la prod et l'environnement de test) - préparation des tests de validation pour la migration Stripe Canada → US : récupération des réponses de Patrick aux questions préparatoires, confirmation que les paiements peuvent être facturés en dollars canadiens même depuis le compte américain, désactivation de PayPal partout, marquage rétroactif des commandes historiques pour identifier leur compte d'origine, ajout d'une colonne "Compte Stripe" dans l'admin avec un filtre, et 3 correctifs préventifs sur le code de paiement modifié - double-vérification de tout ça par une seconde IA en plusieurs passes, consensus atteint - livraison de scripts de tests automatiques - en parallèle, amorce de la migration suivante : le module "Espace Étudiant"`
+
+Remarquer dans cet exemple :
+- **Aucun ID, aucun numéro de phase, aucun nom de script, aucun nom de skill ni de fonction interne.**
+- Les sous-détails techniques sont regroupés entre parenthèses ("regroupement de plusieurs bouts de code épars..."), pas énumérés à plat.
+- Noms propres conservés : ejardin.ca, Stripe, PayPal, Patrick.
+- Concepts métier conservés : "compte Stripe", "espace étudiant", "Compte Stripe" (colonne admin).
+- Ton direct, factuel, première personne implicite, séparateurs ` - ` et parfois ` + `.
+
+#### Anti-pattern à éviter
+
+Trop brut, illisible pour le client :
+
+> `Phase 4-4 cutover prod cluster ejardin-courses-display sur ejardin.ca (13 snippets migrés vers plugin, snippets actifs prod 18→5, fix sync du template Elementor 3931 live→staging via script dédié) - Stripe CA→US : validation empirique Q1 (CAD presentment OK sur compte US Standard via test API PaymentIntent) - doc-sync aligné sur consensus Phase C+D - Phase E pré-QA livrée : PayPal globalement off, backfill C4 _ejardin_stripe_account historique, colonne admin C5 compte Stripe + filtre, 3 patches préventifs du fork US issus de Codex (token_set_default, list_item, prepare_source) - confront-codex round 4 Phase E pré-QA atteignant consensus absolu`
+
+Pourquoi c'est mauvais : IDs et numéros partout ("Phase 4-4", "C4", "C5", "Q1", "round 4", "Elementor 3931"), noms de fonctions ("token_set_default"), noms de skills ("confront-codex", "doc-sync"), jargon ("cutover", "backfill", "snippets", "fork"). Le client comprend une fraction de ce qui s'est passé.
 
 ## Workflow d'exécution
 
@@ -236,7 +295,7 @@ Remarquer : ton direct, factuel, pas de phrases complètes, séparateurs ` - ` e
    - Regarder les messages utilisateur des sessions Claude tombant dans ce bloc
    - Regarder les messages utilisateur des sessions Codex tombant dans ce bloc (mêmes règles : on regarde ce que l'utilisateur a demandé, pas ce que le modèle a répondu)
    - Regarder les commits du bloc et leur scope (fichiers modifiés)
-   - Reformuler en langage naturel à la sauce de l'utilisateur (voir exemples). Fusionner sans distinguer l'agent quand le travail porte sur le même sujet ; mentionner discrètement "avec Codex" seulement si c'est pertinent pour le client.
+   - **Reformuler en langage client** (voir section Style général) : sortir le jargon technique, garder les noms propres et les concepts métier. Fusionner sans distinguer l'agent — ne jamais mentionner "Claude" ou "Codex" par défaut, juste l'intention ("double-vérification par une seconde IA" si vraiment pertinent).
 
 8. **Présenter** la synthèse dans le chat, prête à copier-coller. Pas de fichier créé.
 
@@ -244,7 +303,8 @@ Remarquer : ton direct, factuel, pas de phrases complètes, séparateurs ` - ` e
 
 - **Jamais d'em dash (`—`)** dans la sortie. L'utilisateur déteste ça. Toujours utiliser le tiret simple `-`.
 - **Ne pas inventer** d'activités. Si une session Claude Code ou Codex n'est pas claire, mieux vaut un résumé vague ("travail divers sur X") qu'une fabulation détaillée.
-- **Ne pas mentionner Claude ni Codex** par défaut, ni "j'ai aidé l'utilisateur à..." dans la synthèse. C'est l'utilisateur qui a fait le travail, point. La synthèse est rédigée à la première personne du singulier implicite (style des exemples). Exception : mention discrète d'un agent si vraiment pertinent pour le contexte client (rare).
+- **Ne pas mentionner Claude ni Codex** ni aucun nom de skill/CLI dans la sortie. C'est l'utilisateur qui a fait le travail. La synthèse est rédigée à la première personne du singulier implicite. Quand un outil d'IA a vraiment fait partie du travail (ex: review croisée), traduire par l'intention ("double-vérification par une seconde IA"), jamais par le nom de l'outil.
+- **Mode client par défaut** : voir section Style général. Le mode technique brut est l'exception, activé uniquement sur demande explicite de l'utilisateur.
 - **Pas de markdown lourd** : pas de `##`, pas de `**bold**`, pas de bullets. Juste du texte plat avec retours à la ligne entre blocs.
 - **Si rien n'a été fait ce jour-là** dans ce projet (pas de commit, pas de session), le dire simplement : "Aucune activité détectée pour ce projet le [date]."
 - **Demander confirmation rapide** si la date est ambiguë, mais ne pas surcharger l'utilisateur de questions — l'objectif est qu'il copie-colle vite.
