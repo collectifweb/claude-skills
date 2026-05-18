@@ -1,6 +1,6 @@
 ---
 name: session-review
-description: Fait reviewer la session Claude Code courante par Codex (CLI) pour valider que rien n'ait été manqué dans le travail effectué. Codex examine les échanges de la session et le diff git non-commité, produit un rapport d'observations et recommandations, que Claude analyse et accepte/rejette point par point. Si Claude a des objections, il les soumet à Codex pour une réponse finale. Utilise ce skill dès que l'utilisateur demande de "faire reviewer la session", "double-vérifier ce qui a été fait", "que codex valide la session", "review codex de la session", "vérifier que rien n'a été manqué", "faire une session review", ou tape la slash command `/session-review`. À utiliser à la fin d'une session de travail Claude Code, avant que l'utilisateur ne commit ou ne ferme la session, pour s'assurer qu'aucun point important n'a été oublié.
+description: Fait reviewer la session Claude Code courante par Codex CLI pour valider que rien n'ait été manqué. Codex analyse échanges + diff git, produit rapport, Claude accepte/rejette. Trigger /session-review, "faire reviewer la session", "que codex valide", "vérifier que rien manqué".
 ---
 
 # Session Review
@@ -40,13 +40,7 @@ Si pas de repo git, signale-le à l'utilisateur — ce skill repose sur le diff 
 
 Par défaut, ce skill utilise **`gpt-5.5`** avec **`model_reasoning_effort="xhigh"`** pour invoquer codex. Ce choix optimise pour la qualité du raisonnement critique, ce qui est exactement ce qu'on cherche dans une revue de code et de session.
 
-**Override par l'utilisateur** : si l'utilisateur mentionne un modèle différent ou un niveau de raisonnement différent dans sa demande initiale (ex: "lance la review codex avec gpt-5.4", "utilise codex-mini pour aller vite", "fais-le sans xhigh", "reasoning normal", "plus rapide"), respecte ce choix au lieu du défaut. Détecte ces mentions naturellement dans la requête.
-
-**Niveaux de reasoning effort disponibles** (du plus rapide au plus profond) :
-- `low` — rapide, analyse superficielle
-- `medium` — défaut codex, équilibré
-- `high` — profond, recommandé si `xhigh` est trop lent
-- `xhigh` — maximum, défaut de ce skill (peut prendre 5-15 min)
+**Override par l'utilisateur** : si l'utilisateur mentionne un modèle différent ou un niveau de raisonnement différent dans sa demande initiale (ex: "lance la review codex avec gpt-5.4", "utilise codex-mini pour aller vite", "fais-le sans xhigh", "reasoning normal", "plus rapide"), respecte ce choix au lieu du défaut. Détecte ces mentions naturellement dans la requête. Voir les niveaux disponibles dans la section "Lancement et suivi de codex" plus bas.
 
 **Concrètement** : toutes les invocations de `codex exec` dans ce skill doivent inclure ces flags par défaut :
 
@@ -60,9 +54,15 @@ codex exec \
 
 **Note sur `gpt-5.5`** : ce modèle requiert une authentification ChatGPT (pas API key). En cas d'erreur d'authentification, propose à l'utilisateur de basculer sur `gpt-5.4` ou `gpt-5.3-codex` comme fallback.
 
-## Visibilité de la progression de codex
+## Lancement et suivi de codex (RÈGLE CRITIQUE)
 
-Quand codex tourne en mode `exec`, il streame sa progression sur **stderr**. Selon le client, cette progression peut être invisible. Utilise `--json` pour obtenir un flux JSON Lines structuré sur stdout :
+**Tous les appels `codex exec` dans ce skill DOIVENT être lancés en arrière-plan** avec `run_in_background: true` sur l'outil Bash. Jamais en foreground.
+
+**Pourquoi** : codex exec prend typiquement 5 à 15 minutes (xhigh raisonne longtemps). Un appel Bash en foreground time out à 2 min par défaut (10 min max), retourne en erreur, et tu crois que codex a échoué alors qu'il tourne toujours. C'est la cause #1 des sessions où je dois être relancé manuellement après plusieurs heures de silence.
+
+### Pattern de lancement obligatoire
+
+Toujours rediriger stderr + stdout vers un log file, et lancer en background :
 
 ```bash
 codex exec \
@@ -70,12 +70,44 @@ codex exec \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
   --json \
-  "PROMPT_ICI" 2>&1 | tee /tmp/codex-stream.log
+  "PROMPT_ICI" > /tmp/codex-stream-{phase}.log 2>&1
 ```
 
-Avec `--json`, tu vois en direct : `reasoning`, `command_execution`, `file_change`, `agent_message`. Le `tee` garde une trace.
+Sur l'outil Bash : `run_in_background: true`. Note le `bash_id` retourné.
 
-**Si codex semble bloqué** : 10-15 minutes en `xhigh` sur une session avec beaucoup de changements est normal. Au-delà de 20 minutes sans output, suggère à l'utilisateur d'interrompre (Ctrl+C) et de relancer avec `model_reasoning_effort="high"`.
+**Ne pas piper vers `tee`** quand le bash tourne en background — selon les hooks et le shell, le pipe peut détacher stdin et faire échouer codex silencieusement. Redirection simple `> log 2>&1` uniquement.
+
+### Protocole de suivi obligatoire
+
+1. **Annonce à l'utilisateur** :
+   > "Codex lancé en arrière-plan (phase X). Je surveille sa progression et te tiens au courant toutes les 30-60s."
+
+2. **Boucle de polling** (toutes les 30-60 secondes, jamais plus long) :
+   - Vérifie si le fichier de sortie attendu existe : `ls -la {chemin-vers-fichier-codex.md} 2>/dev/null`
+   - Si pas encore là, vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
+   - Lis la fin du log : `tail -30 /tmp/codex-stream-{phase}.log` pour repérer activité (`reasoning`, `command_execution`, `agent_message`), erreurs, ou achèvement
+   - Lis aussi la sortie stream du bash background (BashOutput sur le `bash_id`) au cas où
+   - **Donne un status à l'utilisateur à chaque tour** : "Codex tourne toujours, X minutes écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
+
+3. **Critère d'achèvement** : le fichier `.md` attendu existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
+
+4. **Si codex échoue ou disparaît du `pgrep`** sans avoir créé le fichier : lis le log complet, diagnostique (auth, sandbox, modèle indisponible, pipe cassé), signale à l'utilisateur et propose un fallback.
+
+5. **Si codex tourne >20 minutes sans output dans le log** : signale-le à l'utilisateur et propose d'interrompre + relancer avec `model_reasoning_effort="high"` (plus rapide que `xhigh`).
+
+### Anti-oubli (très important)
+
+**Tant que la phase courante n'a pas son fichier `.md` complet, tu n'as PAS terminé.** Ne passe à aucune autre tâche. Ne réponds à aucune digression. Si l'utilisateur change de sujet pendant l'attente, réponds brièvement puis rappelle : "Codex tourne toujours sur la phase X, je reste en surveillance." Le silence prolongé entre lancement et lecture est le bug que ce protocole corrige — l'utilisateur a déjà perdu 3 heures à cause de ça dans une session précédente.
+
+Si tu reviens dans la conversation après une compression de contexte ou un nouveau tour utilisateur, ta première action doit être de vérifier l'état du codex en cours (existence du fichier attendu + `pgrep` + tail du log) avant de continuer.
+
+### Niveaux de reasoning effort disponibles
+
+Du plus rapide au plus profond :
+- `low` — rapide, analyse superficielle
+- `medium` — défaut codex, équilibré
+- `high` — profond, recommandé si `xhigh` est trop lent
+- `xhigh` — maximum, défaut de ce skill (5-15 min typique)
 
 ## Structure des fichiers
 
@@ -204,7 +236,7 @@ tu as fait rapidement, ou qui mérite un second regard]
 
 ## Phase 2 — Faire intervenir Codex pour la review
 
-Une fois `01-context.md` écrit, invoque codex avec le prompt prévu pour la review. Voir `references/codex-prompts.md` pour les prompts exacts.
+Une fois `01-context.md` écrit, invoque codex avec le prompt prévu pour la review **en arrière-plan** (`run_in_background: true` sur l'outil Bash — c'est obligatoire, voir section "Lancement et suivi de codex"). Voir `references/codex-prompts.md` pour les prompts exacts.
 
 ```bash
 codex exec \
@@ -219,7 +251,7 @@ Contexte à analyser : docs/reviews/session-review-{slug}-{timestamp}/01-context
 
 Écris ton rapport complet dans : docs/reviews/session-review-{slug}-{timestamp}/02-codex-report.md
 EOF
-)" 2>&1 | tee /tmp/codex-stream-review.log
+)" > /tmp/codex-stream-review.log 2>&1
 ```
 
 Codex va :
@@ -228,7 +260,7 @@ Codex va :
 3. Identifier ce qui a été manqué, oublié, mal fait, à risque
 4. Écrire son rapport structuré dans `02-codex-report.md`
 
-Cette opération peut prendre plusieurs minutes — c'est normal. Vérifie ensuite que le fichier a bien été créé.
+Applique strictement le **Protocole de suivi obligatoire** pendant l'attente : polling 30-60s du fichier `02-codex-report.md` + `/tmp/codex-stream-review.log` + status à l'utilisateur. Ne passe à la phase 3 que lorsque le fichier est complet et stable.
 
 ## Phase 3 — Analyse par Claude
 
@@ -298,7 +330,7 @@ Codex, je te demande de répondre en ligne par ligne.
 
 ### 4.2 Faire répliquer Codex
 
-Relance codex avec le prompt d'objection (voir `references/codex-prompts.md`) :
+Relance codex avec le prompt d'objection **en arrière-plan** (`run_in_background: true`, voir section "Lancement et suivi de codex" et `references/codex-prompts.md`) :
 
 ```bash
 codex exec \
@@ -317,8 +349,10 @@ Lis ces fichiers en ordre :
 
 Réponds aux objections de Claude dans : docs/reviews/session-review-{slug}-{timestamp}/05-codex-replies.md
 EOF
-)" 2>&1 | tee /tmp/codex-stream-replies.log
+)" > /tmp/codex-stream-replies.log 2>&1
 ```
+
+Applique de nouveau le **Protocole de suivi obligatoire** : polling 30-60s de `05-codex-replies.md` + tail du log + status à l'utilisateur, jusqu'à fichier complet et stable.
 
 ### 4.3 Intégrer les réponses
 
