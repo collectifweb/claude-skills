@@ -1,6 +1,6 @@
 ---
 name: confront-codex
-description: Confronte un plan d'approche technique de Claude avec une analyse indépendante de Codex (CLI), via plusieurs rounds de débat documentés, jusqu'à atteindre un consensus. Utilise ce skill dès que l'utilisateur demande de "confronter codex", "valider le plan avec codex", "lancer une review codex", "challenger l'approche", "second avis sur le plan", ou tape la slash command `/confront-codex`. Utilise-le aussi proactivement quand l'utilisateur termine un plan en plan mode et qu'il a déjà mentionné dans la conversation vouloir une validation croisée avec codex. Le skill produit un plan final consolidé dans `docs/` après débat itératif, avec archivage des rounds intermédiaires dans `docs/archives/`.
+description: Confronte un plan technique avec Codex CLI via débats itératifs jusqu'au consensus. Plan final dans docs/, rounds archivés. Trigger /confront-codex, "confronter codex", "valider le plan avec codex", "challenger l'approche", "second avis sur le plan".
 ---
 
 # Confront-Codex

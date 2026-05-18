@@ -1,6 +1,6 @@
 ---
 name: timelog-synthesis
-description: Génère une synthèse du travail effectué dans la journée pour un projet client, formatée en entrées de log de temps prêtes à être copiées dans Toggl ou un autre outil de time-tracking. Découpe automatiquement la journée en blocs horaires basés sur l'activité (commits git + sessions Claude Code + sessions Codex CLI), avec une pause de 90 minutes comme seuil entre deux blocs distincts. Utilise ce skill dès que l'utilisateur demande "log de temps", "synthèse de la journée", "résume ce que j'ai fait aujourd'hui/hier", "timelog", "time tracking", "rapport d'activité", "qu'est-ce que j'ai fait aujourd'hui", ou tape la slash command `/timelog`. À utiliser uniquement à l'intérieur d'un dossier de projet client (le repo courant).
+description: Génère synthèse de la journée pour un projet client (entrées Toggl). Découpe en blocs basés sur commits git + sessions Claude/Codex CLI (seuil 90 min). Trigger /timelog, "log de temps", "synthèse journée", "résume ce que j'ai fait", "time tracking", "rapport d'activité".
 ---
 
 # Timelog Synthesis
