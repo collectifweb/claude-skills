@@ -54,12 +54,24 @@ ln -s "$(pwd)/claude-skills/humanize" ~/.claude/skills/humanize
 
 ---
 
+### [tidy](./tidy/)
+
+Reorganizes documentation, archives obsolete plans, removes scratch files, and audits exposed secrets so Claude Code can navigate the project in a fresh session without getting lost. Produces a justified markdown report in `docs/tidy/`, then executes changes category by category with your approval at each step. `/tidy --deep` extends analysis to application code (orphan modules) — always proposed as questions, never auto-deleted.
+
+**Requires:** Claude Code, git
+
+```bash
+ln -s "$(pwd)/claude-skills/tidy" ~/.claude/skills/tidy
+```
+
+---
+
 ## Install all at once
 
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog-synthesis humanize; do
+for skill in session-review confront-codex timelog-synthesis humanize tidy; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
