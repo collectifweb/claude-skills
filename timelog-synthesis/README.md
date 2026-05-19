@@ -31,7 +31,9 @@ Output is printed directly in the chat, ready to copy-paste into Toggl. No files
 
 ### As a personal skill (available across all projects, both agents)
 
-Clone the monorepo and symlink the skill into each agent's skills directory:
+Clone the monorepo and symlink the skill into each agent's skills directory.
+
+**Linux / macOS** (bash / zsh)
 
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
@@ -43,9 +45,23 @@ mkdir -p ~/.codex/skills
 ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.codex/skills/timelog-synthesis
 ```
 
+**Windows** (PowerShell — run as Administrator, or enable Developer Mode)
+
+```powershell
+git clone https://github.com/collectifweb/claude-skills.git
+# Claude Code
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog-synthesis" -Target "$PWD\claude-skills\timelog-synthesis"
+# Codex CLI
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\timelog-synthesis" -Target "$PWD\claude-skills\timelog-synthesis"
+```
+
 After installing into Codex, restart the Codex CLI so it picks up the new skill.
 
 ### As a project skill (committed with a specific project)
+
+**Linux / macOS**
 
 ```bash
 cd /path/to/your/project
@@ -53,6 +69,17 @@ mkdir -p .claude/skills
 git clone https://github.com/collectifweb/claude-skills.git /tmp/claude-skills
 cp -r /tmp/claude-skills/timelog-synthesis .claude/skills/timelog-synthesis
 ```
+
+**Windows** (PowerShell)
+
+```powershell
+cd C:\path\to\your\project
+New-Item -ItemType Directory -Force -Path ".claude\skills" | Out-Null
+git clone https://github.com/collectifweb/claude-skills.git "$env:TEMP\claude-skills"
+Copy-Item -Recurse "$env:TEMP\claude-skills\timelog-synthesis" ".claude\skills\timelog-synthesis"
+```
+
+> **Note Windows** — Les liens symboliques exigent PowerShell en Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` (vous perdrez la synchro auto au `git pull`).
 
 Verify by opening a Claude Code session and typing `/help` — `timelog-synthesis` should appear in the list. On Codex, the skill is discovered automatically from `~/.codex/skills/` and surfaced in the AGENTS.md skill index at session start.
 

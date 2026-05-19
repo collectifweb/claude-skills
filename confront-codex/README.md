@@ -43,13 +43,25 @@ The skill defaults to `gpt-5.5` with `model_reasoning_effort="xhigh"`. Mention a
 
 ### As a personal skill (available across all projects)
 
+**Linux / macOS** (bash / zsh)
+
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/confront-codex" ~/.claude/skills/confront-codex
 ```
 
+**Windows** (PowerShell — run as Administrator, or enable Developer Mode)
+
+```powershell
+git clone https://github.com/collectifweb/claude-skills.git
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\confront-codex" -Target "$PWD\claude-skills\confront-codex"
+```
+
 ### As a project skill (committed with a specific project)
+
+**Linux / macOS**
 
 ```bash
 cd /path/to/your/project
@@ -57,6 +69,17 @@ mkdir -p .claude/skills
 git clone https://github.com/collectifweb/claude-skills.git /tmp/claude-skills
 cp -r /tmp/claude-skills/confront-codex .claude/skills/confront-codex
 ```
+
+**Windows** (PowerShell)
+
+```powershell
+cd C:\path\to\your\project
+New-Item -ItemType Directory -Force -Path ".claude\skills" | Out-Null
+git clone https://github.com/collectifweb/claude-skills.git "$env:TEMP\claude-skills"
+Copy-Item -Recurse "$env:TEMP\claude-skills\confront-codex" ".claude\skills\confront-codex"
+```
+
+> **Note Windows** — Les liens symboliques exigent une session PowerShell Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` — vous perdrez la synchro automatique au `git pull`.
 
 Verify by opening a Claude Code session and typing `/help` — `confront-codex` should appear in the list.
 

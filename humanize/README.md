@@ -76,11 +76,23 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 
 ## Installation
 
+**Linux / macOS** (bash / zsh)
+
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/humanize" ~/.claude/skills/humanize
 ```
+
+**Windows** (PowerShell — run as Administrator, or enable Developer Mode)
+
+```powershell
+git clone https://github.com/collectifweb/claude-skills.git
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\humanize" -Target "$PWD\claude-skills\humanize"
+```
+
+> **Note Windows** — Les liens symboliques exigent PowerShell en Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` (vous perdrez la synchro auto au `git pull`).
 
 Verify by opening a Claude Code session — `humanize` should appear in `/help`.
 
