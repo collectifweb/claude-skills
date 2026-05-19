@@ -1,0 +1,990 @@
+{
+  "meta": {
+    "titre": "Détecteur de scories IA",
+    "version": "1.1 du 11 mars 2026",
+    "langue": "fr",
+    "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement)",
+    "sources": [
+      "Wikipedia:Signs of AI writing",
+      "Recherche Gemini Deep Research du 11 mars 2026",
+      "Notes personnelles de l'auteur"
+    ],
+    "types_disponibles": [
+      "interdit",
+      "limite",
+      "pattern",
+      "injection",
+      "biais"
+    ]
+  },
+  "regles": [
+    {
+      "id": "LEX-001",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Intensifieurs creux",
+      "description": "Adjectifs et adverbes intensifieurs surreprésentés dans les outputs LLM. Ils gonflent l'importance sans ajouter de sens.",
+      "regle": "Détecter toute occurrence de ces termes. Proposer soit la suppression, soit une reformulation avec un terme précis et vérifiable.",
+      "exemples": {
+        "avant": "Ce projet est fondamentalement crucial et constitue un levier absolument incontournable.",
+        "apres": "Ce projet change la donne."
+      },
+      "parametres": {
+        "mots": [
+          "massif",
+          "massivement",
+          "colossal",
+          "crucial",
+          "crucialement",
+          "fondamental",
+          "fondamentalement",
+          "essentiel",
+          "essentiellement",
+          "significatif",
+          "significativement",
+          "remarquable",
+          "remarquablement",
+          "particulièrement",
+          "véritablement",
+          "absolument",
+          "extrêmement",
+          "incontournable",
+          "indéniable",
+          "indéniablement",
+          "véritablement",
+          "profondément",
+          "résolument",
+          "pleinement",
+          "intrinsèquement",
+          "spécifiquement",
+          "substantiel",
+          "substantiellement",
+          "révolutionnaire",
+          "fascinant",
+          "transformateur",
+          "vital",
+          "catalyseur"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "LEX-002",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Verbes creux",
+      "description": "Verbes qui simulent l'action ou l'analyse sans rien dire. Le LLM les préfère aux verbes directs parce qu'ils sonnent plus 'sérieux'.",
+      "regle": "Remplacer systématiquement par un verbe d'action direct. Si aucun verbe d'action n'est possible, la phrase est probablement creuse et doit être supprimée.",
+      "exemples": {
+        "avant": "Cette approche permet de mettre en lumière les enjeux et offre une perspective nouvelle.",
+        "apres": "Cette approche révèle les enjeux. Elle ouvre une perspective nouvelle."
+      },
+      "parametres": {
+        "mots": [
+          "permettre de",
+          "s'avérer",
+          "constituer",
+          "représenter",
+          "offrir (sens figuré)",
+          "souligner",
+          "noter que",
+          "mettre en lumière",
+          "jouer un rôle",
+          "apporter une réponse",
+          "apporter une solution",
+          "contribuer à",
+          "participer à",
+          "s'inscrire dans",
+          "garantir",
+          "assurer (sens rhétorique)",
+          "approfondir"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "LEX-003",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Noms abstraits creux",
+      "description": "Substantifs vagues qui donnent une apparence de profondeur sans contenu réel. Le test : peut-on remplacer le nom par un terme plus précis ? Si oui, le faire. Si non, supprimer.",
+      "regle": "Signaler chaque occurrence. Demander si le terme est utilisé dans son sens technique précis ou comme remplissage. Dans le second cas, reformuler ou supprimer.",
+      "exemples": {
+        "avant": "Cette synergie crée une dynamique nouvelle dans l'écosystème associatif.",
+        "apres": "Les organisations travaillent mieux ensemble. Le secteur en profite."
+      },
+      "parametres": {
+        "mots": [
+          "paradigme (hors épistémologie)",
+          "écosystème (hors biologie)",
+          "synergie",
+          "dynamique (nom)",
+          "perspective (fourre-tout)",
+          "dimension",
+          "approche (flou)",
+          "problématique",
+          "enjeu (surutilisé)",
+          "paysage (abstrait)",
+          "trajectoire (abstrait)",
+          "levier",
+          "dispositif",
+          "démarche",
+          "processus (vague)",
+          "la sphère de",
+          "le domaine de",
+          "le champ des possibles",
+          "un nouveau chapitre"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LEX-004",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Adjectifs corporate et passe-partout",
+      "description": "Adjectifs qui semblent qualificatifs mais ne qualifient rien. Souvent hérités de la langue des organisations et du management.",
+      "regle": "Pour chaque occurrence, poser la question : cet adjectif dit-il quelque chose de vérifiable ? Si non, supprimer.",
+      "exemples": {
+        "avant": "Une solution innovante et holistique pour un impact optimal.",
+        "apres": "Une solution qui fonctionne."
+      },
+      "parametres": {
+        "mots": [
+          "pertinent",
+          "approprié",
+          "adéquat",
+          "optimal",
+          "efficace (sans preuve)",
+          "robuste",
+          "sophistiqué",
+          "innovant",
+          "holistique",
+          "transversal",
+          "intégré",
+          "structurant",
+          "fédérateur",
+          "collaboratif (langue de bois)",
+          "compréhensif (anglicisme de comprehensive)",
+          "avant-gardiste",
+          "parfait (superlatif implicite)"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LEX-005",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Transitions mortes",
+      "description": "Formules de transition qui ne font rien transiter. Elles occupent de l'espace sans établir de lien logique réel entre les idées.",
+      "regle": "Supprimer systématiquement. Si la suppression crée un hiatus logique, c'est qu'un vrai connecteur est nécessaire — aller vers INJ-001.",
+      "exemples": {
+        "avant": "Il convient de souligner que, dans ce contexte, force est de constater que les résultats sont encourageants.",
+        "apres": "Les résultats sont encourageants."
+      },
+      "parametres": {
+        "expressions": [
+          "il est important de noter que",
+          "il convient de souligner",
+          "force est de constater",
+          "dans ce contexte",
+          "à cet égard",
+          "en définitive",
+          "en fin de compte",
+          "il va sans dire",
+          "cela étant dit",
+          "qui plus est",
+          "en outre",
+          "de plus",
+          "ainsi (début de phrase)",
+          "il apparaît que",
+          "on peut observer que",
+          "on constate que",
+          "il est à noter que",
+          "cela soulève la question de",
+          "il est crucial de",
+          "il est essentiel de rappeler",
+          "dans ce cadre",
+          "par la suite",
+          "en conséquence (mécanique)"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "LEX-006",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Paires redondantes synonymiques",
+      "description": "L'IA combine deux quasi-synonymes pour simuler une richesse lexicale qu'elle n'a pas. Le résultat est une lourdeur caractéristique : là où le mot juste serait un seul terme précis, elle en place deux qui se recouvrent presque entièrement.",
+      "regle": "Détecter les binômes adjectivaux ou nominaux dont les deux termes sont quasi synonymes. Proposer de ne conserver que le plus précis des deux.",
+      "exemples": {
+        "avant": "Nous proposons une analyse complète et exhaustive, robuste et fiable, innovante et avant-gardiste.",
+        "apres": "Nous proposons une analyse exhaustive et fiable."
+      },
+      "parametres": {
+        "binomes_types": [
+          "crucial et essentiel",
+          "complet et exhaustif",
+          "robuste et fiable",
+          "innovant et avant-gardiste",
+          "efficace et efficient",
+          "dynamique et évolutif",
+          "clair et transparent",
+          "simple et accessible",
+          "rapide et efficace",
+          "précis et rigoureux"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LEX-007",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Lexique de l'exploration (calques anglophones métaphoriques)",
+      "description": "Famille de verbes et d'expressions issus de la surreprésentation de l'anglais dans les corpus d'entraînement. En anglais, 'delve into' est un tic très fréquent chez les LLM. En français, il se traduit par 'plonger dans', 'naviguer dans', 'explorer ensemble' : des images de mouvement intellectuel qui créent une illusion de progression sans faire avancer le contenu.",
+      "regle": "Supprimer ou remplacer par un verbe d'action direct décrivant ce qui est réellement fait (analyser, examiner, comparer, décrire...).",
+      "exemples": {
+        "avant": "Plongeons dans les détails de cette méthode et naviguons ensemble dans les complexités du sujet.",
+        "apres": "Voici comment fonctionne cette méthode."
+      },
+      "parametres": {
+        "expressions": [
+          "plonger dans",
+          "plongeons dans",
+          "plongeons en profondeur",
+          "naviguer dans",
+          "naviguer dans les complexités de",
+          "explorer ensemble",
+          "explorons",
+          "approfondir ensemble",
+          "en toile de fond",
+          "tisser des liens",
+          "une toile complexe",
+          "une riche tapisserie",
+          "le paysage de (métaphore)"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "LEX-008",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Calques anglophones syntaxiques",
+      "description": "Constructions qui calquent la syntaxe anglaise sur le français. Elles sont souvent tolérées voire invisibles pour un lecteur non averti, mais elles trahissent une influence de l'anglais dans les données d'entraînement. Le français dispose d'équivalents plus naturels pour chacune.",
+      "regle": "Détecter chaque occurrence et proposer le substitut français naturel.",
+      "exemples": {
+        "avant": "Basé sur ces résultats, notre approche, en termes de performance, fait sens.",
+        "apres": "Ces résultats justifient notre approche. Sur le plan de la performance, elle est cohérente."
+      },
+      "parametres": {
+        "calques": {
+          "faire sens": "avoir du sens / être cohérent",
+          "basé sur": "fondé sur / à partir de / s'appuyant sur",
+          "en termes de": "sur le plan de / concernant / au sujet de / quant à",
+          "délivrer (résultats)": "produire / fournir / obtenir",
+          "adresser (un problème)": "traiter / résoudre / répondre à",
+          "implémenter": "mettre en place / appliquer / déployer",
+          "opportunité (systématique)": "occasion / possibilité",
+          "compléter (au sens de réaliser)": "achever / terminer / effectuer"
+        }
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "SYN-001",
+      "categorie": "syntaxe",
+      "type": "interdit",
+      "label": "Participe présent en fonction verbale",
+      "description": "Le participe présent en -ant utilisé comme verbe principal ou comme proposition participiale détachée. Marque d'un style mécanique et d'une syntaxe appauvrie. En français de qualité, il se remplace toujours.",
+      "regle": "Détecter toute proposition dont le verbe principal est au participe présent. Proposer un remplacement par une relative ('qui...'), une coordination, ou un infinitif selon le contexte.",
+      "exemples": {
+        "avant": "L'association développe ses activités, répondant ainsi aux besoins du territoire et mobilisant de nouveaux bénévoles.",
+        "apres": "L'association développe ses activités. Elle répond aux besoins du territoire et attire de nouveaux bénévoles."
+      },
+      "parametres": {
+        "detecter": "Toute forme verbale en -ant en position de verbe principal ou de participiale détachée en début ou fin de phrase."
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "SYN-002",
+      "categorie": "syntaxe",
+      "type": "interdit",
+      "label": "Structures scolaires françaises",
+      "description": "Constructions syntaxiques héritées de la dissertation française qui sonnent académique et rigide. Particulièrement fréquentes dans les outputs LLM en français.",
+      "regle": "Détecter et reformuler. Préférer la coordination simple ou la juxtaposition.",
+      "exemples": {
+        "avant": "Non seulement cette initiative répond aux besoins, mais elle permet également d'insuffler une dynamique nouvelle.",
+        "apres": "Cette initiative répond aux besoins et insuffle une nouvelle dynamique."
+      },
+      "parametres": {
+        "structures": [
+          "non seulement... mais aussi/également",
+          "tant... que...",
+          "X, et ce, Y",
+          "c'est ainsi que",
+          "c'est pourquoi (en début de paragraphe)",
+          "il en résulte que",
+          "on notera que",
+          "rappelons que"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "SYN-003",
+      "categorie": "syntaxe",
+      "type": "interdit",
+      "label": "Parallélisme négatif",
+      "description": "Construction du type 'ce n'est pas X, c'est Y' ou 'pas seulement X, mais Y'. Les LLMs y recourent en permanence pour simuler une pensée nuancée. En pratique, la construction est vide et prévisible.",
+      "regle": "Détecter toute construction négative-positive en miroir. Proposer soit une affirmation directe de Y, soit une vraie mise en tension argumentée.",
+      "exemples": {
+        "avant": "Ce n'est pas seulement une question de budget, c'est une question de vision.",
+        "apres": "La vision compte autant que le budget."
+      },
+      "parametres": {
+        "structures": [
+          "ce n'est pas... c'est...",
+          "il ne s'agit pas de... il s'agit de...",
+          "pas seulement... mais aussi...",
+          "non pas... mais...",
+          "ce n'est pas tant... que..."
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "SYN-004",
+      "categorie": "syntaxe",
+      "type": "pattern",
+      "label": "Rigidité de placement de l'adjectif",
+      "description": "Le français permet de placer certains adjectifs avant ou après le nom, avec des nuances de sens ou de style. L'IA place quasi systématiquement les adjectifs après le nom, même quand l'antéposition serait plus naturelle ou plus précise. Cette rigidité contribue à l'aspect plat et monocorde du style synthétique.",
+      "regle": "Repérer les adjectifs placés après le nom dans des cas où l'antéposition serait plus naturelle ou plus expressive en français courant. Proposer l'antéposition quand elle change l'effet sans changer le sens de façon problématique.",
+      "exemples": {
+        "avant": "Cette opportunité unique de créer un impact positif et durable.",
+        "apres": "Cette unique occasion de faire quelque chose qui dure."
+      },
+      "parametres": {
+        "paires_exemples": [
+          "opportunité unique → unique opportunité",
+          "moment important → moment capital",
+          "question essentielle → question centrale",
+          "résultat positif → bon résultat",
+          "défi majeur → grand défi"
+        ],
+        "note_usage": "Ne pas appliquer mécaniquement. L'antéposition doit sonner naturellement dans le contexte."
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "TYP-001",
+      "categorie": "typographie",
+      "type": "interdit",
+      "label": "Titres en title case",
+      "description": "Les LLMs capitalisent tous les mots principaux des titres et sous-titres, à l'anglo-saxonne. En français, seul le premier mot prend une majuscule (sauf noms propres).",
+      "regle": "Vérifier tous les titres et intertitres. Corriger en ne conservant la majuscule qu'au premier mot et aux noms propres.",
+      "exemples": {
+        "avant": "Les Enjeux Du Numérique Dans Le Secteur Associatif",
+        "apres": "Les enjeux du numérique dans le secteur associatif"
+      },
+      "parametres": null,
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "TYP-002",
+      "categorie": "typographie",
+      "type": "interdit",
+      "label": "Émojis",
+      "description": "Les LLMs utilisent des émojis dans les titres, les listes et les transitions pour compenser un manque de structure argumentative réelle.",
+      "regle": "Supprimer tous les émojis sauf usage éditorial délibéré et assumé.",
+      "exemples": {
+        "avant": "🚀 Une approche innovante\n✅ Des résultats concrets\n💡 Une vision partagée",
+        "apres": "Une approche qui fonctionne, des résultats mesurables, une vision commune."
+      },
+      "parametres": null,
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "TYP-003",
+      "categorie": "typographie",
+      "type": "interdit",
+      "label": "Gras systématique",
+      "description": "Les LLMs mettent en gras tous les termes qu'ils jugent importants, transformant le texte en slide de présentation. Le gras perd toute valeur quand il est partout.",
+      "regle": "Conserver le gras uniquement pour les termes techniques introduits pour la première fois, ou pour un effet rhétorique délibéré et isolé. Maximum 2-3 occurrences par texte.",
+      "exemples": {
+        "avant": "Cette **approche innovante** repose sur une **vision partagée** et des **outils adaptés** pour un **impact durable**.",
+        "apres": "Cette approche repose sur une vision partagée et des outils adaptés."
+      },
+      "parametres": {
+        "max": 3,
+        "scope": "texte_entier"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "TYP-004",
+      "categorie": "typographie",
+      "type": "interdit",
+      "label": "Majuscule après deux-points",
+      "description": "Les LLMs héritent de l'usage anglophone qui met une majuscule après les deux-points. En français, les deux-points sont suivis d'une minuscule, sauf s'ils introduisent un nom propre ou une citation commençant une nouvelle phrase.",
+      "regle": "Détecter toute majuscule placée après un signe deux-points dans le corps du texte (hors noms propres et citations). Corriger en minuscule.",
+      "exemples": {
+        "avant": "Le projet repose sur trois principes : Transparence, Collaboration et Innovation.",
+        "apres": "Le projet repose sur trois principes : transparence, collaboration et innovation."
+      },
+      "parametres": {
+        "exceptions": [
+          "noms propres",
+          "début de citation directe introduite par deux-points"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "TYP-005",
+      "categorie": "typographie",
+      "type": "limite",
+      "label": "Listes systématiques",
+      "description": "Les LLM ont une préférence marquée pour la structuration en listes à puces ou numérotées, même là où un paragraphe courant serait plus naturel et plus lisible. Les listes facilitent la prédiction probabiliste en découpant le contenu en unités indépendantes — mais elles produisent un texte qui ressemble à une présentation plutôt qu'à un écrit.",
+      "regle": "Évaluer chaque liste : est-elle justifiée par une vraie énumération (étapes séquentielles, comparaisons, inventaire) ? Si le contenu peut se lire naturellement en prose, proposer de le reformuler en paragraphe. Signaler aussi les introductions de liste du type 'voici X éléments clés...'.",
+      "exemples": {
+        "avant": "Voici les trois éléments clés à retenir :\n- La communication est essentielle.\n- La collaboration crée de la valeur.\n- L'innovation est incontournable.",
+        "apres": "Communication, collaboration, innovation : trois mots d'ordre qui ne valent que si on les met en pratique."
+      },
+      "parametres": {
+        "max": 2,
+        "scope": "texte_entier",
+        "introductions_suspectes": [
+          "voici X éléments clés",
+          "voici les points essentiels",
+          "les principaux aspects sont les suivants",
+          "on peut identifier les points suivants",
+          "plusieurs facteurs entrent en jeu"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PON-001",
+      "categorie": "ponctuation",
+      "type": "interdit",
+      "label": "Virgule de série (virgule d'Oxford)",
+      "description": "Les LLMs placent systématiquement une virgule avant le dernier élément d'une énumération (avant 'et' ou 'ou'). Cet usage est anglo-saxon et incorrect en français standard.",
+      "regle": "Supprimer la virgule placée immédiatement avant 'et' ou 'ou' dans une énumération.",
+      "exemples": {
+        "avant": "Le projet mobilise des associations, des entreprises, des collectivités, et des citoyens.",
+        "apres": "Le projet mobilise des associations, des entreprises, des collectivités et des citoyens."
+      },
+      "parametres": null,
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "PON-002",
+      "categorie": "ponctuation",
+      "type": "limite",
+      "label": "Tiret cadratin en surrégime",
+      "description": "Les LLMs abusent du tiret cadratin pour créer un effet de punch ou d'emphase là où une virgule, des parenthèses ou un point feraient mieux l'affaire.",
+      "regle": "Compter les tirets cadratins. Au-delà du seuil, proposer des remplacements par virgule, parenthèses ou point selon le contexte.",
+      "exemples": {
+        "avant": "Ce projet — ambitieux — repose sur une équipe — soudée — et des moyens — enfin — à la hauteur.",
+        "apres": "Ce projet ambitieux repose sur une équipe soudée et des moyens à la hauteur."
+      },
+      "parametres": {
+        "max": 1,
+        "scope": "texte_entier"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LIM-001",
+      "categorie": "rhetorique",
+      "type": "limite",
+      "label": "Règle de trois",
+      "description": "Les LLMs groupent compulsivement les éléments par trois — trois adjectifs, trois exemples, trois arguments. Répétée, cette structure signe l'écriture IA et donne une impression de fabrication.",
+      "regle": "Compter les énumérations à exactement trois éléments. Au-delà du seuil, signaler les occurrences en surnombre et proposer de réduire à deux éléments ou d'en développer un seul vraiment.",
+      "exemples": {
+        "avant": "Cette démarche est inclusive, innovante et transformatrice. Elle mobilise les acteurs, fédère les énergies et crée de la valeur.",
+        "apres": "Cette démarche est inclusive et innovante. Elle mobilise et transforme."
+      },
+      "parametres": {
+        "max": 1,
+        "scope": "texte_entier"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LIM-002",
+      "categorie": "rhetorique",
+      "type": "limite",
+      "label": "Anaphores et lyrisme répétitif",
+      "description": "Les LLMs ont une tendance aux envolées rhétoriques avec anaphores (répétition d'un même mot ou groupe en début de phrase). Utilisée une fois, l'anaphore peut être un bel outil. Répétée, elle sombre dans la boursouflure.",
+      "regle": "Détecter les séquences de phrases débutant par le même mot ou groupe. Au-delà du seuil, proposer de rompre la série.",
+      "exemples": {
+        "avant": "C'est un choix. C'est un engagement. C'est une responsabilité. C'est notre avenir.",
+        "apres": "C'est un choix et une responsabilité."
+      },
+      "parametres": {
+        "max": 1,
+        "scope": "paragraphe",
+        "longueur_serie_min": 3
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LIM-003",
+      "categorie": "syntaxe",
+      "type": "limite",
+      "label": "Phrases sans verbe",
+      "description": "Les LLMs produisent des phrases nominales pour créer un effet de style ou de rythme. Une ou deux peuvent fonctionner. Au-delà, c'est du remplissage pseudo-percutant.",
+      "regle": "Compter les phrases sans verbe conjugué. Au-delà du seuil, signaler les occurrences en surnombre.",
+      "exemples": {
+        "avant": "Un constat simple. Une réalité partagée. Un défi collectif. Une opportunité unique.",
+        "apres": "Un constat simple, une réalité partagée : le défi est collectif."
+      },
+      "parametres": {
+        "max": 2,
+        "scope": "texte_entier"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-001",
+      "categorie": "rhetorique",
+      "type": "pattern",
+      "label": "Analyse superficielle en queue de phrase",
+      "description": "Ajout d'une proposition participiale en fin de phrase pour simuler une analyse ou une mise en perspective. L'un des marqueurs les plus insidieux de l'écriture LLM : l'information factuelle est réelle, mais la 'signification' qui lui est collée est creuse et non démontrée.",
+      "regle": "Repérer les constructions '[fait], [participe présent] ainsi [généralisation]'. Proposer soit la suppression pure de la queue de phrase, soit sa réécriture en phrase indépendante si elle contient une information réelle et démontrable.",
+      "exemples": {
+        "avant": "L'association a réuni 200 bénévoles en 2024, illustrant ainsi la vitalité du tissu associatif local et soulignant l'importance de l'engagement citoyen.",
+        "apres": "L'association a réuni 200 bénévoles en 2024."
+      },
+      "parametres": {
+        "marqueurs": [
+          "soulignant ainsi",
+          "illustrant",
+          "reflétant",
+          "témoignant de",
+          "confirmant",
+          "démontrant",
+          "mettant en évidence",
+          "contribuant à",
+          "permettant de",
+          "offrant ainsi",
+          "renforçant"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "PAT-002",
+      "categorie": "rhetorique",
+      "type": "pattern",
+      "label": "Phrases creuses et gonflement d'importance",
+      "description": "Phrases qui gesticulent vers le sens sans le délivrer. Elles affirment l'importance, la pertinence ou la complexité d'un sujet sans apporter la moindre preuve ni information concrète.",
+      "regle": "Pour chaque phrase suspecte, appliquer le test de suppression : que se passe-t-il si on la supprime ? Si la réponse est 'rien', la phrase est creuse. Indices : superlatifs vagues, affirmations d'importance sans preuve, références à 'l'époque actuelle', 'les enjeux contemporains', 'un contexte en mutation'.",
+      "exemples": {
+        "avant": "Dans un monde en profonde transformation, il est plus que jamais essentiel de repenser nos modes d'action collectifs pour répondre aux défis de notre époque.",
+        "apres": "[Suppression. Attaquer directement avec le premier fait concret.)"
+      },
+      "parametres": {
+        "indices": [
+          "dans un contexte de",
+          "à l'heure où",
+          "dans un monde",
+          "il est plus que jamais",
+          "répondre aux défis de",
+          "un tournant décisif",
+          "un moment charnière",
+          "à l'échelle de",
+          "dans une perspective globale",
+          "dans le paysage actuel de",
+          "dans le paysage moderne de",
+          "à l'ère de",
+          "à l'ère du numérique",
+          "plongeons dans",
+          "dans le monde trépidant d'aujourd'hui"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "PAT-003",
+      "categorie": "structure",
+      "type": "pattern",
+      "label": "Structure Défis/Perspectives",
+      "description": "Couplet rigide de fin de texte : 'Malgré ses succès, X fait face à des défis / L'avenir de X s'annonce prometteur'. Le LLM l'applique mécaniquement comme conclusion-type, quelle que soit la réalité du sujet.",
+      "regle": "Détecter la présence simultanée d'une section ou d'un paragraphe sur les 'défis' et d'un paragraphe sur les 'perspectives' ou 'l'avenir'. Proposer soit la suppression si les deux sont convenus, soit une réécriture qui dit quelque chose de réel.",
+      "exemples": {
+        "avant": "Malgré ses succès indéniables, l'association fait face à des défis importants. Néanmoins, les perspectives restent encourageantes.",
+        "apres": "[Soit supprimer, soit formuler un vrai problème réel avec une vraie piste concrète.]"
+      },
+      "parametres": {
+        "marqueurs": [
+          "malgré ses succès",
+          "malgré ces avancées",
+          "reste des défis",
+          "les perspectives",
+          "l'avenir s'annonce",
+          "des opportunités nouvelles",
+          "fort de ces acquis"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-004",
+      "categorie": "structure",
+      "type": "pattern",
+      "label": "Redondances tournantes",
+      "description": "Répétition d'une même idée d'un paragraphe à l'autre sous des formulations différentes. Le LLM paraphrase au lieu de progresser. Le texte avance en surface mais tourne en rond en profondeur.",
+      "regle": "Lire les phrases-clés de chaque paragraphe (première et dernière phrase). Si deux paragraphes disent la même chose avec des mots différents, signaler et demander lequel des deux conserver ou comment les fusionner.",
+      "exemples": {
+        "avant": "§1 : 'Le numérique transforme les pratiques associatives.' §2 : 'Les associations doivent s'adapter aux mutations numériques.' §3 : 'La transformation digitale impose de nouveaux modes de fonctionnement.'",
+        "apres": "Un seul paragraphe qui dit vraiment quelque chose de nouveau sur le sujet."
+      },
+      "parametres": null,
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-005",
+      "categorie": "structure",
+      "type": "pattern",
+      "label": "Fausse exhaustivité",
+      "description": "Constructions qui prétendent couvrir un spectre complet en associant deux éléments vaguement liés. L'effet de complétude est factice.",
+      "regle": "Détecter les constructions 'de X à Y' ou 'entre X et Y' où X et Y sont trop distants ou trop généraux pour former un spectre cohérent. Proposer soit un exemple concret unique, soit une vraie liste avec au moins trois éléments réels.",
+      "exemples": {
+        "avant": "Cette méthode s'adresse à tous les acteurs, des petites associations aux grandes institutions internationales.",
+        "apres": "Cette méthode s'adapte à des contextes très différents : une ASBL de 3 personnes comme une fédération nationale."
+      },
+      "parametres": {
+        "marqueurs": [
+          "des plus petits aux plus grands",
+          "de l'individu à la société",
+          "du local au global",
+          "de la théorie à la pratique",
+          "des associations aux entreprises",
+          "à toutes les échelles"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-006",
+      "categorie": "structure",
+      "type": "pattern",
+      "label": "Plan hyper scolaire",
+      "description": "L'IA applique systématiquement un plan dissertation même sans y être invitée : introduction générique qui annonce le plan, développement en 2-4 parties clairement segmentées avec intertitres, conclusion récapitulative. Ce gabarit est reconnaissable au premier coup d'oeil et signe immédiatement une origine artificielle.",
+      "regle": "Évaluer la macro-structure du texte. Si le texte présente les trois caractéristiques simultanément (introduction qui annonce le plan + parties numérotées ou titrées + conclusion qui récapitule), proposer de briser au moins un des trois éléments : supprimer l'annonce du plan, fusionner des parties, ou remplacer la conclusion récapitulative par une ouverture ou une prise de position.",
+      "exemples": {
+        "avant": "Dans cet article, nous aborderons trois aspects : 1. Le contexte. 2. Les enjeux. 3. Les perspectives. [...] En conclusion, nous avons vu que le contexte, les enjeux et les perspectives sont trois dimensions essentielles.",
+        "apres": "Commencer par le fait le plus saillant. Laisser la structure émerger du contenu, pas l'inverse."
+      },
+      "parametres": {
+        "signaux": [
+          "dans cet article, nous allons",
+          "nous verrons dans un premier temps",
+          "dans une première partie",
+          "premièrement... deuxièmement... troisièmement",
+          "pour conclure, nous avons vu que",
+          "cet article a montré que"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-007",
+      "categorie": "rhetorique",
+      "type": "pattern",
+      "label": "Équilibre artificiel thèse/antithèse",
+      "description": "L'IA est alignée pour être neutre et inoffensive. Elle présente donc systématiquement les deux faces d'un argument avec une symétrie presque parfaite, même quand le sujet ne s'y prête pas. Résultat : un texte qui semble nuancé mais ne prend jamais position. La conclusion est toujours une synthèse tiède.",
+      "regle": "Détecter les constructions 'bien que X, il n'en reste pas moins que Y' ou 'si X présente des défis, Y offre des opportunités'. Proposer soit une prise de position claire, soit la suppression de l'un des deux plateaux si l'équilibre est factice.",
+      "exemples": {
+        "avant": "Bien que cette méthode présente certains défis, il n'en reste pas moins qu'elle offre de réelles opportunités. Si les obstacles sont réels, les bénéfices potentiels sont considérables.",
+        "apres": "Les bénéfices potentiels de cette méthode sont considérables."
+      },
+      "parametres": {
+        "structures": [
+          "bien que... il n'en reste pas moins",
+          "si... il convient toutefois de",
+          "malgré... les opportunités restent",
+          "certes... mais force est de constater",
+          "d'un côté... de l'autre",
+          "des avantages... mais aussi des inconvénients"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "PAT-008",
+      "categorie": "rhetorique",
+      "type": "pattern",
+      "label": "Fausse émotion et métaphores génériques",
+      "description": "Dans les textes narratifs et les contenus de marque, l'IA injecte des mots à forte charge émotionnelle et des images poétiques stéréotypées pour simuler une profondeur qu'elle ne maîtrise pas. Le résultat est un registre mièvre et préfabriqué : les détails sensoriels sont absents, les images sont universelles et lisses.",
+      "regle": "Repérer les adjectifs d'intensité fabriquée et les métaphores sans ancrage concret. Proposer soit la suppression, soit le remplacement par un détail sensoriel ou factuel précis et situé.",
+      "exemples": {
+        "avant": "Dans ce silence vibrant, elle portait un secret brûlant. Comme si le monde retenait son souffle, un instant suspendu entre deux chapitres de sa vie.",
+        "apres": "Elle n'avait rien dit depuis le café. La tasse était encore là, à moitié pleine."
+      },
+      "parametres": {
+        "adjectifs_suspects": [
+          "vibrant (émotion)",
+          "brûlant (secret)",
+          "suspendu (instant)",
+          "palpitant",
+          "électrisant",
+          "frémissant",
+          "murmuré",
+          "indicible"
+        ],
+        "metaphores_generiques": [
+          "comme si le monde retenait son souffle",
+          "un voyage au coeur de",
+          "un nouveau chapitre s'ouvre",
+          "le temps s'arrête",
+          "une riche tapisserie de",
+          "tisser des liens",
+          "à l'aube d'une nouvelle ère"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "INJ-001",
+      "categorie": "connecteurs",
+      "type": "injection",
+      "label": "Connecteurs logiques manquants",
+      "description": "Les LLMs juxtaposent les phrases et les idées sans expliciter les relations logiques entre elles. Le raisonnement est implicite, le lecteur doit le reconstituer seul. Un texte humain montre ses articulations.",
+      "regle": "Calculer le ratio connecteurs logiques / phrases. En dessous du seuil, identifier les jonctions entre phrases ou paragraphes où une relation logique est implicite et la rendre explicite avec le connecteur adapté à la relation réelle.",
+      "exemples": {
+        "avant": "Le secteur associatif traverse une crise de financement. Les bénévoles sont de moins en moins disponibles. Les besoins augmentent.",
+        "apres": "Le secteur associatif traverse une crise de financement. De plus, les bénévoles sont de moins en moins disponibles alors que les besoins augmentent."
+      },
+      "parametres": {
+        "ratio_min": "1 connecteur logique pour 4 phrases",
+        "scope": "paragraphe",
+        "connecteurs_par_relation": {
+          "cause": [
+            "car",
+            "parce que",
+            "puisque",
+            "étant donné que"
+          ],
+          "consequence": [
+            "donc",
+            "ainsi",
+            "c'est pourquoi",
+            "dès lors"
+          ],
+          "opposition": [
+            "mais",
+            "or",
+            "pourtant",
+            "en revanche",
+            "cependant"
+          ],
+          "concession": [
+            "certes",
+            "même si",
+            "bien que",
+            "quoique"
+          ],
+          "illustration": [
+            "ainsi",
+            "par exemple",
+            "c'est le cas de",
+            "notamment"
+          ]
+        }
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "INJ-002",
+      "categorie": "rythme",
+      "type": "injection",
+      "label": "Uniformité de longueur des phrases",
+      "description": "Les LLMs produisent des phrases d'une longueur remarquablement uniforme. L'absence de variation rythmique est un marqueur fort d'écriture mécanique. Un texte humain vivant alterne les phrases longues et les courtes.",
+      "regle": "Analyser la distribution des longueurs de phrases (en nombre de mots). Si l'écart-type est faible (toutes les phrases font entre 15 et 25 mots), signaler et proposer d'introduire des phrases très courtes (5 mots ou moins) aux moments de rupture ou d'emphase, et des phrases longues pour les développements.",
+      "exemples": {
+        "avant": "L'association développe ses activités sur l'ensemble du territoire. Elle mobilise de nombreux bénévoles chaque année. Ses résultats sont reconnus par les partenaires institutionnels.",
+        "apres": "L'association couvre tout le territoire. Elle mobilise chaque année des centaines de bénévoles et ses partenaires institutionnels le reconnaissent."
+      },
+      "parametres": {
+        "ratio_cible": "60% phrases longues (15+ mots) / 40% phrases courtes (moins de 10 mots)",
+        "seuil_alerte": "Moins de 15% de phrases courtes sur l'ensemble du texte"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "INJ-003",
+      "categorie": "registre",
+      "type": "injection",
+      "label": "Registre homogène du début à la fin",
+      "description": "L'IA maintient un registre soutenu et constant de la première à la dernière ligne, sans glissement de niveau de langue, sans familiarité ponctuelle, sans rupture de ton. Or l'écriture humaine naturelle varie : un soupçon de familiarité, une question directe, une formule orale, une incise légère. Cette variation est ce qui donne de la vie à un texte.",
+      "regle": "Évaluer si le registre reste identique du début à la fin. Si oui, proposer d'introduire au moins une rupture de ton légère : une question directe adressée au lecteur, une formule plus familière, une phrase très courte après un développement dense, ou une incise personnelle.",
+      "exemples": {
+        "avant": "Il convient d'examiner les différentes dimensions de cette problématique afin d'en saisir toute la complexité et d'identifier les leviers d'action les plus pertinents.",
+        "apres": "Regardons ça de plus près. Parce que la complexité, ici, cache quelque chose d'assez simple."
+      },
+      "parametres": {
+        "ratio_cible": "au moins une rupture de registre pour 400 mots",
+        "types_ruptures": [
+          "question directe adressée au lecteur",
+          "formule orale ou semi-familière",
+          "phrase nominale percutante",
+          "incise légère ou parenthèse personnelle",
+          "phrase très courte après développement dense"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "BIA-001",
+      "categorie": "biais",
+      "type": "biais",
+      "label": "Sycophantisme narratif",
+      "description": "Posture rhétorique qui traite le sujet dont on parle comme forcément important, admirable ou porteur d'enjeux civilisationnels — indépendamment de ce que les faits disent. Ce n'est pas une formule, c'est une posture qui infuse tout le texte.",
+      "regle": "Évaluer le texte dans son ensemble : le sujet est-il présenté comme important parce que des preuves le montrent, ou parce que le LLM ne sait pas écrire autrement ? Chercher les affirmations d'importance non étayées, les métaphores de grandeur non justifiées, les appels implicites à la gravité du propos.",
+      "exemples": {
+        "avant": "Cette initiative s'inscrit dans une démarche profondément humaniste qui répond aux aspirations les plus profondes de notre époque.",
+        "apres": "Cette initiative part d'une idée simple : quand on les écoute vraiment, les gens savent exprimer leurs besoins."
+      },
+      "parametres": {
+        "indices": [
+          "profondément humaniste",
+          "aspirations de notre époque",
+          "défi de civilisation",
+          "enjeu majeur pour l'avenir",
+          "réponse aux attentes",
+          "à la hauteur des enjeux",
+          "riche patrimoine",
+          "héritage précieux"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "BIA-002",
+      "categorie": "biais",
+      "type": "biais",
+      "label": "Résumé conclusif compulsif",
+      "description": "Les LLMs terminent les sections et les textes par un résumé de ce qui vient d'être dit, même sur des textes courts qui n'en ont pas besoin. 'En résumé', 'Pour conclure', 'En définitive' suivis d'une paraphrase du paragraphe précédent.",
+      "regle": "Détecter les paragraphes de clôture qui ne font que reformuler ce qui précède. Proposer soit la suppression, soit le remplacement par une véritable ouverture ou une conclusion qui dit quelque chose de nouveau.",
+      "exemples": {
+        "avant": "En résumé, cette approche innovante permet donc de mobiliser les acteurs, de fédérer les énergies et de créer une dynamique collective positive.",
+        "apres": "[Suppression. Ou : une phrase finale qui dit quelque chose qu'on n'a pas encore dit.]"
+      },
+      "parametres": {
+        "marqueurs": [
+          "en résumé",
+          "en conclusion",
+          "pour conclure",
+          "en définitive",
+          "pour résumer",
+          "au final",
+          "en somme",
+          "tout bien considéré",
+          "on retiendra que",
+          "il ressort de"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "BIA-003",
+      "categorie": "biais",
+      "type": "biais",
+      "label": "Absence de marqueurs autobiographiques",
+      "description": "Un texte IA manque d'ancrages concrets qui prouvent une expérience réelle : pas de date précise, pas de lieu nommé, pas de nom propre vérifié, pas d'anecdote située, pas de petite incohérence d'expérience vécue. Le texte sait tout mais n'a rien vécu.",
+      "regle": "Vérifier si le texte contient au moins un ancrage concret par grande section : une date précise, un lieu nommé, un nom propre réel, un chiffre sourcé, une anecdote avec des détails sensoriels ou situationnels. En l'absence totale de tels ancrages sur un texte long, signaler le risque de platitude.",
+      "exemples": {
+        "avant": "De nombreuses études montrent que la communication joue un rôle essentiel dans le succès des organisations. Les experts s'accordent à dire que les équipes qui communiquent mieux obtiennent de meilleurs résultats.",
+        "apres": "Une étude McKinsey de 2023 sur 1 200 entreprises montre que les équipes qui communiquent explicitement leurs priorités chaque semaine réduisent leurs délais de 23%."
+      },
+      "parametres": {
+        "ancrages_attendus": [
+          "date ou période précise",
+          "lieu nommé",
+          "nom propre vérifiable",
+          "chiffre sourcé",
+          "anecdote avec détails sensoriels",
+          "référence à une expérience personnelle située"
+        ],
+        "seuil": "au moins 1 ancrage concret par section de 300 mots"
+      },
+      "severite": "avertissement",
+      "actif": true
+    }
+  ],
+  "experimentale": [
+    {
+      "id": "EXP-001",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Variation élégante appauvrissante",
+      "description": "EXPÉRIMENTAL — Règle asymétrique selon la langue. En français, varier est une norme prescriptive forte. Ce qui est signalé ici n'est pas la variation elle-même, mais la variation qui remplace le mot juste par un synonyme approximatif ou plus faible.",
+      "regle": "Signaler uniquement les cas où un synonyme utilisé pour éviter une répétition est manifestement moins précis ou plus vague que le mot original. Ne pas activer par défaut : trop de faux positifs en français.",
+      "exemples": {
+        "avant": "L'IA analyse le texte. L'algorithme traite les données. Le système évalue les résultats.",
+        "apres": "L'IA analyse le texte, traite les données, évalue les résultats."
+      },
+      "parametres": null,
+      "severite": "avertissement",
+      "actif": false
+    },
+    {
+      "id": "EXP-002",
+      "categorie": "syntaxe",
+      "type": "interdit",
+      "label": "Évitement du verbe être",
+      "description": "EXPÉRIMENTAL — En anglais, les LLMs remplacent 'is/are' par 'serves as', 'stands as', 'represents'. En français, 'constituer', 'représenter' peuvent être des choix stylistiques légitimes. Règle trop risquée en français général.",
+      "regle": "Ne signaler que les cas manifestes où 'constitue' ou 'représente' remplacent un simple 'est' sans apporter aucune nuance supplémentaire.",
+      "exemples": {
+        "avant": "Cette initiative constitue une réponse adaptée aux besoins.",
+        "apres": "Cette initiative répond aux besoins."
+      },
+      "parametres": null,
+      "severite": "avertissement",
+      "actif": false
+    }
+  ]
+}
