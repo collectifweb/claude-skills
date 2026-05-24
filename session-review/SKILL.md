@@ -1,6 +1,6 @@
 ---
 name: session-review
-description: Fait reviewer la session Claude Code courante par Codex CLI pour valider que rien n'ait été manqué. Codex analyse échanges + diff git, produit rapport, Claude accepte/rejette. Trigger /session-review, "faire reviewer la session", "que codex valide", "vérifier que rien manqué".
+description: Fait reviewer la session Claude Code par Codex CLI (échanges + diff git). Trigger /session-review, "faire reviewer la session", "que codex valide", "vérifier que rien manqué".
 ---
 
 # Session Review
@@ -42,15 +42,17 @@ Par défaut, ce skill utilise **`gpt-5.5`** avec **`model_reasoning_effort="xhig
 
 **Override par l'utilisateur** : si l'utilisateur mentionne un modèle différent ou un niveau de raisonnement différent dans sa demande initiale (ex: "lance la review codex avec gpt-5.4", "utilise codex-mini pour aller vite", "fais-le sans xhigh", "reasoning normal", "plus rapide"), respecte ce choix au lieu du défaut. Détecte ces mentions naturellement dans la requête. Voir les niveaux disponibles dans la section "Lancement et suivi de codex" plus bas.
 
-**Concrètement** : toutes les invocations de `codex exec` dans ce skill doivent inclure ces flags par défaut :
+**Concrètement** : toutes les invocations de `codex exec` dans ce skill doivent inclure ces flags par défaut, **plus la redirection stdin et le log de sortie** (voir section "Lancement et suivi de codex" plus bas pour le détail) :
 
 ```bash
 codex exec \
   --model gpt-5.5 \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
-  "PROMPT_ICI"
+  "PROMPT_ICI" > /tmp/codex-review-{phase}.log 2>&1 < /dev/null
 ```
+
+**Ne jamais** retirer `< /dev/null` ni ajouter `--json` — c'est le couple qui cause le hang stdin.
 
 **Note sur `gpt-5.5`** : ce modèle requiert une authentification ChatGPT (pas API key). En cas d'erreur d'authentification, propose à l'utilisateur de basculer sur `gpt-5.4` ou `gpt-5.3-codex` comme fallback.
 
@@ -60,42 +62,54 @@ codex exec \
 
 **Pourquoi** : codex exec prend typiquement 5 à 15 minutes (xhigh raisonne longtemps). Un appel Bash en foreground time out à 2 min par défaut (10 min max), retourne en erreur, et tu crois que codex a échoué alors qu'il tourne toujours. C'est la cause #1 des sessions où je dois être relancé manuellement après plusieurs heures de silence.
 
-### Pattern de lancement obligatoire
+### Piège stdin (cause #2 du bug)
 
-Toujours rediriger stderr + stdout vers un log file, et lancer en background :
+Codex en mode exec lit stdin par défaut. Le shell de Claude Code lui passe un stdin "ouvert mais vide" → codex bloque indéfiniment sur `Reading additional input from stdin...` sans jamais commencer son travail. Le process apparaît dans `pgrep`, semble vivant, mais ne fait rien — pas une ligne dans le log.
+
+**Deux mitigations obligatoires** sur chaque invocation :
+
+1. **Toujours rediriger stdin depuis `/dev/null`** en fin de commande : `... "PROMPT" > log 2>&1 < /dev/null`
+2. **Ne jamais utiliser le flag `--json`** dans ce skill — il aggrave le bug stdin (le flag consomme stdin pour des messages structurés entrants) et n'apporte rien ici. On lit juste le fichier `.md` produit à la fin, on n'a pas besoin de parser un stream JSON.
+
+### Pattern de lancement obligatoire
 
 ```bash
 codex exec \
   --model gpt-5.5 \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
-  --json \
-  "PROMPT_ICI" > /tmp/codex-stream-{phase}.log 2>&1
+  "PROMPT_ICI" > /tmp/codex-review-{phase}.log 2>&1 < /dev/null
 ```
 
-Sur l'outil Bash : `run_in_background: true`. Note le `bash_id` retourné.
+Sur l'outil Bash : `run_in_background: true`. Noter le `bash_id` retourné.
 
-**Ne pas piper vers `tee`** quand le bash tourne en background — selon les hooks et le shell, le pipe peut détacher stdin et faire échouer codex silencieusement. Redirection simple `> log 2>&1` uniquement.
+**Pas de pipe** (vers `tee` ou autre) quand le bash tourne en background — selon les hooks et le shell, le pipe peut détacher stdin et faire échouer codex silencieusement. Redirection simple `> log 2>&1 < /dev/null` uniquement.
 
-### Protocole de suivi obligatoire
+### Protocole de suivi obligatoire (polling ACTIF)
+
+**Le harness Claude Code ne te notifie PAS automatiquement quand codex se bloque ou hang.** Il notifie uniquement sur completion réelle. Si codex hang sur stdin, tu peux attendre des heures sans aucune notification. Tu dois donc poller activement — appeler toi-même les commandes ci-dessous, pas attendre passivement.
 
 1. **Annonce à l'utilisateur** :
-   > "Codex lancé en arrière-plan (phase X). Je surveille sa progression et te tiens au courant toutes les 30-60s."
+   > "Codex lancé en arrière-plan (phase X). Je surveille activement sa progression et te donne un status toutes les 30-60s."
 
-2. **Boucle de polling** (toutes les 30-60 secondes, jamais plus long) :
-   - Vérifie si le fichier de sortie attendu existe : `ls -la {chemin-vers-fichier-codex.md} 2>/dev/null`
-   - Si pas encore là, vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
-   - Lis la fin du log : `tail -30 /tmp/codex-stream-{phase}.log` pour repérer activité (`reasoning`, `command_execution`, `agent_message`), erreurs, ou achèvement
-   - Lis aussi la sortie stream du bash background (BashOutput sur le `bash_id`) au cas où
-   - **Donne un status à l'utilisateur à chaque tour** : "Codex tourne toujours, X minutes écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
+2. **À chaque tour (toutes les 30-60 secondes, pas plus long)** :
+   - Vérifie si le fichier de sortie attendu existe et grandit : `ls -la {chemin-vers-fichier-codex.md} 2>/dev/null`
+   - Vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
+   - Lis la fin du log : `tail -40 /tmp/codex-review-{phase}.log` pour repérer activité (`reasoning`, `command_execution`, `agent_message`), erreurs, ou achèvement
+   - Lis aussi la sortie du bash background (BashOutput sur le `bash_id`) en complément
+   - **Donne un status à l'utilisateur à chaque tour** : "Codex tourne, X min écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
 
-3. **Critère d'achèvement** : le fichier `.md` attendu existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
+3. **Détection du hang stdin** : si après 2-3 polls (1-3 min), `pgrep` montre codex vivant ET le log contient `Reading additional input from stdin` ou reste vide / strictement identique au lancement ET aucun fichier `.md` n'apparaît → c'est un hang stdin. Kill (`pkill -f "codex exec"`), relance en t'assurant que `< /dev/null` est bien présent et que `--json` est absent. Signale à l'utilisateur.
 
-4. **Si codex échoue ou disparaît du `pgrep`** sans avoir créé le fichier : lis le log complet, diagnostique (auth, sandbox, modèle indisponible, pipe cassé), signale à l'utilisateur et propose un fallback.
+4. **Critère d'achèvement** : le fichier `.md` attendu existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
 
-5. **Si codex tourne >20 minutes sans output dans le log** : signale-le à l'utilisateur et propose d'interrompre + relancer avec `model_reasoning_effort="high"` (plus rapide que `xhigh`).
+5. **Si codex échoue ou disparaît du `pgrep`** sans avoir créé le fichier : lis le log complet, diagnostique (auth, sandbox, modèle indisponible), signale à l'utilisateur et propose un fallback.
 
-### Anti-oubli (très important)
+6. **Si codex tourne >20 minutes avec activité dans le log** mais sans fichier : signale-le et propose d'interrompre + relancer avec `model_reasoning_effort="high"` (plus rapide que `xhigh`).
+
+### Anti-passivité (très important)
+
+**Le harness ne te re-invoque pas tout seul à intervalle régulier.** Quand tu dis "Je vais poller toutes les 60s" ou "Je serai re-invoqué automatiquement quand il termine", c'est faux si tu attends passivement — tu restes silencieux jusqu'à la prochaine action utilisateur. Tu dois enchaîner les commandes Bash de polling toi-même, dans une boucle active de tours consécutifs, jusqu'à ce que le critère d'achèvement soit rempli ou qu'un hang soit détecté.
 
 **Tant que la phase courante n'a pas son fichier `.md` complet, tu n'as PAS terminé.** Ne passe à aucune autre tâche. Ne réponds à aucune digression. Si l'utilisateur change de sujet pendant l'attente, réponds brièvement puis rappelle : "Codex tourne toujours sur la phase X, je reste en surveillance." Le silence prolongé entre lancement et lecture est le bug que ce protocole corrige — l'utilisateur a déjà perdu 3 heures à cause de ça dans une session précédente.
 
@@ -243,7 +257,6 @@ codex exec \
   --model gpt-5.5 \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
-  --json \
   "$(cat <<'EOF'
 [Prompt review — voir references/codex-prompts.md]
 
@@ -251,8 +264,10 @@ Contexte à analyser : docs/reviews/session-review-{slug}-{timestamp}/01-context
 
 Écris ton rapport complet dans : docs/reviews/session-review-{slug}-{timestamp}/02-codex-report.md
 EOF
-)" > /tmp/codex-stream-review.log 2>&1
+)" > /tmp/codex-review-{slug}.log 2>&1 < /dev/null
 ```
+
+⚠️ `< /dev/null` en fin de commande est obligatoire (anti-hang stdin). Pas de `--json`. Voir section "Lancement et suivi de codex".
 
 Codex va :
 1. Lire le contexte préparé
@@ -260,7 +275,7 @@ Codex va :
 3. Identifier ce qui a été manqué, oublié, mal fait, à risque
 4. Écrire son rapport structuré dans `02-codex-report.md`
 
-Applique strictement le **Protocole de suivi obligatoire** pendant l'attente : polling 30-60s du fichier `02-codex-report.md` + `/tmp/codex-stream-review.log` + status à l'utilisateur. Ne passe à la phase 3 que lorsque le fichier est complet et stable.
+Applique strictement le **Protocole de suivi obligatoire** pendant l'attente : polling actif 30-60s du fichier `02-codex-report.md` + `pgrep` + `tail -40 /tmp/codex-review-{slug}.log` + status à l'utilisateur + détection hang stdin. Ne passe à la phase 3 que lorsque le fichier est complet et stable.
 
 ## Phase 3 — Analyse par Claude
 
@@ -337,7 +352,6 @@ codex exec \
   --model gpt-5.5 \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
-  --json \
   "$(cat <<'EOF'
 [Prompt objections — voir references/codex-prompts.md]
 
@@ -349,10 +363,12 @@ Lis ces fichiers en ordre :
 
 Réponds aux objections de Claude dans : docs/reviews/session-review-{slug}-{timestamp}/05-codex-replies.md
 EOF
-)" > /tmp/codex-stream-replies.log 2>&1
+)" > /tmp/codex-review-{slug}-replies.log 2>&1 < /dev/null
 ```
 
-Applique de nouveau le **Protocole de suivi obligatoire** : polling 30-60s de `05-codex-replies.md` + tail du log + status à l'utilisateur, jusqu'à fichier complet et stable.
+⚠️ `< /dev/null` obligatoire, pas de `--json`.
+
+Applique de nouveau le **Protocole de suivi obligatoire** : polling actif 30-60s de `05-codex-replies.md` + `pgrep` + tail du log + status à l'utilisateur + détection hang stdin, jusqu'à fichier complet et stable.
 
 ### 4.3 Intégrer les réponses
 

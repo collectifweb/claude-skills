@@ -29,17 +29,17 @@ Par défaut, ce skill utilise **`gpt-5.5`** avec **`model_reasoning_effort="xhig
 
 **Override par l'utilisateur** : Si l'utilisateur mentionne un modèle différent dans sa demande initiale (ex: "lance la confrontation codex avec gpt-5.4", "utilise codex-mini pour aller vite", "fais-le sans xhigh"), respecte ce choix au lieu du défaut. Détecte ces mentions naturellement dans la requête.
 
-**Concrètement** : toutes les invocations de `codex exec` dans ce skill doivent inclure ces flags par défaut :
+**Concrètement** : toutes les invocations de `codex exec` dans ce skill doivent inclure ces flags par défaut, **plus la redirection stdin et le log de sortie** (voir section "Lancement et suivi de codex" plus bas pour le détail) :
 
 ```bash
 codex exec \
   --model gpt-5.5 \
   -c model_reasoning_effort="xhigh" \
   --skip-git-repo-check \
-  "PROMPT_ICI"
+  "PROMPT_ICI" > /tmp/codex-confront-{slug}-{phase}.log 2>&1 < /dev/null
 ```
 
-Si l'utilisateur demande un modèle différent, remplace `gpt-5.5` par le modèle demandé. Si l'utilisateur dit explicitement "sans xhigh" ou "reasoning normal", retire le flag `-c model_reasoning_effort="xhigh"`.
+Si l'utilisateur demande un modèle différent, remplace `gpt-5.5` par le modèle demandé. Si l'utilisateur dit explicitement "sans xhigh" ou "reasoning normal", retire le flag `-c model_reasoning_effort="xhigh"`. **Ne jamais** retirer `< /dev/null` ni ajouter `--json`.
 
 **Note sur `gpt-5.5`** : ce modèle requiert une authentification ChatGPT (pas API key). Si tu obtiens une erreur d'authentification, signale-le à l'utilisateur et propose de basculer sur `gpt-5.4` ou `gpt-5.3-codex` comme fallback.
 
@@ -47,30 +47,63 @@ Si l'utilisateur demande un modèle différent, remplace `gpt-5.5` par le modèl
 
 **Tous les appels `codex exec` dans ce skill DOIVENT être lancés en arrière-plan** avec `run_in_background: true` sur l'outil Bash. Jamais en foreground.
 
-**Pourquoi** : codex exec prend typiquement 3 à 15 minutes (xhigh raisonne longtemps). Un appel Bash en foreground time out à 2 min par défaut (10 min max), retourne en erreur, et tu crois que codex a échoué alors qu'il tourne toujours. C'est la cause #1 des sessions où je dois être relancé manuellement.
+**Pourquoi** : codex exec prend typiquement 3 à 15 minutes (xhigh raisonne longtemps). Un appel Bash en foreground time out à 2 min par défaut (10 min max), retourne en erreur, et tu crois que codex a échoué alors qu'il tourne toujours. C'est l'une des deux causes du bug où l'utilisateur doit me relancer manuellement après 10+ minutes de silence.
 
-### Protocole de suivi obligatoire
+### Piège stdin (deuxième cause du bug)
 
-1. **Lancement** : Bash avec `run_in_background: true`. Note le `bash_id` retourné.
+Codex en mode exec lit stdin par défaut. Le shell de Claude Code lui passe un stdin "ouvert mais vide" → codex bloque indéfiniment sur `Reading additional input from stdin...` sans jamais commencer son travail. Le process apparaît dans `pgrep`, semble vivant, mais ne fait rien.
 
-2. **Annonce à l'utilisateur** :
-   > "Codex lancé en arrière-plan (round N). Je surveille sa progression et te tiens au courant toutes les 30-60s."
+**Deux mitigations obligatoires** sur chaque invocation :
 
-3. **Boucle de polling** (toutes les 30-60 secondes, jamais plus long) :
-   - Vérifie si le fichier de sortie existe : `ls -la {chemin-vers-round-N-codex.md} 2>/dev/null`
-   - Si pas encore là, vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
-   - Lis la sortie stream du bash background (BashOutput sur le bash_id) pour repérer activité, erreurs, ou achèvement
-   - **Donne un status à l'utilisateur à chaque tour** : "Codex tourne toujours, X minutes écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
+1. **Toujours rediriger stdin depuis `/dev/null`** en fin de commande : `... "PROMPT" < /dev/null`
+2. **Ne jamais utiliser le flag `--json`** dans ce skill — il aggrave le bug stdin et n'apporte rien pour ce workflow (on n'a pas besoin de parser un stream JSON, on lit juste le fichier `.md` produit à la fin).
 
-4. **Critère d'achèvement** : le fichier `round-N-codex.md` existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
+### Pattern de lancement obligatoire
 
-5. **Si codex échoue ou disparaît du `pgrep`** sans avoir créé le fichier : lis la sortie bash background, diagnostique (auth, sandbox, modèle indisponible), signale à l'utilisateur et propose un fallback.
+```bash
+codex exec \
+  --model gpt-5.5 \
+  -c model_reasoning_effort="xhigh" \
+  --skip-git-repo-check \
+  "PROMPT_ICI" > /tmp/codex-confront-{slug}-{round}.log 2>&1 < /dev/null
+```
 
-### Anti-oubli (très important)
+Lancer avec `run_in_background: true` sur l'outil Bash. Noter le `bash_id` retourné.
 
-**Tant que le round courant n'a pas son fichier `round-N-codex.md` complet, tu n'as PAS terminé.** Ne passe à aucune autre tâche. Ne réponds à aucune digression. Si l'utilisateur change de sujet pendant l'attente, réponds brièvement puis rappelle : "Codex tourne toujours sur le round N, je reste en surveillance." Le silence prolongé entre lancement et lecture est le bug que ce protocole corrige.
+### Protocole de suivi obligatoire (polling ACTIF)
 
-Si tu reviens dans la conversation après une compression de contexte ou un nouveau tour utilisateur, ta première action doit être de vérifier l'état du codex en cours (existence du fichier attendu + `pgrep`) avant de continuer.
+**Le harness Claude Code ne te notifie PAS automatiquement quand codex se bloque ou hang.** Il ne notifie que sur completion réelle du process. Si codex hang sur stdin, tu peux attendre des heures sans aucune notification. Tu dois donc poller activement — appeler toi-même les commandes ci-dessous, pas attendre passivement.
+
+**À chaque tour (toutes les 30-60 secondes, pas plus long)** :
+
+1. Vérifie si le fichier de sortie existe et grandit : `ls -la {chemin-vers-round-N-codex.md} 2>/dev/null`
+2. Vérifie que le process codex tourne toujours : `pgrep -af "codex exec" | head -5`
+3. Lis la fin du log : `tail -40 /tmp/codex-confront-{slug}-{round}.log` pour repérer activité (`reasoning`, `command_execution`, `agent_message`), erreurs (`auth`, `stdin`), ou achèvement
+4. Lis aussi la sortie du bash background (BashOutput sur le `bash_id`) en complément
+5. **Donne un status à l'utilisateur à chaque tour** : "Codex tourne, X min écoulées, dernière activité : [extrait]." Même un status minimal suffit — l'objectif est que l'utilisateur sache que tu n'as pas oublié.
+
+### Détection du hang stdin
+
+Si après 2-3 polls (1-3 min) :
+- `pgrep` montre codex vivant
+- ET le log contient `Reading additional input from stdin` ou reste vide / strictement identique au lancement
+- ET aucun fichier `.md` n'apparaît
+
+→ **c'est un hang stdin**. Kill le process (`pkill -f "codex exec"`), relance en t'assurant que `< /dev/null` est bien présent et que `--json` est absent. Signale-le à l'utilisateur.
+
+### Critère d'achèvement
+
+Le fichier `round-N-codex.md` existe ET sa taille est stable sur deux polls consécutifs (codex finalise parfois après que le fichier apparaisse). À ce moment, lis le fichier et passe à la suite.
+
+### Si codex échoue ou disparaît du `pgrep` sans avoir créé le fichier
+
+Lis le log complet, diagnostique (auth, sandbox, modèle indisponible, hang stdin), signale à l'utilisateur et propose un fallback.
+
+### Anti-passivité (très important)
+
+**Le harness ne te re-invoque pas tout seul à intervalle régulier.** Quand tu dis "Je vais poller toutes les 60s" ou "Je serai re-invoqué automatiquement", c'est faux si tu attends passivement — tu restes silencieux jusqu'à la prochaine action utilisateur. Tu dois enchaîner les commandes Bash de polling toi-même, dans une boucle active de tours consécutifs, jusqu'à ce que le critère d'achèvement soit rempli ou qu'un hang soit détecté.
+
+**Tant que le round courant n'a pas son fichier `round-N-codex.md` complet, tu n'as PAS terminé.** Ne passe à aucune autre tâche. Ne réponds à aucune digression. Si l'utilisateur change de sujet pendant l'attente, réponds brièvement puis rappelle : "Codex tourne toujours sur le round N, je reste en surveillance." Si tu reviens après une compression de contexte ou un nouveau tour utilisateur, ta première action doit être de vérifier l'état du codex en cours (existence du fichier attendu + `pgrep` + tail du log) avant de continuer.
 
 ## Structure des fichiers
 
@@ -141,10 +174,12 @@ Plan à analyser : docs/archives/confront-codex-{slug}-{timestamp}/round-1-claud
 
 Écris ton analyse complète dans : docs/archives/confront-codex-{slug}-{timestamp}/round-1-codex.md
 EOF
-)"
+)" > /tmp/codex-confront-{slug}-r1.log 2>&1 < /dev/null
 ```
 
-Une fois lancé en arrière-plan, applique strictement le **Protocole de suivi obligatoire** (polling 30-60s, status à l'utilisateur, critère d'achèvement). Ne passe au round suivant qu'une fois `round-1-codex.md` complet et stable.
+⚠️ `< /dev/null` en fin de commande est obligatoire (anti-hang stdin). Pas de `--json`. Voir section "Lancement et suivi de codex" pour le détail.
+
+Une fois lancé en arrière-plan, applique strictement le **Protocole de suivi obligatoire** (polling actif 30-60s, status à l'utilisateur, détection hang stdin, critère d'achèvement). Ne passe au round suivant qu'une fois `round-1-codex.md` complet et stable.
 
 ### Round N (N≥2) : Ta réponse
 
@@ -192,8 +227,10 @@ Lis ces fichiers en ordre :
 
 Écris ta contre-réponse dans : docs/archives/confront-codex-{slug}-{timestamp}/round-N-codex.md
 EOF
-)"
+)" > /tmp/codex-confront-{slug}-r{N}.log 2>&1 < /dev/null
 ```
+
+⚠️ `< /dev/null` obligatoire, pas de `--json`.
 
 Applique de nouveau le **Protocole de suivi obligatoire** pendant l'attente.
 
