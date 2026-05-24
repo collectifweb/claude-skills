@@ -1,6 +1,6 @@
 ---
 name: tidy
-description: Range et organise la documentation, les archives et la structure de fichiers d'un projet pour que Claude Code retrouve tout naturellement dans une nouvelle session. Analyse les .md, scripts orphelins et configs, propose déplacements/archivages/suppressions justifiés, audite les secrets exposés (.env trackés, clés API hardcodées), puis exécute avec approbation par catégorie. Le mode `--deep` étend l'analyse au code applicatif (modules non-importés, dead code). Utilise ce skill dès que l'utilisateur demande de "ranger le projet", "nettoyer la documentation", "organiser les fichiers", "archiver ce qui est obsolète", "faire le ménage du repo", "tidy", "housekeeping", "pourquoi le projet est si bordélique", ou tape la slash command `/tidy`. À utiliser périodiquement (fin d'itération, avant onboarding d'un nouveau dev, avant de revenir sur un vieux projet) pour garder le projet lisible.
+description: Range documentation, archives et fichiers d'un projet, audite les secrets exposés. Trigger /tidy, "ranger le projet", "nettoyer la doc", "organiser les fichiers", "faire le ménage du repo", "housekeeping". Mode `--deep` analyse aussi le code (dead code).
 ---
 
 # Tidy
