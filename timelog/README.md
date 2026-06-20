@@ -1,4 +1,4 @@
-# timelog-synthesis
+# timelog
 
 A skill for **Claude Code and Codex CLI** that generates ready-to-paste time log entries for a client project, from git commit history and AI-assistant session activity (both Claude Code *and* Codex sessions are merged into the same timeline).
 
@@ -39,10 +39,10 @@ Clone the monorepo and symlink the skill into each agent's skills directory.
 git clone https://github.com/collectifweb/claude-skills.git
 # Claude Code
 mkdir -p ~/.claude/skills
-ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.claude/skills/timelog-synthesis
+ln -s "$(pwd)/claude-skills/timelog" ~/.claude/skills/timelog
 # Codex CLI
 mkdir -p ~/.codex/skills
-ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.codex/skills/timelog-synthesis
+ln -s "$(pwd)/claude-skills/timelog" ~/.codex/skills/timelog
 ```
 
 **Windows** (PowerShell — run as Administrator, or enable Developer Mode)
@@ -51,10 +51,10 @@ ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.codex/skills/timelog-synthesis
 git clone https://github.com/collectifweb/claude-skills.git
 # Claude Code
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog-synthesis" -Target "$PWD\claude-skills\timelog-synthesis"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog" -Target "$PWD\claude-skills\timelog"
 # Codex CLI
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\timelog-synthesis" -Target "$PWD\claude-skills\timelog-synthesis"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\timelog" -Target "$PWD\claude-skills\timelog"
 ```
 
 After installing into Codex, restart the Codex CLI so it picks up the new skill.
@@ -67,7 +67,7 @@ After installing into Codex, restart the Codex CLI so it picks up the new skill.
 cd /path/to/your/project
 mkdir -p .claude/skills
 git clone https://github.com/collectifweb/claude-skills.git /tmp/claude-skills
-cp -r /tmp/claude-skills/timelog-synthesis .claude/skills/timelog-synthesis
+cp -r /tmp/claude-skills/timelog .claude/skills/timelog
 ```
 
 **Windows** (PowerShell)
@@ -76,12 +76,12 @@ cp -r /tmp/claude-skills/timelog-synthesis .claude/skills/timelog-synthesis
 cd C:\path\to\your\project
 New-Item -ItemType Directory -Force -Path ".claude\skills" | Out-Null
 git clone https://github.com/collectifweb/claude-skills.git "$env:TEMP\claude-skills"
-Copy-Item -Recurse "$env:TEMP\claude-skills\timelog-synthesis" ".claude\skills\timelog-synthesis"
+Copy-Item -Recurse "$env:TEMP\claude-skills\timelog" ".claude\skills\timelog"
 ```
 
 > **Note Windows** — Les liens symboliques exigent PowerShell en Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` (vous perdrez la synchro auto au `git pull`).
 
-Verify by opening a Claude Code session and typing `/help` — `timelog-synthesis` should appear in the list. On Codex, the skill is discovered automatically from `~/.codex/skills/` and surfaced in the AGENTS.md skill index at session start.
+Verify by opening a Claude Code session and typing `/help` — `timelog` should appear in the list. On Codex, the skill is discovered automatically from `~/.codex/skills/` and surfaced in the AGENTS.md skill index at session start.
 
 ## Usage
 

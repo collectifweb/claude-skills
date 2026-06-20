@@ -48,7 +48,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\confront-
 
 ---
 
-### [timelog-synthesis](./timelog-synthesis/)
+### [timelog](./timelog/)
 
 Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code session activity (90-minute gap = new block), formatted for Toggl or any time-tracking tool.
 
@@ -57,13 +57,13 @@ Generates a ready-to-paste time log for a client project day. Splits the day int
 **Linux / macOS**
 
 ```bash
-ln -s "$(pwd)/claude-skills/timelog-synthesis" ~/.claude/skills/timelog-synthesis
+ln -s "$(pwd)/claude-skills/timelog" ~/.claude/skills/timelog
 ```
 
 **Windows** (PowerShell, admin / Developer Mode)
 
 ```powershell
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog-synthesis" -Target "$PWD\claude-skills\timelog-synthesis"
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog" -Target "$PWD\claude-skills\timelog"
 ```
 
 ---
@@ -115,7 +115,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\tidy" -Ta
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog-synthesis humanize tidy; do
+for skill in session-review confront-codex timelog humanize tidy; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -125,7 +125,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'session-review','confront-codex','timelog-synthesis','humanize','tidy') {
+foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```

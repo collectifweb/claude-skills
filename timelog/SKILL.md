@@ -1,9 +1,9 @@
 ---
-name: timelog-synthesis
+name: timelog
 description: Génère synthèse de journée (Toggl) — blocs basés sur commits git + sessions Claude/Codex (seuil 90 min). Trigger /timelog, "log de temps", "synthèse journée", "résume ce que j'ai fait", "time tracking".
 ---
 
-# Timelog Synthesis
+# Timelog
 
 Génère des entrées de log de temps en français pour le projet client courant, à partir de l'activité git, des sessions Claude Code **et des sessions Codex CLI** de la journée.
 
