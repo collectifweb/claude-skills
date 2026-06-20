@@ -108,6 +108,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\tidy" -Ta
 
 ---
 
+### [doc-sync](./doc-sync/)
+
+Reconciles every documentation claim against the actual code instead of just summarizing the session. Builds a checklist of every doc file (README, CLAUDE.md, `docs/**`), reads each one in full, cross-checks every claim, and produces a final audit report — no silent skips. Built for end-of-session wrap-up so the next session starts on accurate docs.
+
+**Requires:** Claude Code
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/doc-sync" ~/.claude/skills/doc-sync
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\doc-sync" -Target "$PWD\claude-skills\doc-sync"
+```
+
+---
+
 ## Install all at once
 
 **Linux / macOS**
@@ -115,7 +135,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\tidy" -Ta
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog humanize tidy; do
+for skill in session-review confront-codex timelog humanize tidy doc-sync; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -125,7 +145,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy') {
+foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy','doc-sync') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
