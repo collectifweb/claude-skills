@@ -128,6 +128,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\doc-sync"
 
 ---
 
+### [roast](./roast/)
+
+Convenes a five-persona council to pressure-test an idea before you build it. Five agents run in parallel — Contrarian, Expansionist, Logician, Researcher, Buyer — each locked in character and forbidden to hedge, then a Judge weighs the tension and returns one verdict (FONCE / REMANIE / ABANDONNE) with the cheapest 48-hour test to de-risk the riskiest assumption. Written in French. Works on business ideas and on product, project, or feature calls.
+
+**Requires:** Claude Code (the Researcher persona uses web search)
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/roast" ~/.claude/skills/roast
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -Target "$PWD\claude-skills\roast"
+```
+
+---
+
 ## Install all at once
 
 **Linux / macOS**
@@ -135,7 +155,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\doc-sync"
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog humanize tidy doc-sync; do
+for skill in session-review confront-codex timelog humanize tidy doc-sync roast; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -145,7 +165,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy','doc-sync') {
+foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy','doc-sync','roast') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
