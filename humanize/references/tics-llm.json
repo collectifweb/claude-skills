@@ -954,6 +954,83 @@
       "severite": "avertissement",
       "actif": true
     }
+    {
+      "id": "SYN-005",
+      "categorie": "syntaxe",
+      "type": "interdit",
+      "label": "Fragment-amorce dramatique",
+      "description": "Groupe nominal court (1 à 4 mots) utilisé comme étiquette autonome avant un deux-points ou un point d'interrogation, à la place d'une vraie phrase. L'IA crée une fausse tension narrative ('La raison ?') puis révèle le contenu après la ponctuation. Le procédé imite le style des newsletters marketing et des threads — il sonne fabriqué dans un contexte professionnel ou éditorial.",
+      "regle": "Détecter tout groupe nominal court suivi de ':' ou de '?' qui pourrait être intégré à une phrase normale. Réécrire en absorbant le fragment dans la phrase suivante ou en formulant une vraie question complète.",
+      "exemples": {
+        "avant": "La raison ? Des chercheurs avaient trouvé une faille. Résultat final : les 25 ont reçu leur pire cote. Bonne nouvelle : il existe un outil gratuit. Petite confession : j'aurais dû faire un wireframe.",
+        "apres": "Des chercheurs avaient trouvé une faille, ce qui a motivé la décision. Les 25 ont finalement reçu leur pire cote. Il existe heureusement un outil gratuit pour ça. Je dois admettre que j'aurais dû faire un wireframe."
+      },
+      "parametres": {
+        "marqueurs_typiques": [
+          "La raison ?",
+          "La raison :",
+          "Résultat :",
+          "Résultat final :",
+          "Le résultat :",
+          "Bonne nouvelle :",
+          "Mauvaise nouvelle :",
+          "La solution :",
+          "Le problème :",
+          "La réalité :",
+          "L'objectif :",
+          "La leçon :",
+          "L'astuce :",
+          "Le secret :",
+          "La clé :",
+          "L'enjeu :",
+          "Petite confession :",
+          "Aveu :",
+          "La surprise :"
+        ],
+        "reecritures_types": {
+          "La raison ? X": "X [intégré dans la phrase précédente avec 'parce que' ou 'car']",
+          "Bonne nouvelle : X": "La bonne nouvelle, c'est que X",
+          "Résultat : X / Résultat final : X": "X [le résultat devient sujet de la phrase]",
+          "Petite confession : X": "Je dois admettre que X / À vrai dire, X"
+        },
+        "exception": "Acceptable dans un contexte de newsletter ou de contenu social assumé — ne pas corriger si le registre du texte entier est délibérément informel et journalistique."
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "BIA-004",
+      "categorie": "biais",
+      "type": "biais",
+      "label": "Fausse subjectivité",
+      "description": "Expressions qui simulent une réaction personnelle ou un jugement subjectif de l'auteur pour donner l'impression d'un regard humain engagé. En pratique, ces formules ne signalent aucune observation réelle : elles servent de ponts rhétoriques entre deux idées, exactement comme les transitions mortes, mais avec un vernis de subjectivité.",
+      "regle": "Supprimer le fragment pseudo-subjectif et formuler directement le contenu qui suit, ou remplacer par un connecteur logique réel si une relation causale ou contrastive est implicite.",
+      "exemples": {
+        "avant": "Ce qui me frappe, c'est la rapidité avec laquelle la situation a évolué. Ce qui est intéressant, c'est que les deux équipes ont abouti au même résultat.",
+        "apres": "La situation a évolué très vite. Les deux équipes ont abouti au même résultat — par des chemins opposés."
+      },
+      "parametres": {
+        "expressions": [
+          "ce qui me frappe",
+          "ce qui me frappe le plus",
+          "ce qui m'interpelle",
+          "ce qui m'a surpris",
+          "ce que je trouve fascinant",
+          "ce que je trouve remarquable",
+          "ce que je retiens",
+          "ce qui est frappant",
+          "ce qui est intéressant",
+          "ce qui est remarquable",
+          "ce qui retient l'attention",
+          "ce qui mérite attention",
+          "ce qui mérite d'être noté",
+          "ce qui est notable",
+          "ce qui est surprenant"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    }
   ],
   "experimentale": [
     {

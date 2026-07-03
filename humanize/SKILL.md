@@ -79,6 +79,8 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 
 **Analyse superficielle en queue de phrase** — « soulignant ainsi l'importance de », « illustrant la pertinence de », « reflétant les enjeux de »... Supprimer la queue ou la réécrire en phrase indépendante avec du contenu concret.
 
+**Fragment-amorce dramatique** — groupe nominal court (1 à 4 mots) posé seul avant « : » ou « ? » pour créer une fausse tension narrative. « La raison ? », « Bonne nouvelle : », « Résultat final : », « Petite confession : »... Réécrire en absorbant le fragment dans la phrase suivante. Exception : contexte newsletter ou social délibérément informel.
+
 **Résumé conclusif compulsif** — « En résumé », « En conclusion », « Pour conclure »... Si le paragraphe final ne fait que reformuler ce qui précède, le supprimer ou le remplacer par une ouverture concrète.
 
 ### Avertissements (à corriger quand ça s'accumule)
@@ -104,6 +106,8 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 **Phrases creuses** — « dans un contexte de transformation digitale », « à l'heure où les organisations doivent se réinventer »... Test : que se passe-t-il si on supprime la phrase ? Si la réponse est « rien », elle est creuse.
 
 **Fausse émotion** — vibrant, brûlant, palpitant, électrisant, « comme si le monde retenait son souffle »... Supprimer ou remplacer par un détail concret.
+
+**Fausse subjectivité** — « ce qui me frappe », « ce qui est intéressant », « ce que je trouve remarquable », « ce qui retient l'attention »... Formules qui simulent une réaction personnelle sans exprimer aucune observation réelle. Supprimer et formuler le contenu directement.
 
 **Sycophantisme** — ne pas présenter le sujet comme important juste parce que c'est le sujet. « Enjeu majeur pour l'avenir » → dire en quoi c'est un enjeu, concrètement.
 
@@ -165,7 +169,7 @@ Le tiret cadratin a la pénalité la plus élevée parce que c'est le marqueur l
 
 ## Pour aller plus loin
 
-Le fichier `references/tics-llm.json` contient les 36 règles complètes avec :
+Le fichier `references/tics-llm.json` contient les 38 règles complètes avec :
 - Les listes exhaustives de mots et expressions à détecter
 - Les exemples avant/après pour chaque règle
 - Les seuils et paramètres (nombre max d'occurrences, scope...)

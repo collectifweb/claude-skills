@@ -30,6 +30,7 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 | Hollow opening sentences | dans un contexte de, à l'heure où, dans un monde en profonde transformation |
 | Compulsive summary | en résumé, pour conclure, en définitive, au final, on retiendra que |
 | Present participle as main verb | « Utilisant cette approche, l'équipe a progressé » → two proper sentences |
+| Dramatic fragment opener | « La raison ? », « Bonne nouvelle : », « Résultat final : », « Petite confession : » → absorbed into a real sentence |
 | Title case | « Les Avantages Du Télétravail » → « Les avantages du télétravail » |
 | Oxford comma | « les pommes, les poires, et les bananes » → no comma before *et* |
 | Emojis in headings and lists | removed unless editorial intent is explicit |
@@ -42,6 +43,7 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 | Corporate adjectives (pertinent, optimal, robuste, innovant, holistique…) | flag each occurrence |
 | Redundant pairs (crucial et essentiel, complet et exhaustif…) | keep one |
 | Sycophantic framing (enjeu majeur pour l'avenir, profondément humaniste…) | flag, ask for evidence |
+| Fake subjectivity (ce qui me frappe, ce qui est intéressant, ce que je retiens…) | rephrase directly without the pseudo-reaction |
 | Systematic bold | max 3 per text |
 | Systematic lists | max 2 per text |
 | Rule of three | max 1 per text |
