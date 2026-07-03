@@ -4,16 +4,16 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 
 ## Skills at a glance
 
-| Skill | En une phrase |
+| Skill | In one sentence |
 | --- | --- |
-| [humanize](#humanize) | Réécrit un texte français pour effacer les tics d'écriture LLM, sans toucher aux idées ni à la voix. |
-| [confront-codex](#confront-codex) | Fait débattre Claude et Codex sur un plan technique jusqu'au consensus, avant d'écrire une ligne de code. |
-| [timelog](#timelog) | Génère un log de temps prêt à coller pour une journée client, découpé par commits git et sessions Claude/Codex. |
-| [tidy](#tidy) | Range la doc, archive les plans obsolètes, audite les secrets exposés — pour qu'une nouvelle session Claude s'y retrouve. |
-| [doc-sync](#doc-sync) | Confronte chaque affirmation de la doc au code réel, fichier par fichier, avec rapport d'audit final. |
-| [roast](#roast) | Convoque cinq personas contradictoires pour tester une idée avant construction, verdict FONCE / REMANIE / ABANDONNE. |
-| [session-handoff](#session-handoff) | Produit un résumé de fin de session structuré pour repartir sur un agent frais sans perdre la continuité. |
-| [session-review](#session-review) | Fait relire par Codex la session Claude en cours (transcript + diff git) avant commit, en second regard indépendant. |
+| [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. |
+| [confront-codex](#confront-codex) | Runs an iterative debate between Claude and Codex on a technical plan until they converge — before a single line of code is written. |
+| [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. |
+| [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh Claude session finds its bearings fast. |
+| [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
+| [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
+| [session-handoff](#session-handoff) | Produces a structured end-of-session summary so you can start on a fresh agent without losing continuity. |
+| [session-review](#session-review) | Has Codex read the current Claude session (transcript + git diff) as an independent second pair of eyes before you commit. |
 
 ---
 
@@ -203,7 +203,7 @@ foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roas
 }
 ```
 
-> **Note Windows** — Les liens symboliques exigent soit une session PowerShell *Administrateur*, soit l'activation du **Mode Développeur** (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, copiez les dossiers (`Copy-Item -Recurse`) au lieu de créer un symlink — vous perdrez juste la synchro automatique avec un `git pull`.
+> **Windows note** — Symbolic links require either an *Administrator* PowerShell session or **Developer Mode** enabled (Settings → Privacy & Security → For developers). Otherwise, copy the folders (`Copy-Item -Recurse`) instead of creating a symlink — you'll just lose the automatic sync on `git pull`.
 
 Verify by opening a Claude Code session and typing `/help` — the skills should appear in the list.
 

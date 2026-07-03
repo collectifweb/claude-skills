@@ -79,7 +79,7 @@ git clone https://github.com/collectifweb/claude-skills.git "$env:TEMP\claude-sk
 Copy-Item -Recurse "$env:TEMP\claude-skills\confront-codex" ".claude\skills\confront-codex"
 ```
 
-> **Note Windows** — Les liens symboliques exigent une session PowerShell Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` — vous perdrez la synchro automatique au `git pull`.
+> **Windows note** — Symbolic links require an Administrator PowerShell session or **Developer Mode** enabled (Settings → Privacy & Security → For developers). Otherwise, replace `New-Item -ItemType SymbolicLink` with `Copy-Item -Recurse` — you'll just lose the automatic sync on `git pull`.
 
 Verify by opening a Claude Code session and typing `/help` — `confront-codex` should appear in the list.
 

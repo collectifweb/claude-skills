@@ -63,7 +63,7 @@ New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Ou
 New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-handoff" -Target "$PWD\claude-skills\session-handoff"
 ```
 
-> **Note Windows** — Symbolic links require PowerShell as Administrator or **Developer Mode** enabled (Settings → Privacy & security → For developers). Otherwise replace `New-Item -ItemType SymbolicLink` with `Copy-Item -Recurse` (you just lose auto-sync on `git pull`).
+> **Windows note** — Symbolic links require PowerShell as Administrator or **Developer Mode** enabled (Settings → Privacy & Security → For developers). Otherwise, replace `New-Item -ItemType SymbolicLink` with `Copy-Item -Recurse` (you'll just lose auto-sync on `git pull`).
 
 ## When to use it
 

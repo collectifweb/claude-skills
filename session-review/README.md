@@ -105,7 +105,7 @@ git clone https://github.com/collectifweb/claude-skills.git "$env:TEMP\claude-sk
 Copy-Item -Recurse "$env:TEMP\claude-skills\session-review" ".claude\skills\session-review"
 ```
 
-> **Note Windows** — Les liens symboliques exigent PowerShell en Administrateur ou le **Mode Développeur** activé (Paramètres → Confidentialité et sécurité → Pour les développeurs). À défaut, remplacez `New-Item -ItemType SymbolicLink` par `Copy-Item -Recurse` — vous perdrez la synchro auto au `git pull`.
+> **Windows note** — Symbolic links require PowerShell as Administrator or **Developer Mode** enabled (Settings → Privacy & Security → For developers). Otherwise, replace `New-Item -ItemType SymbolicLink` with `Copy-Item -Recurse` — you'll just lose auto-sync on `git pull`.
 
 Verify the skill is loaded by starting a Claude Code session and typing `/help` — `session-review` should appear in the available skills list.
 
