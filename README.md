@@ -148,6 +148,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 
 ---
 
+### [session-handoff](./session-handoff/)
+
+Produces a structured end-of-session summary so you can `/clear` and start a fresh agent without losing continuity. A fixed template captures decisions, shipped changes, key files, running state (background shell IDs, ports), verification steps, deferrals, and open questions — chat-only, terse, and the same shape every time. Ships optional `PreCompact` hook scripts that block a manual `/compact` until a fresh handoff exists.
+
+**Requires:** Claude Code (git optional)
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/session-handoff" ~/.claude/skills/session-handoff
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-handoff" -Target "$PWD\claude-skills\session-handoff"
+```
+
+---
+
 ## Install all at once
 
 **Linux / macOS**
@@ -155,7 +175,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in session-review confront-codex timelog humanize tidy doc-sync roast; do
+for skill in session-review confront-codex timelog humanize tidy doc-sync roast session-handoff; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -165,7 +185,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy','doc-sync','roast') {
+foreach ($skill in 'session-review','confront-codex','timelog','humanize','tidy','doc-sync','roast','session-handoff') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
