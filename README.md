@@ -139,7 +139,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 
 ## session-handoff
 
-Produces a structured end-of-session summary so you can `/clear` and start a fresh agent without losing continuity. A fixed template captures decisions, shipped changes, key files, running state (background shell IDs, ports), verification steps, deferrals, and open questions — chat-only, terse, and the same shape every time. Ships optional `PreCompact` hook scripts that block a manual `/compact` until a fresh handoff exists.
+Closes a session cleanly in two phases. First it **persists** what happened into the project's living docs — checks off completed to-dos, updates `CLAUDE.md` and any documentation that drifted this session (proposed for approval, then applied). Then it produces a fixed-shape **handoff** recap: decisions, shipped changes, key files, running state (background shell IDs, ports), verification, deferrals, and open questions. The repo ends up accurate, so a fresh agent — or a post-compaction context — resumes without losing continuity. Manual and non-blocking; ships one optional, non-blocking transcript-backup hook.
 
 **Requires:** Claude Code (git optional)
 
