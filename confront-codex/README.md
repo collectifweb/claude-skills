@@ -126,10 +126,6 @@ Mention it in your trigger:
 | "without xhigh" | drops `model_reasoning_effort=xhigh` |
 | "with reasoning high" | uses `model_reasoning_effort=high` (faster) |
 
-## Companion skill
-
-To review a session *after* implementation rather than validate a plan *before* it, see [session-review](https://github.com/collectifweb/claude-skills/tree/main/session-review).
-
 ## Contributing
 
 Issues and PRs welcome. Most useful contributions:

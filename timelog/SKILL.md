@@ -184,7 +184,7 @@ Les logs partent dans Toggl et **sont lus par le client final**, qui n'est pas d
 - **IDs, numéros de phase, références internes** : "Phase 4-4", "item 49", "template 3931", "C4", "C5", "Q1", "round 4", numéros de tickets
 - **Noms de fichiers et scripts** : "qa-item-49-validate.php", "scripts/qa-phase-e-automatable.php"
 - **Noms de fonctions, hooks, méta-clés, paramètres internes** : "token_set_default", "prepare_source", "_ejardin_stripe_account", "list_item"
-- **Noms de skills, outils CLI, agents** : "confront-codex", "doc-sync", "session-review", "Codex", "Claude" — les traduire par leur **intention** ("double-vérification par une seconde IA", "mise à jour de la documentation", "review de session")
+- **Noms de skills, outils CLI, agents** : "confront-codex", "doc-sync", "Codex", "Claude" — les traduire par leur **intention** ("double-vérification par une seconde IA", "mise à jour de la documentation")
 - **Anglicismes techniques opaques pour un non-dev** : "backfill", "cutover", "gate preflight", "snippets", "cluster", "fork", "presentment", "AS", "patches" — traduire en français courant
 
 **À conserver** :

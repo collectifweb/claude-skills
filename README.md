@@ -13,7 +13,6 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
 | [session-handoff](#session-handoff) | Produces a structured end-of-session summary so you can start on a fresh agent without losing continuity. |
-| [session-review](#session-review) | Has Codex read the current Claude session (transcript + git diff) as an independent second pair of eyes before you commit. |
 
 ---
 
@@ -157,30 +156,6 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-h
 
 ---
 
-## session-review
-
-Uses Codex (OpenAI CLI) as an independent second pair of eyes to review a Claude Code working session before you commit. Codex reads the session transcript and the uncommitted git diff, produces a numbered report, and Claude triages each finding — accepting, rejecting, or pushing back with a final round of debate.
-
-**Requires:** Claude Code, Codex CLI, git, Python 3
-
-**Linux / macOS** (bash / zsh)
-
-```bash
-git clone https://github.com/collectifweb/claude-skills.git
-mkdir -p ~/.claude/skills
-ln -s "$(pwd)/claude-skills/session-review" ~/.claude/skills/session-review
-```
-
-**Windows** (PowerShell — run as Administrator, or enable Developer Mode)
-
-```powershell
-git clone https://github.com/collectifweb/claude-skills.git
-New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-review" -Target "$PWD\claude-skills\session-review"
-```
-
----
-
 ## Install all at once
 
 **Linux / macOS**
@@ -188,7 +163,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-r
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff session-review; do
+for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -198,7 +173,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','session-handoff','session-review') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','session-handoff') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
