@@ -13,3 +13,6 @@ Thumbs.db
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Session state (local, written by /save-state)
+.claude/session-state.md
