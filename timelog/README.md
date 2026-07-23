@@ -100,6 +100,24 @@ Or in natural language:
 
 The skill defaults to today. Specify a date or "yesterday" if needed.
 
+### Quick mode — multi-day project overview
+
+For a fast "which projects did I touch recently" answer — no hours, no time blocks, no commits, just a per-day list of project names:
+
+```
+/timelog quick             # today only
+/timelog quick 7           # last 7 days
+/timelog quick 2026-07-15..2026-07-22
+```
+
+Unlike the default mode, quick mode does **not** need to be run from inside a project — it scans every Claude Code project directory (`~/.claude/projects/*`) and every Codex CLI session (`~/.codex/sessions/YYYY/MM/DD/*`) on the machine, groups by day, and prints project basenames.
+
+```
+15 juil : ejardin.ca, ma-boutique-stripe
+16 juil : ma-boutique-stripe
+18 juil : claude-skills, ma-boutique-stripe
+```
+
 ## Output format
 
 ```

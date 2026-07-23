@@ -1,6 +1,6 @@
 ---
 name: timelog
-description: Génère synthèse de journée (Toggl) — blocs basés sur commits git + sessions Claude/Codex (seuil 90 min). Trigger /timelog, "log de temps", "synthèse journée", "résume ce que j'ai fait", "time tracking".
+description: Génère synthèse de journée (Toggl) — blocs basés sur commits git + sessions Claude/Codex (seuil 90 min). Variante /timelog quick : survol multi-jours multi-projets sans détail horaire, réponse à "sur quels projets j'ai travaillé". Trigger /timelog, /timelog quick, "log de temps", "synthèse journée", "résume ce que j'ai fait", "time tracking", "quels projets cette semaine", "sur quels projets j'ai travaillé".
 ---
 
 # Timelog
@@ -315,3 +315,67 @@ Pourquoi c'est mauvais : IDs et numéros partout ("Phase 4-4", "C4", "C5", "Q1",
 - **Sessions Claude Code très longues** : extraire les thèmes principaux des messages utilisateur, ne pas tout énumérer.
 - **Travail purement exploratoire sans commit** : si l'utilisateur a passé une heure à débugger ou explorer sans commit final, le mentionner ("diagno / exploration sur X").
 - **Plusieurs sujets dans un même bloc** : utiliser ` - ` pour séparer, ou parfois ` + ` quand le lien est plus fort (cf. exemple "dépannage Outlook et DMARC laklak + travail design system").
+
+## Mode "quick" — survol multi-projets
+
+Variante déclenchée par `/timelog quick`. Objectif : répondre à **"sur quels projets j'ai travaillé récemment ?"** — sans détail horaire, sans bloc, sans commits. Juste la liste des projets touchés, groupés par jour.
+
+### Déclencheurs et plage
+
+- `/timelog quick` → aujourd'hui uniquement
+- `/timelog quick 7` (ou `7j`) → les 7 derniers jours, aujourd'hui inclus
+- `/timelog quick YYYY-MM-DD` → un jour précis
+- `/timelog quick YYYY-MM-DD..YYYY-MM-DD` → plage explicite
+
+Formulations naturelles acceptées : "quels projets cette semaine", "survol des 15 derniers jours", "sur quoi j'ai travaillé hier"…
+
+### Différence avec le mode par défaut
+
+Le mode par défaut se lance **depuis un projet** et analyse ce projet seul. Le mode `quick` fait l'inverse : il scanne **tous** les projets détectés sur la machine à travers Claude Code et Codex CLI. On n'a donc pas besoin d'être dans un repo git — `/timelog quick` peut se lancer depuis n'importe quel dossier.
+
+### Sources
+
+- **Sessions Claude Code** : parcourir tous les sous-dossiers de `~/.claude/projects/`. Pour chaque dossier, repérer les `.jsonl` avec au moins un message utilisateur dans la plage cible. Le vrai `cwd` du projet se trouve dans le champ `cwd` **à l'intérieur** des lignes du `.jsonl` (le nom du dossier encode `/` en `-` et devient ambigu si le vrai chemin contient déjà des `-`, donc on lit toujours le champ interne, jamais le nom du dossier).
+- **Sessions Codex CLI** : pour chaque jour de la plage, parcourir `~/.codex/sessions/YYYY/MM/DD/*.jsonl`. Pour chaque fichier, lire la première ligne (`session_meta`) et récupérer `payload.cwd`.
+- **Pas de git** dans ce mode. Le survol vient uniquement des sessions AI, jamais des commits — on veut savoir où l'utilisateur *travaillait*, pas où il a *poussé du code*.
+
+Une session compte pour le jour de son **premier message utilisateur** (heure locale America/Toronto — convertir depuis UTC comme pour le mode par défaut). Filtrer les faux messages utilisateur côté Codex (ceux qui commencent par `<` ou `# AGENTS`) avant d'en tirer le premier timestamp.
+
+### Nom de projet affiché
+
+Le **dernier segment du `cwd`** (basename), rien de plus.
+
+Exemples :
+- `/home/alexandre/Apps-coding/ejardin.ca` → `ejardin.ca`
+- `/home/alexandre/Apps-coding/ma-boutique-stripe` → `ma-boutique-stripe`
+- `/home/alexandre/Apps-coding/claude-skills` → `claude-skills`
+
+### Format de sortie
+
+Groupé **par jour**, ordre chronologique croissant. Les jours sans activité sont sautés silencieusement (ne pas afficher `17 juil : (rien)` sauf si l'utilisateur demande explicitement à voir les jours creux).
+
+```
+15 juil : ejardin.ca, ma-boutique-stripe
+16 juil : ma-boutique-stripe
+18 juil : claude-skills, ma-boutique-stripe
+```
+
+Règles :
+- Date en français court : `15 juil`, `1er août`, `3 déc`. Si la plage traverse une année, ajouter l'année : `15 juil 2025`.
+- Projets triés alphabétiquement dans chaque ligne.
+- Séparateur entre projets : `, ` (virgule espace).
+- Aucune heure, aucune durée, aucun bloc, aucune tâche, aucun commit.
+- Pas de markdown, pas de bullets, pas de bold. Texte plat.
+
+### Aucun projet détecté
+
+```
+Aucune activité détectée sur la plage [X..Y].
+```
+
+### Cas limites
+
+- **`cwd` en dehors des chemins de projet habituels** (`/tmp`, `$HOME` nu, `~/Downloads`) : ignorer silencieusement, ce ne sont pas des projets.
+- **Session à cheval sur deux jours** (commencée à 23h50, dernier message à 00h30) : la compter uniquement sur le jour de son premier message utilisateur.
+- **Plusieurs sessions le même jour sur le même projet** : dédupliquer, le projet n'apparaît qu'une seule fois par jour.
+- **Nom de projet dupliqué entre deux chemins différents** (rare : deux dossiers `client-x` dans des parents différents) : préciser le parent en préfixe (`Apps-coding/client-x`, `archives/client-x`) uniquement dans ce cas de collision, sinon rester sur le basename simple.

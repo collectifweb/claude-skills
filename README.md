@@ -8,7 +8,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | --- | --- |
 | [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. |
 | [confront-codex](#confront-codex) | Runs an iterative debate between Claude and Codex on a technical plan until they converge — before a single line of code is written. |
-| [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. |
+| [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. `quick` variant: multi-day, multi-project overview with no hours. |
 | [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh Claude session finds its bearings fast. |
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
@@ -59,6 +59,8 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\confront-
 ## timelog
 
 Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code session activity (90-minute gap = new block), formatted for Toggl or any time-tracking tool.
+
+A `quick` variant (`/timelog quick`, `/timelog quick 7`, `/timelog quick YYYY-MM-DD..YYYY-MM-DD`) scans all Claude Code and Codex CLI sessions on the machine and prints a per-day overview of which projects you touched — no hours, no blocks.
 
 **Requires:** Claude Code, git
 
