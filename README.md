@@ -12,7 +12,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh Claude session finds its bearings fast. |
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
-| [session-handoff](#session-handoff) | Produces a structured end-of-session summary so you can start on a fresh agent without losing continuity. |
+| [session-handoff](#session-handoff) | Ends a session with one paste-ready handoff message — copy it into a fresh session and the work resumes where it stopped. |
 
 ---
 
@@ -140,7 +140,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 
 ## session-handoff
 
-Closes a session cleanly in two phases. First it **persists** what happened into the project's living docs — checks off completed to-dos, updates `CLAUDE.md` and any documentation that drifted this session (proposed for approval, then applied). Then it produces a fixed-shape **handoff** recap: decisions, shipped changes, key files, running state (background shell IDs, ports), verification, deferrals, and open questions. The repo ends up accurate, so a fresh agent — or a post-compaction context — resumes without losing continuity. Manual and non-blocking; ships one optional, non-blocking transcript-backup hook.
+Ends a session with one fixed-shape **handoff message**, posted alone as the last message of the turn: decisions, shipped changes, key files, running state (background shell IDs, ports), verification, deferrals, open questions. Written for a cold reader — copy it, open a fresh session, paste, and the work resumes where it stopped. Nothing before it, nothing after it, so a copy grabs exactly what you need. It writes no files and edits no docs (that's `/doc-sync`'s job). Manual and non-blocking; ships one optional, non-blocking transcript-backup hook.
 
 **Requires:** Claude Code (git optional)
 

@@ -1,49 +1,37 @@
 ---
 name: session-handoff
-description: Use at end of session — when the user says "session handoff", "wrap up session", "hand off", "handoff summary", or is about to /clear or /compact. First persists what happened into the project's living docs (checks off completed to-dos, updates CLAUDE.md and any docs that drifted this session — proposed for approval, then applied), then produces a chat handoff covering decisions, shipped changes, key files, running state, verification, deferrals, and open questions. Leaves the repo accurate so a fresh agent — or a post-compaction context — resumes without losing continuity.
+description: Use at end of session — when the user says "session handoff", "wrap up session", "hand off", "handoff summary", or is about to /clear and start over. Produces one paste-ready handoff message as the entire final message of the turn — decisions, shipped changes, key files, running state, verification, deferrals, open questions — written for a cold reader so it can be copied into a brand-new session and resume the work from nothing. It writes no files and edits no docs.
 ---
 
 # Session Handoff
 
-Close a session cleanly so nothing is lost when the context is compacted or cleared. This runs in two phases:
+Produce a **paste-ready handoff message**: one block, posted as the entire final message of the turn, written so the user can copy it, open a fresh session, paste it, and have the work resume exactly where it stopped.
 
-1. **Persist** — write what happened this session into the project's durable files (to-do list, CLAUDE.md, docs). The next context reads accurate files, not a stale summary.
-2. **Hand off** — produce a chat recap so a fresh agent can pick up by reading it alone.
+That copy-paste is the whole workflow. Everything in this skill serves it:
 
-Serves both cases equally: after `/compact` the durable state lives in the repo; after `/clear` the recap plus the updated docs carry the continuity.
+- The message is the **last** thing in the turn — nothing after it, so a copy grabs it clean.
+- The message is **alone** in that turn — no preamble, no commentary wrapped around it.
+- The message is **self-contained** — it will be read in an empty session with no access to this conversation.
 
-This is a **manual** skill. Run it by hand when it's useful. It is never required before a `/compact` — some sessions don't need it.
+This skill writes nothing to disk. It doesn't update docs, `CLAUDE.md`, or task files — if those drifted, that's `/doc-sync`'s job, or a dedicated doc skill. Say so in one line if you notice drift, then hand off anyway; don't expand scope.
+
+It is a **manual** skill. Run it by hand when it's useful. It is never required before a `/compact`.
 
 ## When to invoke
 
-User says: "session handoff", "wrap up session", "hand off", "handoff summary", "let's wrap up", "summarize before I clear/compact", or any near-equivalent. Also invoke proactively if the user says they're about to `/clear` or `/compact` without having run it yet — but never block them if they decline.
+User says: "session handoff", "wrap up session", "hand off", "handoff summary", "let's wrap up", "summarize before I clear", or any near-equivalent. Also invoke proactively if the user says they're about to `/clear` or start a fresh session without having run it yet — but never block them if they decline.
 
-## Phase 1 — Persist session outcomes into the project
+## What to pull from
 
-Goal: leave the repo's living documents reflecting what actually happened, so the state survives compaction.
+Build the recap from what you already know about this session — not from a filesystem audit. No `git log`, no broad globs to reconstruct what happened. Sources:
 
-1. **Build the session inventory from memory — not from a filesystem audit.** You know what happened this session; don't reconstruct it with `git log` or broad globs. Capture:
-   - To-do / task items **completed** this session (from TodoWrite state and from any `tasks/todo.md` the project uses).
-   - New tasks or follow-ups that surfaced.
-   - Decisions made and changes shipped (with the file they live in).
-   - Anything that changes what a doc **currently claims** — a new command, a renamed thing, a changed data model, a new invariant or gotcha.
-   - Corrections the user made to you (for a lessons file, if the project keeps one).
-2. **Map the inventory to concrete doc targets.** Only the files that genuinely need a change — typically some of:
-   - `tasks/todo.md` (or wherever the project tracks tasks) — check off completed items, add new ones.
-   - `CLAUDE.md` — update if the project context changed (stack detail, invariant, load-bearing gotcha).
-   - `README.md`, `docs/**`, changelog — fix the specific claims this session made stale.
-   - `tasks/lessons.md` — record any correction, if the project uses one.
-   - **Read each target file before proposing an edit** — you need its current wording to change it precisely. Reading the files you're about to edit is fine; a broad audit to re-discover the session is not.
-3. **Propose before applying.** Present a single numbered list of the edits you intend to make — one line per file: `<path> — <what changes and why>`. Then wait for the user's OK. Apply them together after approval. If the user trims the list, apply only what they kept.
-4. **Session-scoped, not a full audit.** Update only what *this session* changed. Do not reconcile the entire doc set against the entire codebase — that is what `/doc-sync` is for. If the docs look broadly drifted beyond this session's work, say so and suggest `/doc-sync`; don't silently expand scope.
-5. **"Nothing to persist" is a valid outcome.** If no doc needs a change, say so explicitly and move to Phase 2 — don't invent edits to look busy.
-
-## Phase 2 — Produce the handoff recap (in chat)
-
-Synthesis of what happened this session, for the next instance of you. The audience is a future agent, not a stakeholder.
-
-- Pull state from: the Phase 1 inventory, plan files referenced this session (check `~/.claude/plans/` if a plan was mentioned), TodoWrite state, background processes you started with `run_in_background` (shell IDs are load-bearing), files you created or modified, memory files touched, and unresolved questions in either direction.
-- Post the recap in chat using the template below. The recap itself is chat-only — the durable state already lives in the files you updated in Phase 1.
+- The original request and the constraints that emerged along the way.
+- Decisions made and changes shipped, with the file each one lives in.
+- Plan files referenced this session (check `~/.claude/plans/` if a plan was mentioned).
+- TodoWrite state — what's done, what's still open.
+- Background processes started with `run_in_background` — shell IDs are load-bearing.
+- Files created or modified; memory files touched.
+- Unresolved questions in either direction — yours to the user, and the user's to you.
 
 ## Output template — use exactly this structure, every time
 
@@ -56,10 +44,6 @@ Synthesis of what happened this session, for the next instance of you. The audie
 ## Decisions locked + what shipped
 - <decision or change> — <why, and where it lives (absolute path if a file)>
 - ...
-
-## Docs updated this handoff
-- `<absolute path>` — <what was written (completed to-dos, CLAUDE.md invariant, doc claim fixed)>
-- ... — or "none"
 
 ## Key files for next session
 - `<absolute path>` — <why the next agent should read this first>
@@ -85,10 +69,10 @@ Synthesis of what happened this session, for the next instance of you. The audie
 
 ## Hard rules
 
-1. **Persist durable state to files; keep the recap in chat.** Phase 1 writes to the project's docs/to-do/CLAUDE.md. Phase 2's narrative stays in chat — it doesn't get written to a summary file.
-2. **Propose doc edits, apply on the user's OK.** Never edit CLAUDE.md, docs, or task files silently. One numbered list, one approval, then apply.
-3. **Never invent state.** If a section of the recap has nothing to report, write "none" — do not omit the section. Structure stability is the whole point. Same for Phase 1: no doc needs changing → say so.
-4. **Session-scoped.** Document only what this session changed. A full doc-vs-code audit is `/doc-sync`'s job — point to it rather than expanding scope.
+1. **The message is the last message, and it stands alone.** No preamble ("here's your handoff"), no sign-off, no question after it. The final message is the template, and only the template. Anything you need to say to the user goes in an earlier message.
+2. **Write it for a cold reader.** It gets pasted into an empty session: no "as discussed above", no reference to this chat, no pronoun whose antecedent lives outside the block. If it doesn't stand on its own, it fails.
+3. **Nothing is written to disk.** No summary file, no doc updates, no `CLAUDE.md` edits. The user carries the handoff by copy-paste.
+4. **Never invent state.** If a section has nothing to report, write "none" — do not omit the section. Structure stability is the whole point.
 5. **Absolute paths always.** The next agent may have a different working directory.
 6. **If a plan file drove the session, name it first** in "Key files" so the next agent reads it before anything else.
 7. **No emojis, no hype, no "great job" summaries.** Terse and concrete — paths, commands, shell IDs, decisions. The tone of a seasoned engineer handing off at end-of-shift.
@@ -100,10 +84,11 @@ Synthesis of what happened this session, for the next instance of you. The audie
 
 ## Anti-patterns — do not do these
 
+- Adding anything after the handoff block: a comment, an offer to adjust it, a question. The block ends the turn.
+- Opening the final message with "Here's the handoff:" or any other framing line.
 - Summarizing the last 3 turns and calling it a handoff.
-- Skipping Phase 1 and only producing the chat recap — the point is that the repo's docs end up accurate, not just the chat.
-- Editing CLAUDE.md or docs without proposing the changes first.
-- Turning Phase 1 into a full doc audit — that's `/doc-sync`. Stay scoped to this session.
+- Updating docs, `CLAUDE.md`, or task files from this skill. Not its job — point at `/doc-sync` and move on.
+- Reconstructing the session with `git log` or broad globs instead of writing what you know.
 - Listing files by relative path.
 - Skipping the "Running state" section because "nothing is running" — write "none" instead.
 - Adding a "what went well / what went poorly" retrospective. This isn't a retro.

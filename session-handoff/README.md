@@ -1,39 +1,25 @@
 # session-handoff
 
-Closes a Claude Code session cleanly so nothing is lost when you `/compact` or `/clear`. It runs in two phases:
+Ends a Claude Code session with one **paste-ready handoff message** — posted alone, as the last message of the turn. Copy it, open a fresh session, paste, and the work resumes exactly where it stopped.
 
-1. **Persist** — writes what happened this session into the project's living docs: checks off completed to-dos, updates `CLAUDE.md` and any documentation that drifted. Changes are proposed for your approval, then applied.
-2. **Hand off** — produces a chat recap (decisions, shipped changes, key files, running state, verification, deferrals, open questions) so a fresh agent picks up by reading it alone.
+That copy-paste is the whole workflow, and everything in the skill serves it:
 
-The result: the repo's docs end up accurate, and the next context — whether it's a post-compaction continuation or a brand-new session — resumes without losing continuity.
+- The message is the **last** thing in the turn — nothing after it, so `/copy` grabs it clean.
+- The message is **alone** — no preamble, no commentary wrapped around it.
+- The message is **self-contained** — it gets read in an empty session, with no access to the conversation it came from.
 
 It's a **manual** skill. You run it when it's useful; it never blocks or forces itself before a `/compact`.
 
 ## The problem it solves
 
-Two failures happen at end of session:
+Asked to "wrap up", a model summarizes the last few turns and drops exactly what the next agent needs: background shell IDs, dev-server ports, the plan file that drove the work, absolute paths a fresh working directory can resolve. Then it wraps the summary in chatter, so what you paste carries half a conversation with it.
 
-- **The docs go stale.** To-do items got done, `CLAUDE.md` picked up a new invariant, a command changed — but none of it is written down. After a compaction or a `/clear`, that knowledge is gone.
-- **The handoff is thin.** Asked to "wrap up", models summarize the last few turns and drop the load-bearing details: background shell IDs, dev-server ports, the plan file that drove the work, relative paths a fresh working directory can't resolve.
+session-handoff fixes the shape: same sections every time, written for someone who wasn't there.
 
-session-handoff fixes both: it persists session outcomes into the repo *and* produces a fixed-shape recap, every time.
-
-## What it does
-
-**Phase 1 — persist (proposed, then applied):**
-
-- **To-do** — checks off items completed this session (TodoWrite state + `tasks/todo.md` if the project uses one), adds follow-ups that surfaced
-- **CLAUDE.md** — updates it when the project context changed (a new invariant, stack detail, or load-bearing gotcha)
-- **Docs** — fixes the specific claims in `README.md` / `docs/**` / changelog that *this session* made stale
-- **Lessons** — records any correction you made, if the project keeps a `tasks/lessons.md`
-
-It lists every intended edit as a numbered list, waits for your OK, then applies them together. Session-scoped by design — it updates only what this session changed. For a full doc-vs-code audit, it points you to [`/doc-sync`](../doc-sync/) instead of expanding scope.
-
-**Phase 2 — the handoff recap** captures, in chat:
+## What the message contains
 
 - **Where it started** — the original ask and the constraints that emerged
 - **Decisions locked + what shipped** — with the absolute path of where each change lives
-- **Docs updated this handoff** — what Phase 1 wrote
 - **Key files for next session** — plan file first, then everything worth reading before acting
 - **Running state** — background shell IDs + kill commands, dev servers/ports, open worktrees
 - **Verification** — the commands that prove things still work
@@ -42,10 +28,11 @@ It lists every intended edit as a numbered list, waits for your OK, then applies
 
 ## Guardrails
 
-- **Durable state goes to files; the recap stays in chat.** Phase 1 writes to the repo's docs; Phase 2's narrative is a chat recap, not another file.
-- **Nothing is written silently.** Doc edits are proposed as one list and applied only after you approve.
-- **Session-scoped, not a filesystem audit.** It synthesizes *this* session — no `git log`, no broad globs to reconstruct what happened. It reads the specific files it's about to edit, nothing wider.
-- **Never invents state.** Empty section → "none". No doc needs a change → it says so instead of manufacturing edits.
+- **The message stands alone and ends the turn.** No preamble, no sign-off, no follow-up question. Anything else Claude has to say goes in an earlier message.
+- **Written for a cold reader.** No "as discussed above", no reference to the session it came from, no pronoun whose antecedent is missing.
+- **Nothing is written to disk.** No summary file, no doc edits, no `CLAUDE.md` changes. You carry the handoff by copy-paste. Docs drifted? That's [`/doc-sync`](../doc-sync/)'s job — the skill points at it instead of expanding scope.
+- **No filesystem audit.** It writes what it already knows about the session — no `git log`, no broad globs to reconstruct what happened.
+- **Never invents state.** Empty section → "none", never omitted. The fixed shape is the point.
 - **Absolute paths, no emojis, no retrospective** — the tone of an engineer handing off at end-of-shift.
 
 ## Optional: transcript backup on auto-compaction
@@ -54,7 +41,7 @@ The `references/` folder ships one **non-blocking** hook script, `pre-compact-ba
 
 ## Requirements
 
-- Claude Code (git optional)
+- Claude Code
 
 ## Installation
 
@@ -78,9 +65,9 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-h
 
 ## When to use it
 
-- End of a substantial session, right before you `/clear`
-- Whenever you're about to hand the work to a fresh agent
-- Before a manual `/compact`, so the next context starts with accurate docs and real state
+- End of a substantial session, right before you `/clear` and start over
+- Whenever you're handing the work to a fresh agent
+- Before a manual `/compact`, so the densest statement of where things stand is the last thing in context
 
 ## License
 
