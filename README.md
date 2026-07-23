@@ -13,6 +13,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
 | [session-handoff](#session-handoff) | Ends a session with one paste-ready handoff message — copy it into a fresh session and the work resumes where it stopped. |
+| [save-state](#save-state) | Writes the session's truth to disk before a `/compact`, then hands you the `/compact` line and the prompt to send right after. |
 
 ---
 
@@ -158,6 +159,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-h
 
 ---
 
+## save-state
+
+Run before a manual `/compact`. Compaction is a lossy save: the session knows the current task, the reasons behind the last decisions, the half-finished file and the trap you hit an hour ago — the files know none of it. save-state lists what the session changed, updates only the docs and task files those changes made false, writes `.claude/session-state.md` (rewritten in full each run, gitignored), reports the uncommitted work, then ends with two blocks to paste: `/compact` carrying instructions written for your actual task, then the short prompt that re-anchors the compacted session. `--commit` also makes the commit; it never pushes. Scoped by design, because it runs when context is nearly full — for the exhaustive pass, use `/doc-sync`.
+
+**Requires:** Claude Code (git optional)
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/save-state" ~/.claude/skills/save-state
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\save-state" -Target "$PWD\claude-skills\save-state"
+```
+
+---
+
 ## Install all at once
 
 **Linux / macOS**
@@ -165,7 +186,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-h
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff; do
+for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff save-state; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -175,7 +196,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','session-handoff') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','session-handoff','save-state') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
