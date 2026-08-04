@@ -14,6 +14,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
 | [session-handoff](#session-handoff) | Ends a session with one paste-ready handoff message — copy it into a fresh session and the work resumes where it stopped. |
 | [save-state](#save-state) | Writes the session's truth to disk before a `/compact`, then hands you the `/compact` line and the prompt to send right after. |
+| [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. |
 
 ---
 
@@ -179,6 +180,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\save-stat
 
 ---
 
+## rename-sessions
+
+Auto-generated session titles are long, English, and phrased alike — three "Review X for security vulnerabilities" in a row and the `/resume` list stops carrying information. This renames every session in a workspace to a status emoji plus three to six words (✅ done · ⏳ in progress · ⭐ worth a look · 🔒 security review), telling apart the families that dominate the list — automatic security reviews, skill invocations — by what each one actually covered. Titles you wrote by hand keep their text and only gain the emoji. Renaming is an append, so nothing is overwritten and a title you dislike is fixed with one more line; a coverage check aborts rather than renaming a workspace halfway. Ships the `CLAUDE.md` rule that names new sessions as they go, so the bulk pass only happens once.
+
+**Requires:** Claude Code
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/rename-sessions" ~/.claude/skills/rename-sessions
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\rename-sessions" -Target "$PWD\claude-skills\rename-sessions"
+```
+
+---
+
 ## Install all at once
 
 **Linux / macOS**
@@ -186,7 +207,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\save-stat
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff save-state; do
+for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff save-state rename-sessions; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
