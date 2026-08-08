@@ -55,6 +55,14 @@ En français, après un deux-points, c'est une minuscule. Sauf nom propre ou dé
 
 ---
 
+## Interdit absolu — ne rien fabriquer
+
+Humaniser un texte, ce n'est jamais y ajouter de l'information fausse. Ne JAMAIS inventer un fait, un nom, une date, un chiffre, une étude ou une citation qui ne figure pas déjà dans le texte d'origine.
+
+Quand une règle réclame plus de concret (un ancrage, une source) et que le texte n'en fournit pas : le signaler et demander la donnée réelle à l'auteur. Ne pas combler le vide avec une donnée plausible mais inventée. Un chiffre fabriqué est pire que son absence.
+
+---
+
 ## Règles de réécriture — par ordre de sévérité
 
 Lire le fichier `references/tics-llm.json` pour la liste complète des règles avec exemples et paramètres détaillés. Ci-dessous, le résumé opérationnel.
@@ -83,6 +91,10 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 
 **Résumé conclusif compulsif** — « En résumé », « En conclusion », « Pour conclure »... Si le paragraphe final ne fait que reformuler ce qui précède, le supprimer ou le remplacer par une ouverture concrète.
 
+**Résidus de conversation IA** — « Bien sûr ! Voici… », « J'espère que cela vous aidera », « N'hésitez pas à me dire… », « En tant qu'IA… », « à la date de ma dernière mise à jour », « Souhaitez-vous que je… »... Les politesses et offres d'aide d'un assistant qui fuient au copier-coller. Supprimer entièrement : ne garder que le texte lui-même.
+
+**Périphrases de remplissage** — afin de → pour, en raison du fait que → parce que, au niveau de → pour/dans, de manière à ce que → pour que, dans le cadre de (souvent supprimable). Lourdeurs administratives qui ont toutes une forme courte.
+
 ### Avertissements (à corriger quand ça s'accumule)
 
 **Noms abstraits creux** — paradigme, écosystème, synergie, dynamique, perspective, levier, dispositif, démarche... Remplacer par le terme concret ou supprimer.
@@ -109,6 +121,12 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 
 **Fausse subjectivité** — « ce qui me frappe », « ce qui est intéressant », « ce que je trouve remarquable », « ce qui retient l'attention »... Formules qui simulent une réaction personnelle sans exprimer aucune observation réelle. Supprimer et formuler le contenu directement.
 
+**Autorité fantôme** — « de nombreuses études montrent », « les experts s'accordent », « selon certains observateurs », « il est communément admis »... Appel à une autorité anonyme pour crédibiliser une affirmation sans jamais nommer de source. Deux issues : citer la source réelle si elle existe, sinon assumer l'affirmation en son nom propre. Ne jamais inventer la source.
+
+**Liste à étiquette en gras** — le motif « **Terme** : description » répété en série (deux entrées ou plus) transforme le texte en fiche produit. Convertir en prose, ou en liste simple sans étiquette grasse.
+
+**Empilement de modalisateurs** — « il se pourrait éventuellement que… peut-être », « pourrait potentiellement »... Plusieurs précautions de langage superposées dans une même phrase. Garder un seul modalisateur, ou aucun si l'affirmation est certaine.
+
 **Sycophantisme** — ne pas présenter le sujet comme important juste parce que c'est le sujet. « Enjeu majeur pour l'avenir » → dire en quoi c'est un enjeu, concrètement.
 
 ### Injections positives (à ajouter si absentes)
@@ -119,7 +137,7 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 
 **Ruptures de registre** — au moins une rupture de ton pour 400 mots. Question directe, formule orale, incise personnelle, phrase très courte après un développement dense.
 
-**Ancrages concrets** — au moins 1 par section de 300 mots : date, lieu, nom propre, chiffre sourcé, anecdote avec détails.
+**Ancrages concrets** — un texte sans date, lieu, nom propre ni chiffre sonne désincarné. S'il en manque (moins de 1 par section de 300 mots), le signaler et demander à l'auteur une donnée réelle. Ne jamais en inventer (voir l'interdit de fabrication plus haut).
 
 ---
 
@@ -149,6 +167,12 @@ Produire dans cet ordre exact :
 [Le texte réécrit. Pas de commentaire, pas de préambule. Juste le texte propre.]
 ```
 
+## Passe finale d'auto-audit
+
+Avant de livrer, relire une dernière fois le texte réécrit et se poser une seule question : reste-t-il un seul marqueur IA (un tiret cadratin oublié, une majuscule après deux-points, une transition morte, un résidu de conversation) ? Si oui, corriger avant de rendre. Cette relecture ne figure pas dans la sortie : seul le texte propre est livré.
+
+---
+
 ## Barème
 
 Partir de 100. Retirer des points pour chaque pattern détecté. Les occurrences multiples d'un même pattern s'additionnent jusqu'à 2x la pénalité de base.
@@ -169,7 +193,7 @@ Le tiret cadratin a la pénalité la plus élevée parce que c'est le marqueur l
 
 ## Pour aller plus loin
 
-Le fichier `references/tics-llm.json` contient les 38 règles complètes avec :
+Le fichier `references/tics-llm.json` contient les 43 règles complètes avec :
 - Les listes exhaustives de mots et expressions à détecter
 - Les exemples avant/après pour chaque règle
 - Les seuils et paramètres (nombre max d'occurrences, scope...)

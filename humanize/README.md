@@ -18,6 +18,10 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 
 **Capital letter after colon** — wrong in French. `Résultat : Les ventes` → `Résultat : les ventes`.
 
+### One safeguard — never fabricate
+
+Humanizing never means adding false information. The skill never invents a fact, name, date, figure, study, or citation that isn't already in the source. When a rule asks for more concreteness (a missing anchor or source), it flags the gap and asks you for the real data instead of filling it with a plausible invention.
+
 ### Errors — always fixed
 
 | Pattern | Examples |
@@ -33,6 +37,8 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 | Dramatic fragment opener | « La raison ? », « Bonne nouvelle : », « Résultat final : », « Petite confession : » → absorbed into a real sentence |
 | Title case | « Les Avantages Du Télétravail » → « Les avantages du télétravail » |
 | Oxford comma | « les pommes, les poires, et les bananes » → no comma before *et* |
+| AI chat residue | « Bien sûr ! Voici… », « J'espère que cela vous aidera », « En tant qu'IA… », « à la date de ma dernière mise à jour » → removed entirely |
+| Filler periphrases | « afin de » → « pour », « en raison du fait que » → « parce que », « au niveau de » → « pour / dans » |
 | Emojis in headings and lists | removed unless editorial intent is explicit |
 
 ### Warnings — fixed when they accumulate
@@ -44,6 +50,9 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 | Redundant pairs (crucial et essentiel, complet et exhaustif…) | keep one |
 | Sycophantic framing (enjeu majeur pour l'avenir, profondément humaniste…) | flag, ask for evidence |
 | Fake subjectivity (ce qui me frappe, ce qui est intéressant, ce que je retiens…) | rephrase directly without the pseudo-reaction |
+| Phantom authority (de nombreuses études montrent, les experts s'accordent…) | flag, ask for a real source — never invent one |
+| Bold-label lists (**Terme** : description, repeated) | convert to prose |
+| Hedging pile-up (il se pourrait éventuellement que… peut-être) | keep one modal at most |
 | Systematic bold | max 3 per text |
 | Systematic lists | max 2 per text |
 | Rule of three | max 1 per text |
@@ -75,6 +84,8 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 
 [Texte réécrit. Pas de préambule.]
 ```
+
+A final self-audit pass re-reads the rewrite and fixes any marker that slipped through — only the clean text ships.
 
 ## Installation
 
@@ -110,7 +121,7 @@ Also triggers on: "humaniser ce texte", "virer le slop", "nettoyer le style IA",
 
 ## Reference
 
-`references/tics-llm.json` — 36 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it for nuanced judgment calls on longer texts.
+`references/tics-llm.json` — 43 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it for nuanced judgment calls on longer texts.
 
 ## License
 

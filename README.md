@@ -20,7 +20,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 
 ## humanize
 
-Rewrites French text to remove LLM writing tics. Detects and corrects 36 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
+Rewrites French text to remove LLM writing tics. Detects and corrects 43 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three, AI chat residue, phantom authority…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
 
 **Requires:** Claude Code
 

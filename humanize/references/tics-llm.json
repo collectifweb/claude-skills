@@ -1,11 +1,12 @@
 {
   "meta": {
     "titre": "Détecteur de scories IA",
-    "version": "1.1 du 11 mars 2026",
+    "version": "1.2 du 7 août 2026",
     "langue": "fr",
     "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement)",
     "sources": [
       "Wikipedia:Signs of AI writing",
+      "blader/humanizer (github.com/blader/humanizer)",
       "Recherche Gemini Deep Research du 11 mars 2026",
       "Notes personnelles de l'auteur"
     ],
@@ -170,7 +171,16 @@
           "collaboratif (langue de bois)",
           "compréhensif (anglicisme de comprehensive)",
           "avant-gardiste",
-          "parfait (superlatif implicite)"
+          "parfait (superlatif implicite)",
+          "idyllique",
+          "pittoresque",
+          "à couper le souffle",
+          "d'exception",
+          "niché au cœur de",
+          "au cœur de (métaphore)",
+          "s'enorgueillir de",
+          "un éventail de",
+          "une riche palette de"
         ]
       },
       "severite": "avertissement",
@@ -935,10 +945,10 @@
       "type": "biais",
       "label": "Absence de marqueurs autobiographiques",
       "description": "Un texte IA manque d'ancrages concrets qui prouvent une expérience réelle : pas de date précise, pas de lieu nommé, pas de nom propre vérifié, pas d'anecdote située, pas de petite incohérence d'expérience vécue. Le texte sait tout mais n'a rien vécu.",
-      "regle": "Vérifier si le texte contient au moins un ancrage concret par grande section : une date précise, un lieu nommé, un nom propre réel, un chiffre sourcé, une anecdote avec des détails sensoriels ou situationnels. En l'absence totale de tels ancrages sur un texte long, signaler le risque de platitude.",
+      "regle": "Vérifier si le texte contient au moins un ancrage concret par grande section : une date précise, un lieu nommé, un nom propre réel, un chiffre sourcé, une anecdote avec des détails sensoriels ou situationnels. En l'absence de tels ancrages, SIGNALER le manque et demander à l'auteur une donnée réelle. Ne jamais inventer d'ancrage : une date, un chiffre ou une étude fabriqués sont pires que leur absence.",
       "exemples": {
         "avant": "De nombreuses études montrent que la communication joue un rôle essentiel dans le succès des organisations. Les experts s'accordent à dire que les équipes qui communiquent mieux obtiennent de meilleurs résultats.",
-        "apres": "Une étude McKinsey de 2023 sur 1 200 entreprises montre que les équipes qui communiquent explicitement leurs priorités chaque semaine réduisent leurs délais de 23%."
+        "apres": "[Signaler le manque d'ancrage : quelle étude, quel chiffre, quelle date ? Demander la source réelle à l'auteur. Ne jamais inventer de statistique ni de nom d'institut.]"
       },
       "parametres": {
         "ancrages_attendus": [
@@ -953,7 +963,7 @@
       },
       "severite": "avertissement",
       "actif": true
-    }
+    },
     {
       "id": "SYN-005",
       "categorie": "syntaxe",
@@ -1027,6 +1037,148 @@
           "ce qui est notable",
           "ce qui est surprenant"
         ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "COM-001",
+      "categorie": "communication",
+      "type": "interdit",
+      "label": "Résidus de conversation IA",
+      "description": "Formules d'assistant conversationnel qui n'ont rien à faire dans un texte livré. Elles fuient quand on copie-colle une réponse de ChatGPT ou d'un autre modèle : politesses d'ouverture, offres d'aide, avertissements sur la date d'entraînement, questions de relance. C'est le marqueur le plus flagrant après le tiret cadratin, parce qu'il révèle l'origine du texte sans la moindre ambiguïté.",
+      "regle": "Supprimer entièrement toute phrase qui s'adresse au lecteur comme à un interlocuteur de chat, annonce ce que l'assistant va faire, ou mentionne sa nature d'IA. Ne rien laisser de la couche conversationnelle.",
+      "exemples": {
+        "avant": "Bien sûr ! Voici le texte que vous avez demandé. En tant qu'IA, je ne peux pas garantir l'exactitude à la date de ma dernière mise à jour. J'espère que cela vous aidera. N'hésitez pas à me dire si vous voulez que je l'ajuste !",
+        "apres": "[Ne garder que le texte lui-même. Toute la couche conversationnelle disparaît.]"
+      },
+      "parametres": {
+        "marqueurs": [
+          "Bien sûr !",
+          "Certainement !",
+          "Voici le texte que vous avez demandé",
+          "Voici une version",
+          "J'espère que cela vous aidera",
+          "J'espère que cela répond à votre question",
+          "N'hésitez pas à me dire",
+          "N'hésitez pas à demander",
+          "Souhaitez-vous que je",
+          "Voulez-vous que je",
+          "En tant qu'IA",
+          "En tant que modèle de langage",
+          "à la date de ma dernière mise à jour",
+          "je ne peux pas accéder à",
+          "Excellente question",
+          "Bonne question"
+        ]
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "BIA-005",
+      "categorie": "biais",
+      "type": "biais",
+      "label": "Autorité fantôme (attribution vague)",
+      "description": "Appel à une autorité anonyme pour donner du poids à une affirmation sans jamais citer de source réelle. « De nombreuses études montrent », « les experts s'accordent » : la formule emprunte la crédibilité d'une recherche qui n'est ni nommée ni vérifiable. Différent de l'absence d'ancrage (BIA-003) : ici il ne s'agit pas d'ajouter une source, mais de retirer une fausse.",
+      "regle": "Repérer toute attribution à une autorité non nommée. Deux issues : soit l'auteur dispose d'une source réelle et on la cite précisément, soit il n'en a pas et on supprime l'appel à autorité pour formuler l'affirmation en son nom propre. Ne jamais inventer la source manquante.",
+      "exemples": {
+        "avant": "De nombreuses études montrent que le télétravail améliore la productivité, et les experts s'accordent à dire que la tendance est durable.",
+        "apres": "Le télétravail améliore la productivité. [Si une étude précise existe, la nommer. Sinon, assumer l'affirmation sans la déguiser en consensus scientifique.]"
+      },
+      "parametres": {
+        "marqueurs": [
+          "de nombreuses études montrent",
+          "des études montrent",
+          "la recherche suggère",
+          "les experts s'accordent",
+          "les experts estiment",
+          "selon les experts",
+          "selon certains observateurs",
+          "des analystes estiment",
+          "il est communément admis",
+          "il est largement reconnu",
+          "beaucoup considèrent que",
+          "d'aucuns pensent que",
+          "les spécialistes recommandent"
+        ]
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "TYP-006",
+      "categorie": "typographie",
+      "type": "limite",
+      "label": "Liste à étiquette en gras",
+      "description": "Format de liste où chaque puce commence par un ou deux mots en gras suivis de deux-points, puis d'une description sur la même ligne. Le motif « étiquette en gras : explication » répété transforme un texte en fiche produit ou en diapositive. Marqueur visuel très reconnaissable des sorties LLM.",
+      "regle": "Repérer les listes dont plusieurs entrées suivent le schéma « **étiquette** : description ». Convertir en prose courante, ou en liste simple sans étiquette grasse quand l'énumération est justifiée.",
+      "exemples": {
+        "avant": "- **Rapidité** : le système traite les données en temps réel.\n- **Fiabilité** : aucune panne recensée depuis 2023.\n- **Simplicité** : trois clics suffisent.",
+        "apres": "Le système traite les données en temps réel et n'a connu aucune panne depuis 2023. Il suffit de trois clics pour s'en servir."
+      },
+      "parametres": {
+        "seuil": "signaler dès 2 entrées consécutives au format étiquette grasse + deux-points",
+        "scope": "texte_entier"
+      },
+      "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "LEX-009",
+      "categorie": "lexique",
+      "type": "interdit",
+      "label": "Périphrases de remplissage",
+      "description": "Locutions longues qui disent en quatre mots ce qu'un seul mot dit mieux. Héritage de la langue administrative française, surreprésentées dans les outputs LLM parce qu'elles gonflent le texte sans risque. Chacune a une forme courte évidente.",
+      "regle": "Remplacer chaque périphrase par sa forme courte. Certaines (« dans le cadre de », « au niveau de ») sont souvent purement supprimables.",
+      "exemples": {
+        "avant": "Afin de répondre aux besoins et en raison du fait que les délais sont courts, nous agissons au niveau de la coordination dans le cadre de ce projet.",
+        "apres": "Pour respecter des délais courts, nous coordonnons le projet."
+      },
+      "parametres": {
+        "remplacements": {
+          "afin de": "pour",
+          "dans le but de": "pour",
+          "de manière à ce que": "pour que",
+          "en raison du fait que": "parce que",
+          "du fait que": "parce que",
+          "compte tenu du fait que": "parce que",
+          "au niveau de": "pour / dans / concernant",
+          "dans le cadre de": "pour / lors de (souvent supprimable)",
+          "en ce qui concerne": "pour / quant à",
+          "à l'heure actuelle": "aujourd'hui / actuellement",
+          "dans la mesure où": "puisque / si",
+          "il est possible de": "on peut"
+        }
+      },
+      "severite": "erreur",
+      "actif": true
+    },
+    {
+      "id": "LIM-004",
+      "categorie": "rhetorique",
+      "type": "limite",
+      "label": "Empilement de modalisateurs",
+      "description": "Accumulation de précautions de langage dans une même phrase : plusieurs adverbes et tournures de doute qui se superposent. Le LLM empile la prudence pour ne jamais s'engager. Un seul modalisateur suffit ; deux ou plus signalent la sur-prudence mécanique.",
+      "regle": "Compter les marqueurs de doute dans une même proposition. Au-delà d'un, n'en garder qu'un seul, le plus juste. Si l'affirmation est en réalité certaine, retirer toute la prudence.",
+      "exemples": {
+        "avant": "Il se pourrait éventuellement que cette approche puisse peut-être améliorer, dans une certaine mesure, les résultats.",
+        "apres": "Cette approche peut améliorer les résultats."
+      },
+      "parametres": {
+        "marqueurs": [
+          "peut-être",
+          "éventuellement",
+          "potentiellement",
+          "sans doute",
+          "probablement",
+          "il se pourrait que",
+          "il semblerait que",
+          "dans une certaine mesure",
+          "en quelque sorte",
+          "d'une certaine façon"
+        ],
+        "max_par_proposition": 1
       },
       "severite": "avertissement",
       "actif": true
