@@ -6,7 +6,7 @@ description: Renomme en masse les sessions Claude Code d'un workspace avec un ti
 # rename-sessions
 
 Les titres de sessions générés automatiquement sont longs, souvent en anglais, et ne
-disent rien au premier coup d'œil : « Review Termageddon assistant security changes ».
+disent rien au premier coup d'œil : « Review Quillo assistant security changes ».
 Après trois mois de travail, la liste `/resume` devient un mur de phrases interchangeables
 où plus rien ne se retrouve.
 
@@ -28,7 +28,7 @@ symbole perd son sens.
 
 Une session qui n'est que le lancement d'un skill prend le nom du skill en tête, suivi de
 quelques mots si nécessaire : `✅ /tidy - purge des secrets`,
-`🔒 /security-review - API Axeptio`.
+`🔒 /security-review - API Nimbus`.
 
 **Un titre déjà conforme se garde tel quel** : on ajoute l'emoji devant, on ne réécrit pas
 le texte. Un titre écrit à la main porte une intention que le modèle n'a pas à corriger.
@@ -50,8 +50,9 @@ ajouter une ligne en fin de fichier :
 L'opération est **purement additive** : rien n'est écrasé, une erreur se corrige avec une
 ligne de plus. Les lignes `ai-title` écrites ensuite ne reprennent pas le dessus.
 
-Le `<workspace-encodé>` est le chemin absolu du projet avec `/` et `_` remplacés par `-`
-(`/home/moi/Apps/mon-projet` → `-home-moi-Apps-mon-projet`). Vérifier que le dossier
+Le `<workspace-encodé>` est le chemin absolu du projet où tout caractère autre qu'une lettre
+ou un chiffre (`/`, `_`, `.`, espace…) devient `-` (`/home/moi/Apps/mon_projet.ca` →
+`-home-moi-Apps-mon-projet-ca`). Vérifier que le dossier
 existe avant d'aller plus loin plutôt que de supposer l'encodage.
 
 ## Déroulé

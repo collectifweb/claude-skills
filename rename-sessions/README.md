@@ -2,7 +2,7 @@
 
 Renames every Claude Code session in a workspace so the `/resume` list can be read at a glance: a status emoji, then three to six words.
 
-The problem it solves is small and constant. Auto-generated session titles are long, English, and phrased alike — "Review Termageddon assistant security changes", "Review Axeptio API integration for security", "Review security vulnerabilities in dashboard changes". Three of those and the list stops carrying information. After a few months you scroll past fifty of them looking for the session where you fixed that one thing.
+The problem it solves is small and constant. Auto-generated session titles are long, English, and phrased alike — "Review Quillo assistant security changes", "Review Nimbus API integration for security", "Review security vulnerabilities in dashboard changes". Three of those and the list stops carrying information. After a few months you scroll past fifty of them looking for the session where you fixed that one thing.
 
 ## What a renamed list looks like
 
@@ -10,8 +10,8 @@ The problem it solves is small and constant. Auto-generated session titles are l
 ✅ Refonte de l'éditeur de rapport
 ✅ Optimize web crawler
 ✅ Page de garde PDF + sommaire
-⏳ Mode Axeptio (M3/M4 restants)
-🔒 /security-review - API Axeptio
+⏳ Mode Nimbus (M3/M4 restants)
+🔒 /security-review - API Nimbus
 🔒 /security-review - SSRF url-guard
 🔒 /security-review - étape Mode (2)
 ```
