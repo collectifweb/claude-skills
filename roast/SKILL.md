@@ -5,7 +5,6 @@ description: >
   valider une idée business, réunir le conseil, obtenir un deuxième avis brutal avant de se lancer,
   ou tape /roast. Réunit un conseil de 5 personas qui attaquent l'idée sous tous les angles, puis
   un Juge rend un seul verdict FONCE / REMANIE / ABANDONNE avec le test le moins cher pour la dé-risquer.
-argument-hint: "[l'idée à faire tester]"
 ---
 
 # Roast — le conseil qui teste ton idée à mort
@@ -20,10 +19,10 @@ Le conseil est adversarial par choix. Aucun persona n'a le droit de nuancer ou d
 
 ## Étape 1 : le brief
 
-Si `$ARGUMENTS` contient l'idée, pars de là. Ensuite, pose à l'utilisateur une série serrée de questions pour que le conseil ait du vrai contexte. Ne demande que ce qui n'a pas déjà été donné. Maximum 3-4 questions, en un seul bloc :
+Si l'idée est donnée avec la commande (`$ARGUMENTS` dans Claude Code), pars de là. Ensuite, pose à l'utilisateur une série serrée de questions pour que le conseil ait du vrai contexte. Ne demande que ce qui n'a pas déjà été donné. Maximum 3-4 questions, en un seul bloc :
 
 1. **L'idée** en une ou deux phrases (ce que c'est, ce que ça fait).
-2. **Pour qui** c'est et **comment ça fait de l'argent** (l'acheteur + le prix / le modèle).
+2. **Pour qui** c'est et **ce que ça rapporte** : l'acheteur et le prix, ou, pour un projet interne ou une fonctionnalité, qui s'en sert et ce que ça fait gagner.
 3. **Ton avantage** : compétences, audience ou actifs que tu as déjà.
 4. **Les contraintes** : budget, échéance, à quelle vitesse tu as besoin du premier dollar.
 
@@ -33,7 +32,7 @@ Si l'utilisateur dit « lance-le » ou t'en a déjà donné assez, saute les que
 
 ## Étape 2 : réunir le conseil (5 agents, en parallèle)
 
-Lance **les cinq agents en parallèle dans un seul message** (un appel d'agent chacun, `subagent_type: general-purpose`). Colle le même brief dans chacun, puis donne à chaque agent son mandat de persona ci-dessous.
+Lance **les cinq sous-agents en parallèle, en une seule fois** (un sous-agent chacun ; dans Claude Code, `subagent_type: general-purpose`). Colle le même brief dans chacun, puis donne à chaque agent son mandat de persona ci-dessous.
 
 Chaque membre doit renvoyer : une prise de position en une ligne, ses 3 à 5 points les plus tranchants, la seule chose que l'utilisateur doit absolument entendre, et une note sur 10 sur sa propre dimension (1 = passe ton chemin, 10 = évidence).
 
@@ -47,7 +46,7 @@ Chaque membre doit renvoyer : une prise de position en une ligne, ses 3 à 5 poi
 > Tu es le Logicien d'un conseil qui évalue une idée. AUCUNE recherche, AUCUN web. Raisonne uniquement à partir des premiers principes : le mécanisme de base tient-il debout, les incitations s'alignent-elles, la logique de fond est-elle saine, est-ce que les chiffres tiennent en théorie ? Ramène tout aux fondamentaux et dis-nous si ça tient. LE BRIEF : [brief]
 
 **4. Le Chercheur (preuves)**
-> Tu es le Chercheur d'un conseil qui évalue une idée. Utilise la recherche web. Ramène des preuves du monde réel : qui sont les concurrents existants, la taille du marché ou les signaux de demande, ce que facturent les produits comparables, si c'est validé ou contredit par ce qui existe déjà. Cite tes sources. Le monde réel dit oui ou non ? LE BRIEF : [brief]
+> Tu es le Chercheur d'un conseil qui évalue une idée. Utilise la recherche web. Ramène des preuves du monde réel : qui sont les concurrents existants, la taille du marché ou les signaux de demande, ce que facturent les produits comparables, si c'est validé ou contredit par ce qui existe déjà. Cite tes sources. Si tu n'as pas accès au web, dis-le et marque comme tel tout ce qui vient de ta seule connaissance. Le monde réel dit oui ou non ? LE BRIEF : [brief]
 
 **5. Le Client (voix du client)**
 > Tu es le Client d'un conseil qui évalue une idée. Joue exactement le client cible décrit dans le brief. Réagis comme lui, à la première personne. Est-ce que tu paierais vraiment pour ça ? C'est quoi ta vraie objection ? Qu'est-ce qui te ferait choisir un concurrent, ou ne rien faire du tout à la place ? Quel prix te semble juste, et qu'est-ce qui te ferait dire oui aujourd'hui ? Sois le client honnête et un peu sceptique, pas un supporteur. LE BRIEF : [brief]
@@ -56,7 +55,7 @@ Chaque membre doit renvoyer : une prise de position en une ligne, ses 3 à 5 poi
 
 Une fois les cinq réponses revenues, TOI tu joues le Juge. Lis les conclusions de chaque membre, pèse-les, et synthétise un seul verdict tranchant. Ne fais pas juste la moyenne des notes. Nomme la vraie tension entre les personas et tranche-la.
 
-Intègre toi-même la **lecture financière** : prix approximatif, délai réaliste avant le premier dollar, et capacité réelle de l'utilisateur à livrer ça vite vu l'avantage qu'il a décrit.
+Intègre toi-même la **lecture financière** : prix approximatif, délai réaliste avant le premier dollar, et capacité réelle de l'utilisateur à livrer ça vite vu l'avantage qu'il a décrit. Pour un projet interne, remplace le prix et le premier dollar par le coût en temps et le gain attendu.
 
 Rends le verdict exactement dans cette forme :
 
