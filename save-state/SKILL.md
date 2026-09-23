@@ -20,7 +20,9 @@ description: Use before a manual /compact or at the end of a session — "save-s
 - **Default and `--end`: read `references/workflow.md` in this skill's folder now, and follow it.** It holds the full procedure.
 - **`--quick`: do not read anything else.** The procedure is below, complete.
 
-This skill **cannot run `/compact`**: slash commands are executed by the Claude Code CLI, not by the model, and the `PreCompact` hook fires during a compaction without being able to start one. Never claim the compaction was triggered.
+This skill **cannot run `/compact`**: slash commands are executed by the CLI (Claude Code or Codex), not by the model, and the `PreCompact` hook fires during a compaction without being able to start one. Never claim the compaction was triggered.
+
+**In Codex CLI**: the state file and Block B work the same. Codex has a `/compact` command, but whether it takes free-form instructions like Claude Code's has not been verified: give Block A as written and say so in one line; Block B re-anchors the session either way. Skip memory writes: Codex manages its own memory.
 
 ## Rules for every mode
 
@@ -78,6 +80,6 @@ Only a few thousand tokens are left. Every tool call counts, and auto-compaction
 
    **Block B** — last thing in the turn
    ```
-   <task in one line>. Read /<absolute path>/.claude/session-state.md first. Update the docs under "Docs to update", then: <next step>.
+   <task in one line>. Read <absolute project path>/.claude/session-state.md first. Update the docs under "Docs to update", then: <next step>.
    ```
    If "Docs to update" is "none", drop that sentence.

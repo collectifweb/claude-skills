@@ -13,7 +13,7 @@ The two modes share Phases 1 to 5. They differ on the depth of the doc pass (Pha
 
 ## Context budget
 
-**Default mode runs at ~300k tokens.** Burning 30k tokens to prepare a compaction defeats the purpose.
+**Default mode runs when the context window is nearly full.** Burning a large share of what's left to prepare a compaction defeats the purpose.
 
 - No full-repo exploration. No `git log`, no broad globs, no reading files you have no intention of editing.
 - Locating is cheap, reading is not. `ls`, `find docs -name '*.md'` and a targeted `grep` for a stale claim are fine. Reading a 600-line doc to confirm it's unaffected is not.
@@ -49,10 +49,10 @@ This list is the input to everything that follows. A file only gets touched in P
 
 For each of the four buckets, list the candidate files with a one-line reason. A file is a candidate when Phase 1 plausibly contradicts it, or when it describes the area the session touched.
 
-**Bucket 1 — Project docs.** `README.md`, `CLAUDE.md`, `docs/*.md`, package-level READMEs. Locate them cheaply:
+**Bucket 1 — Project docs.** `README.md`, `CLAUDE.md`, `AGENTS.md`, `docs/*.md`, package-level READMEs. Locate them cheaply:
 
 ```bash
-ls README.md CLAUDE.md 2>/dev/null
+ls README.md CLAUDE.md AGENTS.md 2>/dev/null
 find docs -type f -name "*.md" 2>/dev/null | sort
 ```
 
@@ -62,7 +62,7 @@ Then filter against Phase 1. `CLAUDE.md` deserves a second look — it's written
 
 **Bucket 3 — The state file.** `.claude/session-state.md`. Always a target, every run. Phase 4 handles it. If the previous file has a "Docs to update" section (left by a `--quick` run), every path listed there becomes a Bucket 1 candidate.
 
-**Bucket 4 — Claude memory.** `~/.claude/projects/<project-slug>/memory/`. Only if a **durable** fact emerged — a user preference, a constraint, an external reference that will still matter in three weeks. Not session narrative, not anything the repo already records. Follow the memory rules in the system prompt: one fact per file, update an existing file rather than duplicating it, add the `MEMORY.md` pointer line.
+**Bucket 4 — Agent memory** (Claude Code: `~/.claude/projects/<project-slug>/memory/`; skipped in Codex). Only if a **durable** fact emerged — a user preference, a constraint, an external reference that will still matter in three weeks. Not session narrative, not anything the repo already records. Follow the memory rules in the system prompt: one fact per file, update an existing file rather than duplicating it, add the `MEMORY.md` pointer line.
 
 Output the inventory as a numbered checklist. Include the files you considered and ruled out, with the reason — that's what stops a stale doc from hiding behind "I assumed it was fine".
 
@@ -147,7 +147,7 @@ End the turn in the language the user is working in.
 **Block B — the prompt to send right after.** Short by design: the compacted session keeps its summary, so this only needs to re-anchor it.
 
 ```
-<one line naming the task>. Read /<absolute path>/.claude/session-state.md first — it holds the exact state at the moment of compaction. Then: <next step>.
+<one line naming the task>. Read <absolute project path>/.claude/session-state.md first — it holds the exact state at the moment of compaction. Then: <next step>.
 ```
 
 ### `--end` — report, then one resume line
@@ -159,14 +159,14 @@ First, the report: every Phase 2 line with its ✓ or ✗ outcome, then the git 
 Then, last, the line to paste into the next session:
 
 ```
-<one line naming the project and the task>. Read /<absolute path>/.claude/session-state.md first — it holds where the last session stopped. Then: <next step>.
+<one line naming the project and the task>. Read <absolute project path>/.claude/session-state.md first — it holds where the last session stopped. Then: <next step>.
 ```
 
 ## Anti-patterns
 
 - Turning `session-state.md` into a session narrative. It's state: current task, next step, decisions, traps. Not a story.
 - Updating a doc "while you're in there" for something this session didn't change.
-- Reading the whole repo to be safe — in default mode, at 300k tokens, that *is* the risk.
+- Reading the whole repo to be safe — in default mode, with the context nearly full, that *is* the risk.
 - Skipping the state file because the docs got updated. Docs don't hold the next step.
 - Saving session narrative into Claude memory. Memory holds durable facts, not what happened today.
 - Handing a `/compact` block to a `--end` run.

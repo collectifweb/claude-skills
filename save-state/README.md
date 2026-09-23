@@ -6,7 +6,7 @@ The mental model: **compaction is a lossy save.** Right now the session knows th
 
 ## The problem it solves
 
-You hit 300k tokens, you compact, and the next turn starts from files that describe a version of the project that stopped being true three hours ago. The README documents the old API. `tasks/todo.md` shows items you already shipped. Nothing anywhere says what you were about to do next.
+Your context fills up, you compact, and the next turn starts from files that describe a version of the project that stopped being true three hours ago. The README documents the old API. `tasks/todo.md` shows items you already shipped. Nothing anywhere says what you were about to do next.
 
 save-state closes that gap in the one window where it can be closed: while the session still remembers.
 
