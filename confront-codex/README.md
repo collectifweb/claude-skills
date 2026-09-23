@@ -34,10 +34,12 @@ Capped at 5 rounds. If consensus isn't reached, Claude surfaces the sticking poi
 
 ## Requirements
 
-- **Claude Code** — this skill runs inside a Claude Code session
-- **Codex CLI** — install from https://developers.openai.com/codex/cli (the VSCode extension alone is not enough)
+- **Claude Code** and **Codex CLI** — install Codex from https://developers.openai.com/codex/cli (the VSCode extension alone is not enough)
+- `timeout` (GNU coreutils; `gtimeout` on macOS via Homebrew)
 
-The skill defaults to `gpt-5.5` with `model_reasoning_effort="xhigh"`. Mention a different model or reasoning level in your trigger if you want to override.
+The skill works from either side. Run from Claude Code, the second opinion is Codex; run from Codex CLI, the second opinion is Claude (`claude -p`). The second agent runs read-only and its final answer is saved as the round file, so it can never modify your project.
+
+With Codex as the second opinion, the default model is `gpt-5.6-sol` with `model_reasoning_effort="xhigh"`. If that model is refused, it falls back to `gpt-5.6-terra`, then `gpt-5.6-luna` — never to a more expensive model on its own. Note that Codex signed in with a ChatGPT account refuses some listed models (e.g. `gpt-6-sol`); the skill quotes the error and offers the fallback.
 
 ## Installation
 
@@ -81,6 +83,13 @@ Copy-Item -Recurse "$env:TEMP\claude-skills\confront-codex" ".claude\skills\conf
 
 > **Windows note** — Symbolic links require an Administrator PowerShell session or **Developer Mode** enabled (Settings → Privacy & Security → For developers). Otherwise, replace `New-Item -ItemType SymbolicLink` with `Copy-Item -Recurse` — you'll just lose the automatic sync on `git pull`.
 
+To make it available in Codex CLI as well:
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/claude-skills/confront-codex" ~/.codex/skills/confront-codex
+```
+
 Verify by opening a Claude Code session and typing `/help` — `confront-codex` should appear in the list.
 
 ## Usage
@@ -116,13 +125,15 @@ docs/
 
 The `docs/plan-{slug}.md` is the deliverable — self-contained, clean, ready to execute. The archive is the reasoning trail.
 
-## Override the Codex model
+## Choose the model
 
-Mention it in your trigger:
+Pass `--model`, or name the model in your trigger. Approximate spellings are fine: the skill reads the list of models your Codex install knows (`~/.codex/models_cache.json`), picks the matching one and announces it, or asks when two models match.
 
 | You say | Effect |
 |---|---|
-| "confront-codex with gpt-5.4" | uses `gpt-5.4` instead of `gpt-5.5` |
+| `/confront-codex --model 5.6terra` | uses `gpt-5.6-terra` |
+| "confront-codex en 5.6 sol" | uses `gpt-5.6-sol` |
+| "confront-codex with luna" | asks: `gpt-6-luna` or `gpt-5.6-luna`? |
 | "without xhigh" | drops `model_reasoning_effort=xhigh` |
 | "with reasoning high" | uses `model_reasoning_effort=high` (faster) |
 

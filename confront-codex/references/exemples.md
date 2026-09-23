@@ -1,6 +1,6 @@
 # Exemples — Calibrer le ton du débat
 
-Ce fichier illustre ce qu'est un bon débat technique vs un mauvais débat. À consulter si tu te demandes comment formuler un point ou comment réagir à une critique de Codex.
+Ce fichier illustre ce qu'est un bon débat technique vs un mauvais débat. À consulter si tu te demandes comment formuler un point ou comment réagir à une critique. Les exemples montrent Claude face à Codex ; quand le skill tourne dans Codex, les rôles s'inversent.
 
 ## Bon débat : honnête, technique, sans ego
 
