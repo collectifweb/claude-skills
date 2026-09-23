@@ -184,12 +184,15 @@ Pour chaque candidat, attribue **une seule** étiquette parmi : `KEEP`, `MOVE`, 
 - Document daté avec timestamp > 90 jours, non référencé, mais avec valeur historique évidente (décisions techniques, RCAs)
 - Plan abandonné explicitement (mention « scrapped », « abandonné », « pas retenu »)
 
-**DELETE** (proposition, jamais auto) si **tous** :
+**DELETE** (proposition, jamais auto) si les deux conditions obligatoires sont réunies :
 - Aucune référence trouvée nulle part
+- Pas modifié depuis > 30 jours
+
+… **et** au moins un signal de fichier jetable :
 - Nom évoque le scratch : `tmp-*`, `wip-*`, `scratch-*`, `test-output-*`, `dump-*`, `*.bak`, `*.old`
 - Contenu trivial ou redondant avec un fichier KEEP
-- Pas modifié depuis > 30 jours
 - L'auteur reconnaît dans le contenu qu'il est jetable (« delete me », « temp », « to remove »)
+- Ancienne config remplacée, dont on a vérifié qu'elle n'est plus chargée
 
 **ASK** dans **tous les autres cas ambigus** :
 - Doublons potentiels (`feature-x.md` + `feature-x-v2.md` + `feature-x-old.md`)
@@ -212,7 +215,7 @@ Pour chaque candidat, attribue **une seule** étiquette parmi : `KEEP`, `MOVE`, 
 | Scripts utilitaires permanents | `scripts/` |
 | Scripts one-off historiques | `scripts/archive/` ou suppression si trivial |
 | Configs de tools (eslint, prettier) | racine (convention de l'outil) |
-| Anciennes configs remplacées | DELETE (vérifier qu'elles ne sont plus chargées) |
+| Anciennes configs remplacées | DELETE si plus chargées (cf. critères DELETE) |
 | Rapports tidy (ce skill) | `docs/tidy/report-AAAA-MM-JJ.md` |
 
 **Important** : si le projet a déjà une convention différente mais cohérente (ex : `documentation/` au lieu de `docs/`), respecte-la. Détecte ça à la Phase 1.
@@ -248,7 +251,8 @@ Tout résultat = alerte critique. Recommander :
 # Patterns à grep (un par appel, plus lisible que des alternations)
 git grep -nE 'AKIA[0-9A-Z]{16}'                       # AWS Access Key
 git grep -nE 'sk-ant-[A-Za-z0-9_-]{20,}'              # Anthropic
-git grep -nE 'sk-[A-Za-z0-9]{40,}'                    # OpenAI
+git grep -nE 'sk-(proj|svcacct|admin)-[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{40,}'  # OpenAI (clés projet + anciennes)
+git grep -nE '(sk|rk)_live_[A-Za-z0-9]{20,}'          # Stripe (clés live)
 git grep -nE 'ghp_[A-Za-z0-9]{36}'                    # GitHub PAT
 git grep -nE 'github_pat_[A-Za-z0-9_]{82}'            # GitHub fine-grained
 git grep -nE 'xox[baprs]-[A-Za-z0-9-]{10,}'           # Slack
@@ -295,123 +299,7 @@ Le skill fait un scan **best-effort**, pas un audit professionnel. Pour les proj
 
 Crée `docs/tidy/` si absent, puis écris `docs/tidy/report-AAAA-MM-JJ.md` (utiliser la date du jour). Si un rapport du jour existe déjà, suffixe avec `-2`, `-3`, etc.
 
-Structure stricte :
-
-```markdown
-# Tidy report — <date longue>
-
-**Repo** : `<nom>`
-**Branche** : `<branche>`
-**Mode** : default | --deep
-**Fichiers analysés** : <n>
-**Propositions** : <X déplacements, Y archivages, Z suppressions, W alertes sécu, Q questions>
-
----
-
-## 🗂️ Réorganisation (déplacements)
-
-> Exécutés via `git mv`. Réversible avec `git mv` inverse.
-
-### `<chemin/source.md>` → `<chemin/cible.md>`
-
-**Pourquoi** : <raison concise, 1-2 phrases>
-**Références à mettre à jour** : <liste de fichiers qui pointent vers l'ancien chemin, ou « aucune »>
-
-```bash
-git mv "<source>" "<cible>"
-```
-
-<répéter pour chaque déplacement>
-
----
-
-## 📦 Archivage
-
-> Déplacement vers `docs/archives/<topic>/`. Le fichier reste lisible, on déclare juste qu'il n'est plus actif.
-
-### `<chemin/source.md>` → `docs/archives/<topic>/<nom>.md`
-
-**Pourquoi** : <raison : feature livrée, débat clos, plan abandonné…>
-**Preuves** :
-- <commit sha qui livre la feature : « feat(x): … »>
-- <ou : section du code qui implémente la décision>
-
-```bash
-mkdir -p "docs/archives/<topic>"
-git mv "<source>" "docs/archives/<topic>/<nom>.md"
-```
-
-<répéter>
-
----
-
-## 🗑️ Suppressions proposées
-
-> ⚠️ Action irréversible (récupérable seulement via `git revert` ou `git reflog`).
-> Chaque suppression demandera une confirmation explicite.
-
-### `<chemin/file>`
-
-**Pourquoi** : <raison>
-**Vérifications effectuées** :
-- Aucune référence trouvée : `git grep "<basename>"` → 0 résultat
-- Dernier commit : <date>
-- Contenu : <résumé en une ligne>
-
-```bash
-git rm "<file>"
-```
-
-<répéter>
-
----
-
-## 🔐 Sécurité
-
-### CRITIQUE — <titre>
-
-**Fichier** : `<path>:<ligne>`
-**Type** : <AWS key | Anthropic key | …>
-**Dans l'historique git** : oui (commit `<sha>`, il y a <durée>) / non
-**Action recommandée** :
-1. <…>
-2. <…>
-
-<répéter pour chaque alerte, ordonnées par gravité>
-
----
-
-## ❓ Questions en suspens
-
-Décisions que je n'ai pas su trancher seul. Réponds dans la session, ce ne sera pas exécuté tant que tu ne valides pas.
-
-### Q1 — `<file>`
-
-**Situation** : <description neutre>
-**Hypothèses** :
-- (a) Garder tel quel — <conséquence>
-- (b) Déplacer vers `<x>` — <conséquence>
-- (c) Archiver — <conséquence>
-- (d) Supprimer — <conséquence>
-
-**Ma recommandation** : <a/b/c/d> parce que <raison>
-
-<répéter>
-
----
-
-## Plan d'exécution
-
-Le skill va te proposer chaque catégorie séquentiellement :
-
-1. ✅ Réorganisation (sûre, réversible facilement)
-2. 📦 Archivage (sûre, réversible facilement)
-3. 🗑️ Suppressions (irréversible — confirmation supplémentaire)
-4. 🔐 Sécurité (action par action)
-5. ❓ Questions (réponses dans la conversation)
-
-Tu peux à chaque étape : **GO** (tout valider), **EDIT** (modifier la liste), **SKIP** (passer cette catégorie), **STOP** (arrêter complètement).
-```
+Structure stricte : suivre le modèle de `references/report-template.md` (dans le dossier de ce skill), à lire au moment d'écrire le rapport.
 
 **Important** : ce rapport doit être **lisible seul**. Un humain ou une nouvelle session Claude qui l'ouvre dans 3 mois doit comprendre quoi a été proposé et pourquoi, même sans contexte.
 
@@ -435,7 +323,7 @@ Puis pour **chaque catégorie**, dans l'ordre : Réorganisation → Archivage �
 GO pour exécuter tout, EDIT pour modifier, SKIP pour passer, STOP pour arrêter.
 ```
 
-Si **GO** : exécuter les `git mv` un par un, vérifier le résultat, puis **mettre à jour les références** dans les autres fichiers (liens markdown brisés). Utilise `Edit` pour patcher chaque référence trouvée à la Phase 1.
+Si **GO** : exécuter les `git mv` un par un, vérifier le résultat, puis **mettre à jour les références** dans les autres fichiers (liens markdown brisés). Patcher chaque référence trouvée à la Phase 1 avec ton outil d'édition.
 
 Si **EDIT** : demander quels items retirer ou modifier (« retire le 2, change la cible du 3 vers X »), reformer la liste, redemander GO.
 
@@ -483,11 +371,7 @@ Après exécution complète :
 
 Pour chaque fichier déplacé, scanner les références qui pointaient vers l'ancien chemin (déjà identifiées à la Phase 1) et les patcher :
 
-```bash
-git grep -l "<ancien-chemin>" | while read f; do
-  # Utilise Edit tool pour remplacer
-done
-```
+Lister les fichiers concernés avec `git grep -l "<ancien-chemin>"`, puis corriger chaque référence avec ton outil d'édition (pas de `sed` global : un chemin peut apparaître dans un contexte qui ne doit pas changer).
 
 **6.2 Mettre à jour CLAUDE.md et README si la structure a bougé**
 
@@ -577,7 +461,7 @@ Si le framework n'est pas reconnu, être prudent et **toujours ASK**.
 8. **En cas de doute = ASK** — jamais une décision unilatérale sur du contenu utilisateur
 9. **Un rapport par exécution** — même si l'utilisateur lance `/tidy` deux fois dans la journée, suffixer (`-2`, `-3`)
 10. **Ne pas commit automatiquement** — l'utilisateur garde la main sur le commit final
-11. **Limites de batch** — si > 200 candidats, demander à l'utilisateur de restreindre le périmètre (option `--scope=docs` ou `--scope=root` à proposer) plutôt que de produire un rapport ingérable
+11. **Limites de batch** — si > 200 candidats, demander à l'utilisateur de restreindre le périmètre (par exemple `docs/` seul, ou la racine seule) plutôt que de produire un rapport ingérable
 
 ## Sortie attendue
 
@@ -585,7 +469,7 @@ Si le framework n'est pas reconnu, être prudent et **toujours ASK**.
 - Un rapport `docs/tidy/report-AAAA-MM-JJ.md` complet et historiquement préservé
 - Une structure de projet plus propre et conforme aux conventions
 - Un `docs/archives/` qui contient l'histoire technique du projet (pas un cimetière, une bibliothèque)
-- Zero secret exposé connu
+- Aucun secret exposé détecté par le scan (qui reste best-effort)
 - Un commit prêt à pousser (proposé, pas exécuté)
 - Une nouvelle session Claude qui ouvre le projet trouve immédiatement la doc pertinente
 
