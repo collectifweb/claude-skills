@@ -28,7 +28,7 @@ Périmètre : docs (`*.md`, `*.txt`), scripts orphelins (`*.sh`, `*.py` à la ra
 
 1. **Inventaire** — cartographie complète du repo, lecture de `CLAUDE.md` / `README.md` / `AGENTS.md`, catalogue de tous les candidats, métadonnées git par fichier, carte des références
 2. **Classification** — chaque candidat reçoit une étiquette parmi `KEEP / MOVE / ARCHIVE / DELETE / ASK` selon des heuristiques explicites (référence ailleurs, âge, signaux de contenu, doublons)
-3. **Audit sécurité** — scan de patterns connus (AWS, Anthropic, OpenAI, GitHub, JWT, private keys, URLs avec credentials), vérification des `.env` trackés, audit `.gitignore`
+3. **Audit sécurité** — scan de patterns connus (AWS, Anthropic, OpenAI, Stripe, GitHub, JWT, private keys, URLs avec credentials), vérification des `.env` trackés, audit `.gitignore`
 4. **Rapport** — fichier markdown structuré dans `docs/tidy/report-AAAA-MM-JJ.md`
 5. **Exécution séquentielle** — catégorie par catégorie avec approbation : `GO` / `EDIT` / `SKIP` / `STOP`
 6. **Méta-mise à jour** — patch des références cassées, suggestion de mise à jour `CLAUDE.md`, commit proposé

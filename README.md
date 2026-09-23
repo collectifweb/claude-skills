@@ -1,19 +1,19 @@
 # claude-skills
 
-A collection of Claude Code skills for power users. Each skill is a self-contained folder you can install individually.
+A collection of skills for power users of **Claude Code** and **Codex CLI**. Each skill is a self-contained folder you can install individually. All of them run in Claude Code; all but `rename-sessions` also run in Codex CLI (same folder, linked into `~/.codex/skills`).
 
 ## Skills at a glance
 
-| Skill | In one sentence |
-| --- | --- |
-| [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. |
-| [confront-codex](#confront-codex) | Runs an iterative debate between Claude and Codex on a technical plan until they converge — before a single line of code is written. |
-| [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. `quick` variant: multi-day, multi-project overview with no hours. |
-| [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh Claude session finds its bearings fast. |
-| [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
-| [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
-| [save-state](#save-state) | Writes the session's truth to disk before a `/compact` (or at session end), then hands you the `/compact` line and the prompt to send right after. `--quick` and `--end` variants. |
-| [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. |
+| Skill | In one sentence | Codex CLI |
+| --- | --- | --- |
+| [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. | yes |
+| [confront-codex](#confront-codex) | Runs an iterative debate on a technical plan between the agent you're in and a second, independent one (Codex from Claude, Claude from Codex) until they converge — before a single line of code is written. | yes |
+| [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. `quick` variant: multi-day, multi-project overview with no hours. | yes |
+| [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh agent session finds its bearings fast. | yes |
+| [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. | yes |
+| [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. | yes |
+| [save-state](#save-state) | Writes the session's truth to disk before a `/compact` (or at session end), then hands you the `/compact` line and the prompt to send right after. `--quick` and `--end` variants. | yes |
+| [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. | no |
 
 ---
 
@@ -21,7 +21,7 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 
 Rewrites French text to remove LLM writing tics. Detects and corrects 43 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three, AI chat residue, phantom authority…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
 
-**Requires:** Claude Code
+**Requires:** Claude Code or Codex CLI
 
 **Linux / macOS**
 
@@ -41,7 +41,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\humanize"
 
 Validates a technical plan by running an iterative debate between Claude and Codex before any implementation starts. Claude proposes, Codex critiques, Claude responds — until both converge or surface a real disagreement for you to resolve.
 
-**Requires:** Claude Code, Codex CLI
+**Requires:** Claude Code and Codex CLI (either one can host the debate)
 
 **Linux / macOS**
 
@@ -63,7 +63,7 @@ Generates a ready-to-paste time log for a client project day. Splits the day int
 
 A `quick` variant (`/timelog quick`, `/timelog quick 7`, `/timelog quick YYYY-MM-DD..YYYY-MM-DD`) scans all Claude Code and Codex CLI sessions on the machine and prints a per-day overview of which projects you touched — no hours, no blocks.
 
-**Requires:** Claude Code, git
+**Requires:** Claude Code or Codex CLI, git, Python 3
 
 **Linux / macOS**
 
@@ -83,7 +83,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog" 
 
 Reorganizes documentation, archives obsolete plans, removes scratch files, and audits exposed secrets so Claude Code can navigate the project in a fresh session without getting lost. Produces a justified markdown report in `docs/tidy/`, then executes changes category by category with your approval at each step. `/tidy --deep` extends analysis to application code (orphan modules) — always proposed as questions, never auto-deleted.
 
-**Requires:** Claude Code, git
+**Requires:** Claude Code or Codex CLI, git
 
 **Linux / macOS**
 
@@ -103,7 +103,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\tidy" -Ta
 
 Reconciles every documentation claim against the actual code instead of just summarizing the session. Builds a checklist of every doc file (README, CLAUDE.md, `docs/**`), reads each one in full, cross-checks every claim, and produces a final audit report — no silent skips. Built for end-of-session wrap-up so the next session starts on accurate docs.
 
-**Requires:** Claude Code
+**Requires:** Claude Code or Codex CLI
 
 **Linux / macOS**
 
@@ -123,7 +123,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\doc-sync"
 
 Convenes a five-persona council to pressure-test an idea before you build it. Five agents run in parallel — Contrarian, Expansionist, Logician, Researcher, Buyer — each locked in character and forbidden to hedge, then a Judge weighs the tension and returns one verdict (FONCE / REMANIE / ABANDONNE) with the cheapest 48-hour test to de-risk the riskiest assumption. Written in French. Works on business ideas and on product, project, or feature calls.
 
-**Requires:** Claude Code (the Researcher persona uses web search)
+**Requires:** Claude Code or Codex CLI (the Researcher persona uses web search)
 
 **Linux / macOS**
 
@@ -143,7 +143,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 
 Run before a manual `/compact`. Compaction is a lossy save: the session knows the current task, the reasons behind the last decisions, the half-finished file and the trap you hit an hour ago — the files know none of it. save-state lists what the session changed, updates only the docs and task files those changes made false, writes `.claude/session-state.md` (rewritten in full each run, gitignored), reports the uncommitted work, then ends with two blocks to paste: `/compact` carrying instructions written for your actual task, then the short prompt that re-anchors the compacted session. `--quick` is for when auto-compaction is minutes away: the state file is written first and stale docs are listed for after the compaction instead of fixed. `--end` closes the session: every affected doc read in full, no `/compact` block, one line to paste into the next session. `--commit` combines with any mode and makes the commit; it never pushes. Scoped by design, because it runs when context is nearly full — for the exhaustive pass, use `/doc-sync`.
 
-**Requires:** Claude Code (git optional)
+**Requires:** Claude Code or Codex CLI (git optional)
 
 **Linux / macOS**
 
@@ -189,6 +189,12 @@ mkdir -p ~/.claude/skills
 for skill in humanize confront-codex timelog tidy doc-sync roast save-state rename-sessions; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
+
+# Codex CLI (every skill except rename-sessions)
+mkdir -p ~/.codex/skills
+for skill in humanize confront-codex timelog tidy doc-sync roast save-state; do
+  ln -s "$(pwd)/claude-skills/$skill" ~/.codex/skills/$skill
+done
 ```
 
 **Windows** (PowerShell, admin / Developer Mode)
@@ -198,6 +204,12 @@ git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
 foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','rename-sessions') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
+}
+
+# Codex CLI (every skill except rename-sessions)
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state') {
+  New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
 
