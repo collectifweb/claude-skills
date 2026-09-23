@@ -12,12 +12,15 @@ If you use both Claude Code and Codex throughout the day, the skill fuses both t
 
 ## How it works
 
-1. Fetches all git commits for the target date authored by the current git user
-2. Finds Claude Code session files for this project directory (in `~/.claude/projects/<encoded-path>/`)
-3. Finds Codex CLI session files for the target date (in `~/.codex/sessions/YYYY/MM/DD/`) and filters them by `cwd` matching the current project
-4. Extracts user message timestamps and content from all session JSONL files (Claude + Codex), filtering out system/AGENTS injected messages on the Codex side
-5. Merges all events into a timeline and splits into blocks at 90-minute gaps
-6. Summarizes each block in the user's style — direct, French, no em dashes, client-readable
+The mechanical part is done by a bundled, read-only script, `scripts/timelog.py`, so it behaves the same in both agents:
+
+1. Fetches the target date's git commits (all branches) authored by the current git user, with the files each one touched
+2. Finds the Claude Code (`~/.claude/projects/`) and Codex CLI (`~/.codex/sessions/`) sessions whose recorded working directory is the current project or one of its subfolders
+3. Filters on the timestamps inside each session, not on file dates, so a session resumed the next day counts for the right day
+4. Keeps only what you actually typed or pasted (plus slash commands), dropping tool output, notifications and injected instructions
+5. Converts everything to the machine's local time, merges it into one timeline and splits it into blocks at 90-minute gaps, with durations and a day total
+
+The agent then summarizes each block in the user's style — direct, French, no em dashes, client-readable. AI help is written as "avec assistance d'IA", never by tool name.
 
 Output is printed directly in the chat, ready to copy-paste into Toggl. No files created.
 
@@ -25,7 +28,7 @@ Output is printed directly in the chat, ready to copy-paste into Toggl. No files
 
 - **Claude Code** *or* **Codex CLI** — this skill runs inside either agent
 - **git** — the project must be a git repository
-- **jq** or **Python 3** — for parsing session JSONL files (usually pre-installed)
+- **Python 3** — runs the bundled script, standard library only (tested with 3.12)
 
 ## Installation
 
@@ -113,7 +116,7 @@ For a fast "which projects did I touch recently" answer — no hours, no time bl
 Unlike the default mode, quick mode does **not** need to be run from inside a project — it scans every Claude Code project directory (`~/.claude/projects/*`) and every Codex CLI session (`~/.codex/sessions/YYYY/MM/DD/*`) on the machine, groups by day, and prints project basenames.
 
 ```
-15 juil : ejardin.ca, ma-boutique-stripe
+15 juil : boutique-fleurs.ca, ma-boutique-stripe
 16 juil : ma-boutique-stripe
 18 juil : claude-skills, ma-boutique-stripe
 ```
@@ -121,9 +124,11 @@ Unlike the default mode, quick mode does **not** need to be run from inside a pr
 ## Output format
 
 ```
-9h-11h30 : task 1 - task 2 - task 3
+9h-11h30 (2h30) : task 1 - task 2 - task 3
 
-14h-16h45 : task 4 - task 5
+14h-16h45 (2h45) : task 4 - task 5
+
+Total journée : 5h15
 ```
 
 One block per line, blocks separated by a blank line. No markdown, no bullets, no em dashes. Style matches how a freelance dev would write their own time log.
@@ -131,7 +136,6 @@ One block per line, blocks separated by a blank line. No markdown, no bullets, n
 ## Notes
 
 - Must be run from the root of a client project (git repo). The current directory determines which project's activity is analyzed.
-- Codex sessions are stored by date (not by project), so filtering happens via the `cwd` field in each session's `session_meta` event. Only sessions launched from the current project directory (or a subdirectory) are counted.
 - If nothing was committed and no Claude Code / Codex session exists for the project on the target date, the skill says so plainly rather than inventing activity.
 - The skill writes its output to the chat only — it never creates or modifies project files.
 

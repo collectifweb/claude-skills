@@ -16,3 +16,6 @@ Thumbs.db
 
 # Session state (local, written by /save-state)
 .claude/session-state.md
+
+# Local task tracking
+tasks/
