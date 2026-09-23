@@ -1,11 +1,11 @@
 ---
 name: doc-sync
-description: Sync project docs (README.md, CLAUDE.md, docs/*.md) with actual code. Trigger /doc-sync, "update the docs", "sync documentation", "refresh docs", or end-of-session wrap-up.
+description: Sync project docs (README.md, CLAUDE.md, AGENTS.md, docs/*.md) with actual code. Trigger /doc-sync, "update the docs", "sync documentation", "refresh docs", "mets à jour la doc", "synchronise la documentation", or end-of-session wrap-up.
 ---
 
 # doc-sync
 
-Sync project documentation to match the actual code. Designed for end-of-session use in Claude Code, when context is approaching its limit and the user wants to start fresh next time with documentation that is 100% accurate.
+Sync project documentation to match the actual code. Designed for end-of-session use in Claude Code or Codex CLI, when context is approaching its limit and the user wants to start fresh next time with documentation that is 100% accurate.
 
 ## The core problem this skill solves
 
@@ -30,7 +30,7 @@ Build a complete list of every documentation file in the project. Do not rely on
 Run, from the project root:
 
 ```bash
-ls -la README.md CLAUDE.md 2>/dev/null
+ls -la README.md CLAUDE.md AGENTS.md 2>/dev/null
 find docs -type f -name "*.md" 2>/dev/null | sort
 find . -maxdepth 2 -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" 2>/dev/null | sort
 ```
@@ -95,7 +95,7 @@ These exist because the default failure mode of this task is shortcut-taking. Fo
 3. **If you find yourself wanting to stop early because "the important stuff is done"**, that's the exact moment to keep going. The remaining files are where staleness hides.
 4. **Read full files, not snippets.** A grep-and-patch approach misses context-dependent claims (e.g. a paragraph that's now contradicted by a later section).
 5. **Don't trust your memory of doc contents from earlier in the session.** Re-read.
-6. **CLAUDE.md gets the same scrutiny as everything else.** It's often the most outdated file because it's written for future sessions and easy to forget.
+6. **CLAUDE.md and AGENTS.md get the same scrutiny as everything else.** It's often the most outdated file because it's written for future sessions and easy to forget.
 7. **If the project has a `docs/` subdirectory with many files, do not collapse them into one mental category.** Each is a distinct file requiring distinct review.
 
 ## When the user has a partial scope in mind
