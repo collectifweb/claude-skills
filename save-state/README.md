@@ -59,7 +59,6 @@ Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 | | writes to disk | output | target |
 | --- | --- | --- | --- |
 | **save-state** | yes | short prompt + `/compact` line | a `/compact`, or the end of a session (`--end`) |
-| [session-handoff](../session-handoff/) | no | long self-contained handoff | a `/clear` |
 | [doc-sync](../doc-sync/) | yes (docs only) | audit report | doc accuracy, any time |
 
 ## Requirements

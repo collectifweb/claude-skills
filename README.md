@@ -12,7 +12,6 @@ A collection of Claude Code skills for power users. Each skill is a self-contain
 | [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh Claude session finds its bearings fast. |
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. |
-| [session-handoff](#session-handoff) | Ends a session with one paste-ready handoff message — copy it into a fresh session and the work resumes where it stopped. |
 | [save-state](#save-state) | Writes the session's truth to disk before a `/compact` (or at session end), then hands you the `/compact` line and the prompt to send right after. `--quick` and `--end` variants. |
 | [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. |
 
@@ -140,26 +139,6 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\roast" -T
 
 ---
 
-## session-handoff
-
-Ends a session with one fixed-shape **handoff message**, posted alone as the last message of the turn: decisions, shipped changes, key files, running state (background shell IDs, ports), verification, deferrals, open questions. Written for a cold reader — copy it, open a fresh session, paste, and the work resumes where it stopped. Nothing before it, nothing after it, so a copy grabs exactly what you need. It writes no files and edits no docs (that's `/doc-sync`'s job). Manual and non-blocking; ships one optional, non-blocking transcript-backup hook.
-
-**Requires:** Claude Code (git optional)
-
-**Linux / macOS**
-
-```bash
-ln -s "$(pwd)/claude-skills/session-handoff" ~/.claude/skills/session-handoff
-```
-
-**Windows** (PowerShell, admin / Developer Mode)
-
-```powershell
-New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\session-handoff" -Target "$PWD\claude-skills\session-handoff"
-```
-
----
-
 ## save-state
 
 Run before a manual `/compact`. Compaction is a lossy save: the session knows the current task, the reasons behind the last decisions, the half-finished file and the trap you hit an hour ago — the files know none of it. save-state lists what the session changed, updates only the docs and task files those changes made false, writes `.claude/session-state.md` (rewritten in full each run, gitignored), reports the uncommitted work, then ends with two blocks to paste: `/compact` carrying instructions written for your actual task, then the short prompt that re-anchors the compacted session. `--quick` is for when auto-compaction is minutes away: the state file is written first and stale docs are listed for after the compaction instead of fixed. `--end` closes the session: every affected doc read in full, no `/compact` block, one line to paste into the next session. `--commit` combines with any mode and makes the commit; it never pushes. Scoped by design, because it runs when context is nearly full — for the exhaustive pass, use `/doc-sync`.
@@ -207,7 +186,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\rename-se
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast session-handoff save-state rename-sessions; do
+for skill in humanize confront-codex timelog tidy doc-sync roast save-state rename-sessions; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 ```
@@ -217,7 +196,7 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','session-handoff','save-state') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','rename-sessions') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```
