@@ -18,6 +18,7 @@ from pathlib import Path
 
 GAP = timedelta(minutes=90)
 MAX_MSG_PER_SESSION = 50
+MAX_CHARS = 400  # longueur max d'un message affiché
 HOME = Path.home()
 CLAUDE_DIR = HOME / ".claude" / "projects"
 CODEX_DIR = Path(os.environ.get("CODEX_HOME", HOME / ".codex")) / "sessions"
@@ -184,7 +185,7 @@ def run_day(day, project):
         print(f"\nBLOC {i} : {hhmm(b[0][0])}-{hhmm(b[-1][0])} ({duration(span)})")
         for t, source, txt in b:
             if txt:
-                print(f"  [{source} {t:%H:%M}] {' '.join(txt.split())[:200]}")
+                print(f"  [{source} {t:%H:%M}] {' '.join(txt.split())[:MAX_CHARS]}")
     if len(blocks) > 1:
         print(f"\nTOTAL : {duration(total)}")
 

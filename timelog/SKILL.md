@@ -36,7 +36,7 @@ Le script est en lecture seule. Il :
 - lit les commits de l'utilisateur courant (`git config user.email`) sur toutes les branches, avec les fichiers touchés ;
 - retrouve les sessions Claude Code (`~/.claude/projects/`) et Codex CLI (`~/.codex/sessions/`) dont le dossier de travail est le projet courant ou un de ses sous-dossiers ;
 - filtre sur les horodatages internes, pas sur la date du fichier : une session commencée la veille et reprise le jour cible compte pour ses messages du jour cible ;
-- ne garde que ce que l'utilisateur a réellement tapé ou collé (pas les retours d'outils, notifications, instructions injectées), plus les commandes lancées (`/tidy`…), avec au plus 50 messages par session ;
+- ne garde que ce que l'utilisateur a réellement tapé ou collé (pas les retours d'outils, notifications, instructions injectées), plus les commandes lancées (`/tidy`…), avec au plus 50 messages par session, chacun coupé à 400 caractères. Si un message coupé est indispensable pour comprendre un bloc, relire ce passage dans le fichier de session ;
 - convertit tout en heure locale de la machine ;
 - découpe en blocs (pause de plus de 90 minutes = nouveau bloc) et calcule chaque durée et le total.
 
