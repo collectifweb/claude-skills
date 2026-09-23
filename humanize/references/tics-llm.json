@@ -1,7 +1,7 @@
 {
   "meta": {
     "titre": "Détecteur de scories IA",
-    "version": "1.2 du 7 août 2026",
+    "version": "1.3 du 23 septembre 2026",
     "langue": "fr",
     "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement)",
     "sources": [
@@ -855,7 +855,7 @@
         "apres": "L'association couvre tout le territoire. Elle mobilise chaque année des centaines de bénévoles et ses partenaires institutionnels le reconnaissent."
       },
       "parametres": {
-        "ratio_cible": "60% phrases longues (15+ mots) / 40% phrases courtes (moins de 10 mots)",
+        "ratio_cible": "environ 40 % de phrases courtes (moins de 10 mots), une majorité du reste à 15 mots ou plus",
         "seuil_alerte": "Moins de 15% de phrases courtes sur l'ensemble du texte"
       },
       "severite": "avertissement",

@@ -7,7 +7,7 @@ description: >
   à quelqu'un (rapport, mail client, message, article, post). Aussi quand il mentionne les tirets cadratins,
   les majuscules après deux-points, le style robot, le ton IA, ou dit que « ça sonne ChatGPT ».
   Utiliser ce skill AVANT d'envoyer tout livrable : rapport, e-mail client, message, article, post LinkedIn,
-  document, présentation textuelle. Si le texte sort de Claude et va vers un humain, ce skill s'applique.
+  document, présentation textuelle. Si le texte sort de l'IA et va vers un humain, ce skill s'applique.
 ---
 
 # Humanize — Filtre anti-tics LLM
@@ -23,11 +23,11 @@ Prend un texte et le réécrit pour qu'il sonne humain. Ne change PAS les idées
 - L'utilisateur tape `/humanize`
 - L'utilisateur demande d'humaniser, nettoyer, dé-slopper un texte
 - L'utilisateur prépare un livrable destiné à un humain (mail, rapport, article, message client)
-- Le texte produit par Claude va être copié-collé et envoyé tel quel
+- Le texte produit par l'IA va être copié-collé et envoyé tel quel
 
 ## Compatibilité
 
-Fonctionne dans Claude, Claude Code, Openclaw, Hermes, et tout client API Anthropic.
+Aucun outil requis : c'est un filtre de texte, au format standard des skills (lisible par Claude Code et par Codex CLI).
 
 ---
 
@@ -133,7 +133,7 @@ Lire le fichier `references/tics-llm.json` pour la liste complète des règles a
 
 **Connecteurs logiques** — viser au moins 1 connecteur pour 4 phrases. Le texte doit expliciter les relations logiques (car, donc, or, pourtant, en revanche...).
 
-**Varier la longueur des phrases** — mélanger phrases longues et phrases courtes. Viser 60 % de phrases de 15+ mots et 40 % de phrases de moins de 10 mots.
+**Varier la longueur des phrases** — mélanger phrases longues et phrases courtes. Viser environ 40 % de phrases courtes (moins de 10 mots) et une majorité du reste à 15 mots ou plus. Alerte sous 15 % de phrases courtes.
 
 **Ruptures de registre** — au moins une rupture de ton pour 400 mots. Question directe, formule orale, incise personnelle, phrase très courte après un développement dense.
 
@@ -187,7 +187,7 @@ Partir de 100. Retirer des points pour chaque pattern détecté. Les occurrences
 | Conclusion passe-partout ou paragraphe creux | -10 |
 | Résumé conclusif compulsif | -10 |
 
-Le tiret cadratin a la pénalité la plus élevée parce que c'est le marqueur le plus flagrant.
+Le tiret cadratin est au niveau de pénalité maximal (-10) parce que c'est le marqueur le plus flagrant.
 
 ---
 
