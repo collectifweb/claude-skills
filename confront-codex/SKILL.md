@@ -1,11 +1,11 @@
 ---
 name: confront-codex
-description: Confronte un plan technique avec un second agent indépendant (Codex depuis Claude, Claude depuis Codex) par débats itératifs jusqu'au consensus. Plan final dans docs/, rounds archivés. Option --model pour choisir le modèle. Trigger /confront-codex, "confronter codex", "valider le plan avec codex", "challenger l'approche", "second avis sur le plan".
+description: Confronte un plan technique avec un second agent indépendant (Codex depuis Claude, Claude depuis Codex, ou Fable avec --fable) par débats itératifs jusqu'au consensus. Plan final dans docs/, rounds archivés. Option --model pour choisir le modèle. Trigger /confront-codex, "confronter codex", "valider le plan avec codex", "challenger l'approche", "second avis sur le plan".
 ---
 
 # Confront-Codex
 
-Ce skill orchestre un débat structuré entre toi et un second agent indépendant (Codex si tu es Claude, Claude si tu es Codex) sur un plan technique, jusqu'à consensus. L'utilisateur arbitre les cas où le débat s'enlise.
+Ce skill orchestre un débat structuré entre toi et un second agent indépendant (Codex si tu es Claude, Claude si tu es Codex, Fable sur demande) sur un plan technique, jusqu'à consensus. L'utilisateur arbitre les cas où le débat s'enlise.
 
 ## Principe général
 
@@ -21,16 +21,17 @@ Le skill oppose l'agent qui le lance à un second agent, indépendant :
 |---|---|---|
 | Claude Code | Codex | `codex exec` |
 | Codex CLI | Claude | `claude -p` |
+| l'un ou l'autre, avec `--fable` (ou « avec Fable ») | Fable | `claude -p --model fable` |
 
-Dans ce document, **toi** désigne l'agent qui lance le skill et **l'autre** le second avis. Chaque fichier de round porte le nom de l'agent qui l'a écrit (`round-N-claude.md`, `round-N-codex.md`).
+Dans ce document, **toi** désigne l'agent qui lance le skill et **l'autre** le second avis. Chaque fichier de round porte le nom de l'agent qui l'a écrit (`round-N-claude.md`, `round-N-codex.md`, `round-N-fable.md`).
 
-Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou `claude --version`). Si elle manque, arrête-toi et explique qu'il faut installer la CLI (pour Codex : https://developers.openai.com/codex/cli, pas seulement l'extension VS Code).
+Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou `claude --version`). Si l'utilisateur n'a rien précisé, c'est la ligne par défaut du tableau ; `--fable` ou « avec Fable » choisit Fable. Si elle manque, arrête-toi et explique qu'il faut installer la CLI (pour Codex : https://developers.openai.com/codex/cli, pas seulement l'extension VS Code).
 
 ## Choix du modèle (second avis = Codex)
 
 - **Défaut** : `gpt-5.6-sol` avec `model_reasoning_effort="xhigh"`.
 - **Secours**, seulement si le modèle est refusé : `gpt-5.6-terra`, puis `gpt-5.6-luna`. Ne jamais basculer tout seul vers un modèle plus cher (`gpt-6-astra`, `gpt-5.5`) : ça reste le choix explicite de l'utilisateur. Signale chaque bascule.
-- **Compte ChatGPT** : avec une connexion ChatGPT plutôt qu'une clé API, Codex refuse certains modèles de la liste (constaté le 23 sept. 2026 : `gpt-6-sol` et `gpt-6-luna`, « not supported when using Codex with a ChatGPT account »). D'autres exigent une CLI plus récente (« requires a newer version of Codex »). Dans les deux cas, cite le message d'erreur tel quel et propose le secours.
+- **Modèle refusé** : une CLI Codex trop ancienne refuse les modèles récents, parfois avec un message trompeur. Constaté le 23 sept. 2026 : la 0.148.0 répondait « not supported when using Codex with a ChatGPT account » pour `gpt-6-sol`, que la 0.156.1 accepte sur le même compte. Avant de basculer sur un secours, vérifie `codex --version` et signale une éventuelle mise à jour ; cite toujours le message d'erreur tel quel.
 - **Choix de l'utilisateur** : `/confront-codex --model <nom>`, ou le modèle cité en langage naturel (« avec astra », « en 5.6 sol »). L'utilisateur écrit souvent le nom approximativement (`gpt6astra`, `6 astra`, `5,6-sol`). Retrouve le vrai identifiant dans la liste des modèles de Codex :
 
   ```bash
@@ -40,7 +41,7 @@ Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou 
   Compare sans tenir compte des tirets, points, espaces et majuscules. Une seule correspondance : annonce-la en une ligne (« Modèle retenu : gpt-6-astra ») et lance. Plusieurs (« sol » vise `gpt-6-sol` et `gpt-5.6-sol`) : demande laquelle. Aucune, ou fichier absent : dis-le et propose la liste.
 - **Raisonnement** : « sans xhigh » ou « reasoning normal » retire `-c model_reasoning_effort="xhigh"`. « reasoning high » le remplace par `high`.
 
-Quand l'autre est Claude, n'impose pas de modèle : `claude -p` prend celui configuré, sauf si l'utilisateur en demande un (`--model <nom>`, mêmes règles de correspondance approximative).
+Quand l'autre est Claude, n'impose pas de modèle : `claude -p` prend celui configuré, sauf si l'utilisateur en demande un (`--model <nom>` : `opus`, `sonnet`, `haiku`, `fable` ou un identifiant complet). Avec `--fable`, c'est `--model fable`.
 
 ## Lancer l'autre et attendre sa réponse
 
@@ -58,13 +59,18 @@ timeout 45m codex exec \
   "PROMPT" > /tmp/confront-{slug}-rN.log 2>&1 < /dev/null
 ```
 
-**Second avis = Claude** :
+**Second avis = Claude ou Fable** (`round-N-claude.md` ou `round-N-fable.md`) :
 
 ```bash
-timeout 45m claude -p \
-  --allowedTools "Read,Grep,Glob" \
-  "PROMPT" > "$ARCHIVE_DIR/round-N-claude.md" 2> /tmp/confront-{slug}-rN.log < /dev/null
+# Fable : garder --model fable et écrire round-N-fable.md
+# Claude : retirer la ligne --model (ou mettre le modèle demandé) et écrire round-N-claude.md
+timeout 45m claude -p "PROMPT" \
+  --allowedTools=Read,Grep,Glob \
+  --model fable \
+  > "$ARCHIVE_DIR/round-N-fable.md" 2> /tmp/confront-{slug}-rN.log < /dev/null
 ```
+
+Le prompt vient **juste après `-p`**, et `--allowedTools` s'écrit avec `=` : sous la forme `--allowedTools "Read,Grep,Glob" "PROMPT"`, l'option avale le prompt et la commande échoue (« Input must be provided »). Seuls ces trois outils de lecture sont permis : toute écriture reste en attente d'une approbation qui ne vient jamais, donc rien n'est modifié.
 
 Trois règles, chacune pour une panne déjà vécue :
 

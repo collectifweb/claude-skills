@@ -1,8 +1,8 @@
 # Prompts à passer au second agent
 
-Ce fichier contient les prompts exacts à passer au second agent (« l'autre » : Codex via `codex exec`, ou Claude via `claude -p`). Le ton et le cadrage sont importants : on veut qu'il soit critique et indépendant, pas complaisant.
+Ce fichier contient les prompts exacts à passer au second agent (« l'autre » : Codex via `codex exec`, ou Claude / Fable via `claude -p`). Le ton et le cadrage sont importants : on veut qu'il soit critique et indépendant, pas complaisant.
 
-Remplace `{toi}` par ton nom (Claude ou Codex) et `{l'autre}` par le sien avant de lancer.
+Remplace `{toi}` par ton nom (Claude ou Codex) et `{l'autre}` par le sien (Codex, Claude ou Fable) avant de lancer.
 
 ## Round 1 — Première analyse
 
@@ -83,7 +83,7 @@ L'absence du token ou un token mal orthographié est traité comme une erreur et
 
 **Commande, modèle, attente** : tout est dans les sections « Choix du modèle » et « Lancer l'autre et attendre sa réponse » du SKILL.md. Rien à dupliquer ici.
 
-**Lecture seule** : l'autre tourne en lecture seule (`--sandbox read-only` pour Codex, `--allowedTools "Read,Grep,Glob"` pour Claude). C'est voulu : il lit le plan et le code, sa réponse finale est enregistrée par la commande elle-même (`-o` pour Codex, redirection de la sortie pour Claude).
+**Lecture seule** : l'autre tourne en lecture seule (`--sandbox read-only` pour Codex, `--allowedTools=Read,Grep,Glob` pour Claude et Fable). C'est voulu : il lit le plan et le code, sa réponse finale est enregistrée par la commande elle-même (`-o` pour Codex, redirection de la sortie pour Claude).
 
 **Vérification du token de consensus** : après chaque réponse de l'autre à partir du round 2 :
 

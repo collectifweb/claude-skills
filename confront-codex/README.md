@@ -37,9 +37,11 @@ Capped at 5 rounds. If consensus isn't reached, Claude surfaces the sticking poi
 - **Claude Code** and **Codex CLI** — install Codex from https://developers.openai.com/codex/cli (the VSCode extension alone is not enough)
 - `timeout` (GNU coreutils; `gtimeout` on macOS via Homebrew)
 
-The skill works from either side. Run from Claude Code, the second opinion is Codex; run from Codex CLI, the second opinion is Claude (`claude -p`). The second agent runs read-only and its final answer is saved as the round file, so it can never modify your project.
+The skill works from either side. Run from Claude Code, the second opinion is Codex; run from Codex CLI, the second opinion is Claude (`claude -p`). With `--fable`, it is Fable from either side. The second agent runs read-only and its final answer is saved as the round file, so it can never modify your project.
 
-With Codex as the second opinion, the default model is `gpt-5.6-sol` with `model_reasoning_effort="xhigh"`. If that model is refused, it falls back to `gpt-5.6-terra`, then `gpt-5.6-luna` — never to a more expensive model on its own. Note that Codex signed in with a ChatGPT account refuses some listed models (e.g. `gpt-6-sol`); the skill quotes the error and offers the fallback.
+With Codex as the second opinion, the default model is `gpt-5.6-sol` with `model_reasoning_effort="xhigh"`. If that model is refused, it falls back to `gpt-5.6-terra`, then `gpt-5.6-luna` — never to a more expensive model on its own. An outdated Codex CLI refuses recent models, sometimes with a misleading message (0.148.0 said `gpt-6-sol` was "not supported when using Codex with a ChatGPT account"; 0.156.1 accepts it on the same account). The skill checks `codex --version` before falling back.
+
+Add `--fable` (or say "avec Fable") to get the second opinion from Claude's Fable model instead, via `claude -p --model fable`, read-only as well.
 
 ## Installation
 
