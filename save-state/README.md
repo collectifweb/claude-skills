@@ -20,7 +20,7 @@ save-state closes that gap in the one window where it can be closed: while the s
 
 ## What it can't do
 
-It **can't trigger the compaction**. Slash commands are run by the Claude Code CLI, not by the model, and the `PreCompact` hook fires *during* a compaction rather than starting one. So the run ends by handing you the exact line to paste. Two paste operations, and you're back at work.
+It **can't trigger the compaction**. Slash commands are run by the CLI (Claude Code or Codex), not by the model, and the `PreCompact` hook fires *during* a compaction rather than starting one. So the run ends by handing you the exact line to paste. Two paste operations, and you're back at work.
 
 ## Usage
 
@@ -63,7 +63,7 @@ Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 
 ## Requirements
 
-- Claude Code (git optional)
+- Claude Code or Codex CLI (git optional). In Codex, whether `/compact` takes instructions is unverified; the resume prompt works either way.
 
 ## Installation
 
@@ -73,6 +73,13 @@ Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/save-state" ~/.claude/skills/save-state
+```
+
+To also expose it to Codex CLI:
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/claude-skills/save-state" ~/.codex/skills/save-state
 ```
 
 **Windows** (PowerShell — run as Administrator, or enable Developer Mode)

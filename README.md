@@ -7,7 +7,7 @@ A collection of skills for power users of **Claude Code** and **Codex CLI**. Eac
 | Skill | In one sentence | Codex CLI |
 | --- | --- | --- |
 | [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. | yes |
-| [confront-codex](#confront-codex) | Runs an iterative debate on a technical plan between the agent you're in and a second, independent one (Codex from Claude, Claude from Codex) until they converge — before a single line of code is written. | yes |
+| [confront-codex](#confront-codex) | Runs an iterative debate on a technical plan between the agent you're in and a second, independent one (Codex from Claude, Claude from Codex, or Fable with `--fable`) until they converge — before a single line of code is written. | yes |
 | [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. `quick` variant: multi-day, multi-project overview with no hours. | yes |
 | [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh agent session finds its bearings fast. | yes |
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. | yes |
@@ -39,7 +39,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\humanize"
 
 ## confront-codex
 
-Validates a technical plan by running an iterative debate between Claude and Codex before any implementation starts. Claude proposes, Codex critiques, Claude responds — until both converge or surface a real disagreement for you to resolve.
+Validates a technical plan by running an iterative debate before any implementation starts. The agent you're in proposes, a second, read-only agent critiques (Codex when run from Claude Code, Claude when run from Codex, Fable with `--fable`), and the debate goes on until both converge or surface a real disagreement for you to resolve. `--model` picks the Codex model, even from an approximate name.
 
 **Requires:** Claude Code and Codex CLI (either one can host the debate)
 
@@ -59,7 +59,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\confront-
 
 ## timelog
 
-Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code session activity (90-minute gap = new block), formatted for Toggl or any time-tracking tool.
+Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code and Codex CLI session activity (90-minute gap = new block), formatted for Toggl or any time-tracking tool.
 
 A `quick` variant (`/timelog quick`, `/timelog quick 7`, `/timelog quick YYYY-MM-DD..YYYY-MM-DD`) scans all Claude Code and Codex CLI sessions on the machine and prints a per-day overview of which projects you touched — no hours, no blocks.
 
@@ -81,7 +81,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\timelog" 
 
 ## tidy
 
-Reorganizes documentation, archives obsolete plans, removes scratch files, and audits exposed secrets so Claude Code can navigate the project in a fresh session without getting lost. Produces a justified markdown report in `docs/tidy/`, then executes changes category by category with your approval at each step. `/tidy --deep` extends analysis to application code (orphan modules) — always proposed as questions, never auto-deleted.
+Reorganizes documentation, archives obsolete plans, removes scratch files, and audits exposed secrets so a fresh Claude Code or Codex session can navigate the project without getting lost. Produces a justified markdown report in `docs/tidy/`, then executes changes category by category with your approval at each step. `/tidy --deep` extends analysis to application code (orphan modules) — always proposed as questions, never auto-deleted.
 
 **Requires:** Claude Code or Codex CLI, git
 
@@ -101,7 +101,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\tidy" -Ta
 
 ## doc-sync
 
-Reconciles every documentation claim against the actual code instead of just summarizing the session. Builds a checklist of every doc file (README, CLAUDE.md, `docs/**`), reads each one in full, cross-checks every claim, and produces a final audit report — no silent skips. Built for end-of-session wrap-up so the next session starts on accurate docs.
+Reconciles every documentation claim against the actual code instead of just summarizing the session. Builds a checklist of every doc file (README, CLAUDE.md, AGENTS.md, `docs/**`), reads each one in full, cross-checks every claim, and produces a final audit report — no silent skips. Built for end-of-session wrap-up so the next session starts on accurate docs.
 
 **Requires:** Claude Code or Codex CLI
 

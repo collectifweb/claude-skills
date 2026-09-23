@@ -1,6 +1,6 @@
 # humanize
 
-A Claude Code skill that rewrites French text to remove LLM writing tics and make it sound human. Pass it any text before it reaches a reader — report, email, article, LinkedIn post — and get back a clean version with a slop score and a list of every fix made.
+A Claude Code and Codex CLI skill that rewrites French text to remove LLM writing tics and make it sound human. Pass it any text before it reaches a reader — report, email, article, LinkedIn post — and get back a clean version with a slop score and a list of every fix made.
 
 ## The problem
 
@@ -95,6 +95,13 @@ A final self-audit pass re-reads the rewrite and fixes any marker that slipped t
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/humanize" ~/.claude/skills/humanize
+```
+
+To also expose it to Codex CLI:
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/claude-skills/humanize" ~/.codex/skills/humanize
 ```
 
 **Windows** (PowerShell — run as Administrator, or enable Developer Mode)

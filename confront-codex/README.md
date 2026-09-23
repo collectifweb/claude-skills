@@ -30,6 +30,8 @@ Plans made with Claude share Claude's blind spots. Bringing in a second model wi
 └─────────────────────────────────────────────────────────────┘
 ```
 
+Run from Codex CLI, the roles swap (Codex proposes, Claude critiques); with `--fable`, Fable takes the critic's seat.
+
 Capped at 5 rounds. If consensus isn't reached, Claude surfaces the sticking points and asks you to arbitrate.
 
 ## Requirements

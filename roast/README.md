@@ -1,6 +1,6 @@
 # roast
 
-A Claude Code skill that convenes a five-persona council to tear an idea apart before you build it, then hands down a single verdict. Written in French, in Alexandre's voice: short, concrete, no hedging.
+A Claude Code and Codex CLI skill that convenes a five-persona council to tear an idea apart before you build it, then hands down a single verdict. Written in French, in Alexandre's voice: short, concrete, no hedging.
 
 ## The problem
 
@@ -42,6 +42,13 @@ Contrarien X/10 · Expansionniste X/10 · Logicien X/10 · Chercheur X/10 · Cli
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
 ln -s "$(pwd)/claude-skills/roast" ~/.claude/skills/roast
+```
+
+To also expose it to Codex CLI:
+
+```bash
+mkdir -p ~/.codex/skills
+ln -s "$(pwd)/claude-skills/roast" ~/.codex/skills/roast
 ```
 
 **Windows** (PowerShell — run as Administrator, or enable Developer Mode)

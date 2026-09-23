@@ -2,7 +2,7 @@
 
 Reconciles every documentation claim in a project against the actual code — instead of "summarizing the session" or patching only the obvious files.
 
-Designed for end-of-session use in Claude Code: when context is approaching its limit and you want the next session to start with documentation that is 100% accurate. It enforces a strict, auditable workflow so the usual shortcuts (update the README, forget the rest) become impossible.
+Designed for end-of-session use in Claude Code or Codex CLI: when context is approaching its limit and you want the next session to start with documentation that is 100% accurate. It enforces a strict, auditable workflow so the usual shortcuts (update the README, forget the rest) become impossible.
 
 ## The problem it solves
 
@@ -32,7 +32,7 @@ doc-sync makes that impossible with a written checklist that must be completed b
 
 ## Requirements
 
-- Claude Code
+- Claude Code or Codex CLI
 
 ## Installation
 
