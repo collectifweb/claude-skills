@@ -1,6 +1,6 @@
 # save-state
 
-Run it right before a manual `/compact`. It moves everything that is true **only in the conversation** onto disk, then hands you two blocks to paste: the `/compact` command carrying instructions written for your actual task, and the prompt to send right after it.
+Run it right before a manual `/compact` — or with `--quick` when auto-compaction is imminent, or with `--end` when you're closing the session. It moves everything that is true **only in the conversation** onto disk, then hands you two blocks to paste: the `/compact` command carrying instructions written for your actual task, and the prompt to send right after it.
 
 The mental model: **compaction is a lossy save.** Right now the session knows the current task, why the last three decisions went the way they did, which file is half-finished, and the trap you hit forty minutes ago. The files know none of that. After compaction a summary survives and the rest doesn't. Anything you want on the other side has to be written down first.
 
@@ -16,7 +16,7 @@ save-state closes that gap in the one window where it can be closed: while the s
 2. **Finds only the files those changes made false** — project docs (`README.md`, `CLAUDE.md`, `docs/*.md`), working files (`tasks/todo.md`, `tasks/lessons.md`, plan files), and Claude memory when a genuinely durable fact emerged. Files considered and ruled out are listed with the reason, so nothing hides behind "looked fine".
 3. **Writes `.claude/session-state.md`** — the anchor file, rewritten in full every run, gitignored automatically. Current task, next step, decisions and why, traps, key files, running state (background shell IDs, ports, branch), open questions.
 4. **Handles git** — lists the uncommitted work and proposes a commit message. With `--commit`, it makes the commit too. Never pushes.
-5. **Ends with two paste-ready blocks** — `/compact <tailored instructions>`, then the short prompt that re-anchors the compacted session on the state file.
+5. **Ends with two paste-ready blocks** — `/compact <tailored instructions>`, then the short prompt that re-anchors the compacted session on the state file. With `--end`: a report and one line to paste into the next session instead.
 
 ## What it can't do
 
@@ -25,9 +25,22 @@ It **can't trigger the compaction**. Slash commands are run by the Claude Code C
 ## Usage
 
 ```
-/save-state             # full run; git is reported on, not touched
-/save-state --commit    # same, plus the commit is actually created (never pushed)
+/save-state             # a /compact is coming: scoped doc pass, state file, two blocks to paste
+/save-state --quick     # auto-compaction is minutes away: state file first, docs deferred
+/save-state --end       # the session is over: fuller doc pass, no /compact block
 ```
+
+Add `--commit` to any of them to also create the commit (never pushed). Without it, git is reported on, not touched. `--quick` and `--end` are mutually exclusive: pass both and it asks which one you meant.
+
+| | Docs | State file | Ends with |
+| --- | --- | --- | --- |
+| default | updated, scoped to what the session changed | full | `/compact` line + resume prompt |
+| `--quick` | **not touched** — listed under "Docs to update" for after the compaction | short, written first | same two blocks, shorter |
+| `--end` | every affected doc read in full and updated | full, written for a brand-new session | report + one line to paste into the next session |
+
+**Why `--quick` defers the docs.** With only a few thousand tokens left, reading and fixing docs is what triggers auto-compaction halfway through the run. So `--quick` writes the state file first — if anything gets cut short, it isn't that — names the stale docs in it, and the resume prompt tells the compacted session to fix them first, with room to spare.
+
+**Why the skill is split in two files.** Invoking a skill loads its whole `SKILL.md` into context. `SKILL.md` holds only the shared rules and the complete `--quick` procedure (about 5 KB), so `--quick` reads nothing else. The default and `--end` procedure lives in `references/workflow.md`, read only by those two modes, which have the budget for it.
 
 Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 
@@ -45,7 +58,7 @@ Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 
 | | writes to disk | output | target |
 | --- | --- | --- | --- |
-| **save-state** | yes | short prompt + `/compact` line | a `/compact` |
+| **save-state** | yes | short prompt + `/compact` line | a `/compact`, or the end of a session (`--end`) |
 | [session-handoff](../session-handoff/) | no | long self-contained handoff | a `/clear` |
 | [doc-sync](../doc-sync/) | yes (docs only) | audit report | doc accuracy, any time |
 
@@ -76,7 +89,8 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\save-stat
 ## When to use it
 
 - The context bar is getting full and you know a `/compact` is next
-- You're stopping for the day mid-task and want tomorrow to start from disk, not from memory
+- Auto-compaction is a few thousand tokens away: `--quick`
+- You're done for the day and closing the session: `--end`
 - Right after a stretch of decisions you'd hate to re-argue
 
 ## License
