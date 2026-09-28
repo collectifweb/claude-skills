@@ -6,6 +6,7 @@ description: >
   le style IA », de « virer le slop », de « rendre naturel », ou prépare un contenu destiné à être envoyé
   à quelqu'un (rapport, mail client, message, article, post). Aussi quand il mentionne les tirets cadratins,
   les majuscules après deux-points, le style robot, le ton IA, ou dit que « ça sonne ChatGPT ».
+  Aussi pour retirer un filigrane (« watermark ») ou des caractères invisibles d'un texte.
   Utiliser ce skill AVANT d'envoyer tout livrable : rapport, e-mail client, message, article, post LinkedIn,
   document, présentation textuelle. Si le texte sort de l'IA et va vers un humain, ce skill s'applique.
 ---
@@ -27,7 +28,7 @@ Prend un texte et le réécrit pour qu'il sonne humain. Ne change PAS les idées
 
 ## Compatibilité
 
-Aucun outil requis : c'est un filtre de texte, au format standard des skills (lisible par Claude Code et par Codex CLI).
+Un seul outil, facultatif : Python 3 (sans dépendance) pour le script de la passe anti-filigrane. Sans terminal, cette passe se fait à la main. Le reste est un filtre de texte, au format standard des skills (lisible par Claude Code et par Codex CLI).
 
 ---
 
@@ -60,6 +61,29 @@ En français, après un deux-points, c'est une minuscule. Sauf nom propre ou dé
 Humaniser un texte, ce n'est jamais y ajouter de l'information fausse. Ne JAMAIS inventer un fait, un nom, une date, un chiffre, une étude ou une citation qui ne figure pas déjà dans le texte d'origine.
 
 Quand une règle réclame plus de concret (un ancrage, une source) et que le texte n'en fournit pas : le signaler et demander la donnée réelle à l'auteur. Ne pas combler le vide avec une donnée plausible mais inventée. Un chiffre fabriqué est pire que son absence.
+
+---
+
+## Passe anti-filigrane — caractères invisibles
+
+Un texte généré ou copié depuis le web peut porter des caractères qu'on ne voit pas : espaces sans chasse, marques de direction, espaces exotiques. Ils suivent le texte au copier-coller et un outil qui les cherche les trouve. C'est ce qu'on appelle un filigrane (« watermark »).
+
+La passe se fait deux fois : sur le texte source avant la réécriture, puis sur le texte final pendant l'auto-audit.
+
+**Avec un terminal**, lancer le script du dossier de ce skill. Un texte collé dans la conversation s'écrit d'abord dans un fichier temporaire.
+
+```bash
+python3 <dossier de ce skill>/scripts/invisibles.py texte.txt > texte-propre.txt
+```
+
+Le texte nettoyé sort dans `texte-propre.txt`, le fichier d'origine n'est pas touché. Le rapport s'affiche dans le terminal : chaque caractère retiré avec son code et son nombre, puis les tirets cadratins encore présents. Reporter ce qui a été retiré dans « Ce qui a été corrigé » (ex. « 3 espaces sans chasse (U+200B) retirées »). Sur le texte final, le rapport doit dire « Aucun caractère invisible. » et ne signaler aucun tiret cadratin.
+
+**Sans terminal**, faire la passe à la main avec la liste ci-dessous, et l'écrire dans la sortie : « passe anti-filigrane faite à la main, non vérifiée par le script ».
+
+Ce que fait le script :
+- il retire les caractères sans largeur (U+200B à U+200D, U+2060, U+FEFF), le trait d'union conditionnel (U+00AD), les marques et commandes de direction (U+200E, U+200F, U+202A à U+202E, U+2066 à U+2069), les opérateurs mathématiques invisibles (U+2061 à U+2064), les sélecteurs de variante, les caractères d'étiquette (U+E0000 à U+E007F) et quelques remplissages invisibles (hangûl, braille vide) ;
+- il remplace par une espace normale les espaces exotiques (U+2000 à U+200A, U+205F, U+3000), pour ne pas coller les mots ;
+- il garde l'espace insécable (U+00A0) et l'espace fine insécable (U+202F), dont la typographie française se sert avant le deux-points, dans les guillemets « » et dans les nombres (10 000). Il garde aussi les liants collés à un émoji conservé (❤️, 👨‍💻), sinon l'émoji se casse en deux.
 
 ---
 
@@ -169,7 +193,7 @@ Produire dans cet ordre exact :
 
 ## Passe finale d'auto-audit
 
-Avant de livrer, relire une dernière fois le texte réécrit et se poser une seule question : reste-t-il un seul marqueur IA (un tiret cadratin oublié, une majuscule après deux-points, une transition morte, un résidu de conversation) ? Si oui, corriger avant de rendre. Cette relecture ne figure pas dans la sortie : seul le texte propre est livré.
+Avant de livrer, relire une dernière fois le texte réécrit et se poser une seule question : reste-t-il un seul marqueur IA (un tiret cadratin oublié, une majuscule après deux-points, une transition morte, un résidu de conversation) ? Si oui, corriger avant de rendre. Puis repasser le texte final au script de la passe anti-filigrane. Cette relecture ne figure pas dans la sortie : seul le texte propre est livré.
 
 ---
 
@@ -181,6 +205,7 @@ Partir de 100. Retirer des points pour chaque pattern détecté. Les occurrences
 |---|---|
 | Tiret cadratin (—) | -10 |
 | Majuscule après deux-points | -8 |
+| Caractère invisible (filigrane) | -5 |
 | Expression interdite (tables de remplacement) | -5 |
 | Pattern de contenu (gonflement, sycophantisme, fausse émotion...) | -8 |
 | Pattern structurel (transitions mortes, ouvertures, listes...) | -5 |
@@ -193,7 +218,7 @@ Le tiret cadratin est au niveau de pénalité maximal (-10) parce que c'est le m
 
 ## Pour aller plus loin
 
-Le fichier `references/tics-llm.json` contient les 43 règles complètes avec :
+Le fichier `references/tics-llm.json` contient les 44 règles complètes avec :
 - Les listes exhaustives de mots et expressions à détecter
 - Les exemples avant/après pour chaque règle
 - Les seuils et paramètres (nombre max d'occurrences, scope...)

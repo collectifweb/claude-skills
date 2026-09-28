@@ -1,7 +1,7 @@
 {
   "meta": {
     "titre": "Détecteur de scories IA",
-    "version": "1.3 du 23 septembre 2026",
+    "version": "1.4 du 27 septembre 2026",
     "langue": "fr",
     "description": "JSON de référence pour détecter et corriger les marqueurs d'écriture IA dans les textes en français. (Modifié localement)",
     "sources": [
@@ -1181,6 +1181,28 @@
         "max_par_proposition": 1
       },
       "severite": "avertissement",
+      "actif": true
+    },
+    {
+      "id": "TYP-007",
+      "categorie": "typographie",
+      "type": "interdit",
+      "label": "Caractères invisibles (filigrane)",
+      "description": "Un texte généré ou copié depuis le web peut porter des caractères sans rendu visible : espaces sans chasse, marques de direction, espaces exotiques, caractères d'étiquette. Ils suivent le texte au copier-coller et trahissent sa provenance auprès de tout outil qui les cherche.",
+      "regle": "Passer le texte source puis le texte final au script scripts/invisibles.py, qui fait foi pour la liste des caractères. Retirer les caractères invisibles, remplacer les espaces exotiques par une espace normale. Sans terminal, faire la passe à la main et le signaler.",
+      "exemples": {
+        "avant": "Le[U+200B] projet[U+2003]avance[U+2060].",
+        "apres": "Le projet avance."
+      },
+      "parametres": {
+        "script": "scripts/invisibles.py",
+        "conserves": [
+          "U+00A0 espace insécable (typographie française)",
+          "U+202F espace fine insécable (typographie française)",
+          "U+200D et U+FE0F collés à un émoji conservé"
+        ]
+      },
+      "severite": "erreur",
       "actif": true
     }
   ],

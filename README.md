@@ -19,7 +19,7 @@ A collection of skills for power users of **Claude Code** and **Codex CLI**. Eac
 
 ## humanize
 
-Rewrites French text to remove LLM writing tics. Detects and corrects 43 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three, AI chat residue, phantom authority…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
+Rewrites French text to remove LLM writing tics. Detects and corrects 44 categories of patterns (em-dashes, hollow intensifiers, dead verbs, Oxford comma, rule of three, AI chat residue, phantom authority, invisible watermark characters…) without touching the ideas or voice. Scores the text on a 0–100 slop scale and lists every correction made.
 
 **Requires:** Claude Code or Codex CLI
 

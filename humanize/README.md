@@ -22,6 +22,16 @@ That's a 56-word sentence with zero content. `humanize` finds every pattern that
 
 Humanizing never means adding false information. The skill never invents a fact, name, date, figure, study, or citation that isn't already in the source. When a rule asks for more concreteness (a missing anchor or source), it flags the gap and asks you for the real data instead of filling it with a plausible invention.
 
+### Invisible-character pass — watermark removal
+
+Generated or web-copied text can carry characters nobody sees: zero-width spaces, direction marks, exotic spaces, tag characters. They survive copy-paste and give the text away to any tool that looks for them. `scripts/invisibles.py` (Python 3, no dependencies) strips them from the source before the rewrite, and checks the final text again during the self-audit:
+
+```bash
+python3 humanize/scripts/invisibles.py text.txt > clean.txt
+```
+
+Clean text goes to stdout (the source file is never modified). A report on stderr lists each character removed, with its code point and count, plus any em-dash still left. Unlike generic watermark removers, it is built for French: exotic spaces become a normal space instead of gluing words together, and it keeps the no-break space (U+00A0) and narrow no-break space (U+202F) that French typography needs (`Résultat : 10 000 $`, `« citation »`), as well as the joiners inside emoji (❤️, 👨‍💻). Without a terminal, the skill does the pass by hand and says so.
+
 ### Errors — always fixed
 
 | Pattern | Examples |
@@ -128,7 +138,7 @@ Also triggers on: "humaniser ce texte", "virer le slop", "nettoyer le style IA",
 
 ## Reference
 
-`references/tics-llm.json` — 43 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it for nuanced judgment calls on longer texts.
+`references/tics-llm.json` — 44 rules with exhaustive word lists, before/after examples, thresholds, and exceptions. Claude reads it for nuanced judgment calls on longer texts.
 
 ## License
 
