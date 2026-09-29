@@ -1,6 +1,6 @@
 ---
 name: timelog
-description: "Génère la synthèse d'une journée pour Toggl, en blocs horaires tirés des commits git et des sessions Claude Code et Codex (seuil 90 min). Variante /timelog quick, survol multi-jours multi-projets sans détail horaire, pour répondre à « sur quels projets j'ai travaillé ». Trigger /timelog, /timelog quick, \"log de temps\", \"synthèse journée\", \"résume ce que j'ai fait\", \"time tracking\", \"quels projets cette semaine\", \"sur quels projets j'ai travaillé\"."
+description: "Génère la synthèse d'une journée pour Toggl, en blocs horaires tirés des commits git et des sessions Claude Code et Codex (seuil 15 min). Variante /timelog quick, survol multi-jours multi-projets sans détail horaire, pour répondre à « sur quels projets j'ai travaillé ». Trigger /timelog, /timelog quick, \"log de temps\", \"synthèse journée\", \"résume ce que j'ai fait\", \"time tracking\", \"quels projets cette semaine\", \"sur quels projets j'ai travaillé\"."
 ---
 
 # Timelog
@@ -38,7 +38,7 @@ Le script est en lecture seule. Il :
 - filtre sur les horodatages internes, pas sur la date du fichier : une session commencée la veille et reprise le jour cible compte pour ses messages du jour cible ;
 - ne garde que ce que l'utilisateur a réellement tapé ou collé (pas les retours d'outils, notifications, instructions injectées), plus les commandes lancées (`/tidy`…), avec au plus 50 messages par session, chacun coupé à 400 caractères. Si un message coupé est indispensable pour comprendre un bloc, relire ce passage dans le fichier de session ;
 - convertit tout en heure locale de la machine ;
-- découpe en blocs (pause de plus de 90 minutes = nouveau bloc) et calcule chaque durée et le total.
+- découpe en blocs (pause de plus de 15 minutes = nouveau bloc) et calcule chaque durée et le total.
 
 Sortie :
 
@@ -62,7 +62,7 @@ Si le script affiche `AUCUNE ACTIVITÉ`, le dire simplement : « Aucune activit�
 
 ## Blocs horaires
 
-Un bloc = une période d'activité continue, avec au plus 90 minutes de pause entre deux événements. Le script les calcule.
+Un bloc = une période d'activité continue, avec au plus 15 minutes de pause entre deux événements. Le script les calcule.
 
 Format des heures : `9h-11h30`, `14h-16h45`. Pas de minutes si pile (`9h` plutôt que `9h00`). La durée suit entre parenthèses : `9h43-12h (2h17)`, ou `45min` sous l'heure. Si la journée contient plusieurs blocs, finir par `Total journée : XhYY`. Si toute la journée tient en un seul bloc, ne pas insister sur l'horaire, mais garder la durée.
 

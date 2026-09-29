@@ -2,7 +2,7 @@
 
 A skill for **Claude Code and Codex CLI** that generates ready-to-paste time log entries for a client project, from git commit history and AI-assistant session activity (both Claude Code *and* Codex sessions are merged into the same timeline).
 
-Run it at the end of the day (or later) from inside a client project repo. It reconstructs the day's work into time blocks — splitting on gaps longer than 90 minutes — and formats the output in a compact, Toggl-ready style.
+Run it at the end of the day (or later) from inside a client project repo. It reconstructs the day's work into time blocks — splitting on gaps longer than 15 minutes — and formats the output in a compact, Toggl-ready style.
 
 ## Why
 
@@ -18,7 +18,7 @@ The mechanical part is done by a bundled, read-only script, `scripts/timelog.py`
 2. Finds the Claude Code (`~/.claude/projects/`) and Codex CLI (`~/.codex/sessions/`) sessions whose recorded working directory is the current project or one of its subfolders
 3. Filters on the timestamps inside each session, not on file dates, so a session resumed the next day counts for the right day
 4. Keeps only what you actually typed or pasted (plus slash commands), dropping tool output, notifications and injected instructions
-5. Converts everything to the machine's local time, merges it into one timeline and splits it into blocks at 90-minute gaps, with durations and a day total
+5. Converts everything to the machine's local time, merges it into one timeline and splits it into blocks at 15-minute gaps, with durations and a day total
 
 The agent then summarizes each block in the user's style — direct, French, no em dashes, client-readable. AI help is written as "avec assistance d'IA", never by tool name.
 

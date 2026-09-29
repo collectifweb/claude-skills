@@ -59,7 +59,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\confront-
 
 ## timelog
 
-Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code and Codex CLI session activity (90-minute gap = new block), formatted for Toggl or any time-tracking tool.
+Generates a ready-to-paste time log for a client project day. Splits the day into blocks based on git commits and Claude Code and Codex CLI session activity (15-minute gap = new block), formatted for Toggl or any time-tracking tool.
 
 A `quick` variant (`/timelog quick`, `/timelog quick 7`, `/timelog quick YYYY-MM-DD..YYYY-MM-DD`) scans all Claude Code and Codex CLI sessions on the machine and prints a per-day overview of which projects you touched — no hours, no blocks.
 

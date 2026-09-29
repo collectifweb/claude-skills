@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Collecte l'activité d'une journée (git + sessions Claude Code + sessions Codex CLI).
 
-Mode par défaut : blocs horaires du projet courant, pause de 90 min = nouveau bloc.
+Mode par défaut : blocs horaires du projet courant, pause de 15 min = nouveau bloc.
     timelog.py [--date YYYY-MM-DD] [--project CHEMIN]
 Mode quick : projets touchés par jour, tous projets confondus, sans git.
     timelog.py --quick [--date YYYY-MM-DD | --days N | --range YYYY-MM-DD..YYYY-MM-DD]
@@ -16,7 +16,7 @@ import subprocess
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-GAP = timedelta(minutes=90)
+GAP = timedelta(minutes=15)
 MAX_MSG_PER_SESSION = 50
 MAX_CHARS = 400  # longueur max d'un message affiché
 HOME = Path.home()
