@@ -13,6 +13,7 @@ A collection of skills for power users of **Claude Code** and **Codex CLI**. Eac
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. | yes |
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. | yes |
 | [save-state](#save-state) | Writes the session's truth to disk before a `/compact` (or at session end), then hands you the `/compact` line and the prompt to send right after. `--quick` and `--end` variants. | yes |
+| [impression](#impression) | Prepares and checks print-ready files for board games, booklets, leaflets and posters: exact trim size, bleed, fonts, resolution, before/after contact sheets, questions for the printer. | yes |
 | [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. | no |
 
 ---
@@ -159,6 +160,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\save-stat
 
 ---
 
+## impression
+
+Prepares and checks files for a print shop: board games (board, cards, box), booklets, leaflets, posters. Sets the frame before designing (trim size, bleed, safe margin), prints an HTML page to PDF through Chrome at the exact size with TrimBox and BleedBox declared, checks a PDF (embedded fonts, image resolution, page boxes, text too close to the trim, words lost between two versions) and builds before/after contact sheets. Every print figure is tied to a cited source (PDF spec, ISO 15930, Ghent Workgroup, ICC) or flagged as something to confirm with the printer. Written in French; complements a visual design skill rather than replacing it.
+
+**Requires:** Claude Code or Codex CLI, Python 3, poppler-utils, ImageMagick; pypdf and a Chrome for the HTML → PDF script
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/impression" ~/.claude/skills/impression
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\impression" -Target "$PWD\claude-skills\impression"
+```
+
+---
+
 ## rename-sessions
 
 Auto-generated session titles are long, English, and phrased alike — three "Review X for security vulnerabilities" in a row and the `/resume` list stops carrying information. This renames every session in a workspace to a status emoji plus three to six words (✅ done · ⏳ in progress · ⭐ worth a look · 🔒 security review), telling apart the families that dominate the list — automatic security reviews, skill invocations — by what each one actually covered. Titles you wrote by hand keep their text and only gain the emoji. Renaming is an append, so nothing is overwritten and a title you dislike is fixed with one more line; a coverage check aborts rather than renaming a workspace halfway. Ships the `CLAUDE.md` rule that names new sessions as they go, so the bulk pass only happens once.
@@ -186,13 +207,13 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\rename-se
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast save-state rename-sessions; do
+for skill in humanize confront-codex timelog tidy doc-sync roast save-state impression rename-sessions; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 
 # Codex CLI (every skill except rename-sessions)
 mkdir -p ~/.codex/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast save-state; do
+for skill in humanize confront-codex timelog tidy doc-sync roast save-state impression; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.codex/skills/$skill
 done
 ```
@@ -202,13 +223,13 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','rename-sessions') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','impression','rename-sessions') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 
 # Codex CLI (every skill except rename-sessions)
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','impression') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 ```

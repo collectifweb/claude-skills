@@ -20,3 +20,6 @@ Thumbs.db
 # Local task tracking
 tasks/
 __pycache__/
+
+# Python
+__pycache__/
