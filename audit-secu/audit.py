@@ -284,8 +284,13 @@ def audit_python(fichier):
 
 def depot_github(projet):
     _, out, _ = lancer(['git', '-C', str(projet), 'remote', 'get-url', 'origin'])
-    m = re.search(r'github\.com[:/](.+?)(?:\.git)?$', out.strip())
+    m = re.search(r'github\.com[:/](.+?)(?:\.git)?/?$', out.strip())
     return m.group(1) if m else None
+
+
+def erreur_gh(out, err):
+    m = re.search(r'"message"\s*:\s*"([^"]+)"', out + err)
+    return f"erreur ({m.group(1) if m else (out or err).strip().splitlines()[-1][:150]})"
 
 
 def audit_github(depot):
@@ -294,7 +299,7 @@ def audit_github(depot):
                              f'repos/{depot}/dependabot/alerts?state=open&per_page=100'])
     failles = []
     if code:
-        res['dependabot'] = 'désactivé' if 'disabled' in (out + err) else f'erreur ({(out or err).strip()[:150]})'
+        res['dependabot'] = 'désactivé' if 'disabled' in (out + err) else erreur_gh(out, err)
     else:
         res['dependabot'] = 'actif'
         for ligne in out.splitlines():
@@ -313,7 +318,7 @@ def audit_github(depot):
                                  f'repos/{depot}/{chemin}/alerts?state=open&per_page=100'])
         if code:
             res[cle] = 'non activé' if re.search(r'not enabled|disabled|no analysis', out + err, re.I) \
-                else f'erreur ({(out or err).strip()[:150]})'
+                else erreur_gh(out, err)
         else:
             alertes = [json.loads(x) for x in out.splitlines()]
             res[cle] = len(alertes)
@@ -571,8 +576,8 @@ def auditer(projet, ignores, table):
         gardees = [f for f in failles if not any((f.get('fichier') or '').startswith(t) for t in tiers)]
         ecartees = len(failles) - len(gardees)
         r['failles'] += gardees
-        if r['github']['dependabot'] == 'désactivé':
-            r['angles_morts'].append('alertes Dependabot désactivées sur GitHub')
+        if r['github']['dependabot'] != 'actif':
+            r['angles_morts'].append(f"alertes Dependabot de {depot} : {r['github']['dependabot']}")
     elif (projet / '.git').exists():
         r['angles_morts'].append('dépôt git sans dépôt GitHub : pas d\'alertes GitHub')
     else:
