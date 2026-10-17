@@ -23,3 +23,7 @@ __pycache__/
 
 # Python
 __pycache__/
+
+# Captures de revue impeccable (noms de projets clients)
+audit-secu/.impeccable/review/
+audit-secu/.impeccable/hook.cache.json

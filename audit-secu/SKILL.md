@@ -37,6 +37,36 @@ ce qui mérite de l'être et Codex donne un second avis sur les cas graves ou do
 
 Chemins à ignorer (copies, preuves…) : un par ligne dans `<base>/.audit-secu-ignorer`.
 
+## Étape 0 — Panneau de sélection
+
+Le panneau d'audit (`selection.html`, page claude.ai privée) liste les projets : seuls les circuits
+« sous tension » sont scannés. Étape sautée quand des projets sont nommés en argument, et avec
+`--reprendre`.
+
+Base de la page : collection `projets`, un document par dossier (`nom`, `scanner`, `raison` parmi
+`abandonne`, `mandat`, `autre-dev`, `suspendu` ou `null`, `nouveau`), et document `meta/panneau`
+(`inventaire` : date ISO, `base`, `dossiers`). Identifiant d'un document : le nom du dossier sans
+accents, chaque caractère hors `A-Za-z0-9_.~:@+-` remplacé par `-` (`SPA Lévis` → `SPA-Levis`).
+
+1. Adresse du panneau : clé `page` de `<base>/.audit-secu-projets.json`. Sans elle, publier
+   `~/.claude/skills/audit-secu/selection.html` avec
+   `capabilities: {"db": {"rules": [{"path": "", "read": "owner", "write": "owner"}]}, "user": {}}`
+   (personne d'autre que le propriétaire ne lit les noms de projets).
+2. `python3 ~/.claude/skills/audit-secu/audit.py --lister` donne les dossiers ; lire `projets`
+   (ArtifactData `list`, `limit` 1000).
+3. Mettre la base à jour par `batch` (50 écritures au plus par appel, chaque document existant
+   épinglé par sa `version`) :
+   - dossier absent de la base : `set` avec `scanner: true`, `raison: null`, `nouveau: true` ;
+   - `nouveau: true` laissé par le passage précédent : `update` à `false` ;
+   - document dont le dossier n'existe plus : `delete` ;
+   - `meta/panneau` : date et nombre de dossiers du jour.
+4. Donner le lien et le relevé (sous tension, hors audit, nouveaux), puis **attendre le feu vert**.
+   Rien n'est scanné avant.
+5. Relire `projets` et écrire `<base>/.audit-secu-projets.json` :
+   `{"page": "<adresse>", "date": "AAAA-MM-JJ", "exclus": {"<nom>": "<raison ou null>"}}`.
+   Le script lit ce fichier : lancé seul, il respecte la dernière sélection, et le rapport brut
+   nomme les projets exclus.
+
 ## Étape 1 — Relevé
 
 ```bash

@@ -6,7 +6,7 @@ Lecture seule : rien n'est modifié, installé ni commité dans les projets. Seu
 de paquets et des numéros de version partent vers les bases publiques (npm, Packagist,
 GitHub, OSV, WPVulnerability, endoflife.date), jamais de code.
 
-Usage : audit.py [--base DIR] [--projet NOM ...] [--sortie DIR]
+Usage : audit.py [--base DIR] [--projet NOM ...] [--sortie DIR] [--lister]
 """
 import argparse
 import concurrent.futures as cf
@@ -34,6 +34,9 @@ ELAGUER = {
 }
 TABLE_MODELES = Path.home() / '.claude/skills/maj-modeles/model-map.json'
 FICHIER_IGNORER = '.audit-secu-ignorer'
+# Sélection faite sur le panneau d'audit (page claude.ai), écrite par le skill avant chaque passage
+FICHIER_SELECTION = '.audit-secu-projets.json'
+RAISONS = {'abandonne': 'abandonné', 'mandat': 'pas de mandat', 'autre-dev': 'autre développeur', 'suspendu': 'suspendu'}
 
 GRAVITE = {'critical': 4, 'high': 3, 'moderate': 2, 'medium': 2, 'low': 1, 'info': 0,
            'c': 4, 'h': 3, 'm': 2, 'l': 1, 'n': 0}
@@ -651,6 +654,9 @@ def rapport_md(res, table_maj):
               "Constats de l'outil, **non triés** : une faille listée ici n'est pas forcément exploitable.",
               "Sources : copie locale (npm, composer, WordPress, modèles d'IA) et GitHub (branche poussée).",
               "**La production n'est pas couverte** : une copie locale peut différer du site en ligne.", '',
+              *([f"Exclus par la sélection ({len(res['exclus'])}) : " + ', '.join(
+                  f"{n} ({RAISONS.get(r, r)})" if r else n for n, r in sorted(res['exclus'].items())), '']
+                if res.get('exclus') else []),
               f"Table des modèles d'IA : `/maj-modeles`, mise à jour {table_maj or 'inconnue'}.", '',
               '## Vue d\'ensemble', '',
               '| Projet | 🔴 | 🟠 | 🟡 | ⚪ | Fin de support | Modèles | Angles morts |',
@@ -735,6 +741,7 @@ def main():
     ap.add_argument('--base', default=str(Path.home() / 'Apps-coding'))
     ap.add_argument('--projet', action='append', help='limiter à ce projet (répétable)')
     ap.add_argument('--sortie', help='dossier du rapport (défaut : <base>/.audit-secu-rapports/<date>)')
+    ap.add_argument('--lister', action='store_true', help='afficher les projets en JSON, sans rien scanner')
     a = ap.parse_args()
     base = Path(a.base).resolve()
     ignores = []
@@ -742,9 +749,18 @@ def main():
         for ligne in (base / FICHIER_IGNORER).read_text().splitlines():
             if ligne.strip() and not ligne.startswith('#'):
                 ignores.append(str(base / ligne.strip().rstrip('/')))
-    projets = [d for d in sorted(base.iterdir())
-               if d.is_dir() and not d.name.startswith('.') and d.name != POUBELLE
-               and str(d) not in ignores and (not a.projet or d.name in a.projet)]
+    tous = [d for d in sorted(base.iterdir())
+            if d.is_dir() and not d.name.startswith('.') and d.name != POUBELLE and str(d) not in ignores]
+    if a.lister:
+        print(json.dumps([d.name for d in tous], ensure_ascii=False))
+        return
+    # un projet nommé avec --projet passe même s'il est exclu par la sélection
+    exclus = {}
+    if not a.projet and (base / FICHIER_SELECTION).is_file():
+        exclus = json.loads((base / FICHIER_SELECTION).read_text()).get('exclus', {})
+    projets = [d for d in tous if (d.name in a.projet if a.projet else d.name not in exclus)]
+    if exclus:
+        print(f'{len(exclus)} projet(s) exclu(s) par la sélection : {", ".join(sorted(exclus))}', file=sys.stderr)
     if a.projet and len(projets) != len(set(a.projet)):
         sys.exit(f"Projet introuvable parmi : {', '.join(a.projet)}")
     table = charger_table()
@@ -765,7 +781,7 @@ def main():
                                   'angles_morts': [f'audit interrompu : {type(e).__name__}: {e}']})
             print(f'[{i}/{len(projets)}] {p.name}', file=sys.stderr)
 
-    res = {'date': maintenant.strftime('%Y-%m-%d %H:%M'), 'base': str(base), 'ignores': ignores,
+    res = {'date': maintenant.strftime('%Y-%m-%d %H:%M'), 'base': str(base), 'ignores': ignores, 'exclus': exclus,
            'table_modeles': table[2], 'projets': sorted(resultats, key=lambda r: r['projet'])}
     (sortie / 'brut.json').write_text(json.dumps(res, ensure_ascii=False, indent=1))
     (sortie / 'rapport-brut.md').write_text(rapport_md(res, table[2]))

@@ -1,0 +1,456 @@
+<title>Panneau d'audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Panneau électrique : porte collante en haut, puis la plaque, circuits de part et d'autre de l'épine */
+:root {
+  --fond: #d3d0c7;
+  --plaque: #e5e2da;
+  --arete: #b4b0a5;
+  --encre: #1c1e21;
+  --encre-2: #4c4f54;
+  --module: #222529;
+  --levier: #474c53;
+  --moule: #9ca2a9;
+  --epine: #8f9399;
+  --ruban: #f6f5f1;
+  --ruban-encre: #141516;
+  --cadenas: #e3540a;
+  --cadenas-encre: #141516;
+  --focus: #1c1e21;
+  --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --etroit: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --pas: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #17191c; --plaque: #212428; --arete: #363a40; --encre: #e8e6e0; --encre-2: #a8acb2;
+    --module: #0d0e10; --levier: #50565e; --moule: #858b93; --epine: #5c6168; --ruban: #e2e0d8;
+    --ruban-encre: #141516; --cadenas: #f06a1f; --cadenas-encre: #141516; --focus: #e8e6e0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #17191c; --plaque: #212428; --arete: #363a40; --encre: #e8e6e0; --encre-2: #a8acb2;
+  --module: #0d0e10; --levier: #50565e; --moule: #858b93; --epine: #5c6168; --ruban: #e2e0d8;
+  --ruban-encre: #141516; --cadenas: #f06a1f; --cadenas-encre: #141516; --focus: #e8e6e0;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--fond);
+  color: var(--encre);
+  font: 400 15px/1.45 var(--sans);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 40px;
+  caret-color: var(--cadenas);
+  scrollbar-color: var(--arete) var(--fond);
+}
+::selection { background: var(--cadenas); color: var(--cadenas-encre); }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.cadre { max-width: 1080px; margin: 0 auto; }
+
+/* Porte du panneau */
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 10; background: var(--fond);
+}
+.porte {
+  background: var(--fond);
+  padding-block: 18px 12px;
+  border-bottom: 1px solid var(--arete);
+  display: grid; gap: 12px;
+}
+.porte-haut { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+h1 {
+  margin: 0; color: var(--encre); font: 700 1.75rem/1.05 var(--etroit); letter-spacing: 0.01em; text-transform: uppercase;
+  text-wrap: balance;
+}
+.inventaire { margin: 0; color: var(--encre-2); font: 500 0.875rem/1.3 var(--etroit); letter-spacing: 0.03em; }
+.releve { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; color: var(--encre); font: 500 0.95rem/1.2 var(--etroit); letter-spacing: 0.02em; }
+.releve div { display: flex; align-items: baseline; gap: 6px; }
+.releve dt { color: var(--encre-2); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; }
+.releve dd { margin: 0; font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.releve .hors dd { color: var(--encre); box-shadow: inset 0 -3px 0 var(--cadenas); }
+.outils { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.recherche {
+  flex: 1 1 200px; min-width: 0;
+  font: 500 1rem/1 var(--sans); color: var(--encre);
+  background: var(--plaque); border: 1px solid var(--arete); border-radius: 3px;
+  padding: 10px 12px;
+}
+.recherche::placeholder { color: var(--encre-2); }
+.filtres { display: flex; border: 1px solid var(--arete); border-radius: 3px; overflow: hidden; flex: 0 1 auto; }
+.filtres button {
+  font: 600 0.85rem/1 var(--etroit); letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--encre-2); background: var(--plaque); border: 0; padding: 11px 12px; cursor: pointer;
+  border-left: 1px solid var(--arete);
+}
+.filtres button:first-child { border-left: 0; }
+.filtres button:hover { color: var(--encre); }
+.filtres button[aria-pressed="true"] { background: var(--module); color: var(--ruban); }
+.enregistre { margin: 0; min-height: 1.2em; color: var(--encre-2); font: 500 0.85rem/1.2 var(--etroit); letter-spacing: 0.03em; }
+.enregistre[data-etat="erreur"] { color: var(--encre); }
+.enregistre[data-etat="erreur"]::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; background: var(--cadenas); border-radius: 50%; }
+
+/* Plaque de façade et épine */
+.plaque {
+  margin-top: 16px;
+  background: var(--plaque);
+  border: 1px solid var(--arete);
+  border-radius: 4px;
+  padding: 14px 10px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.14);
+}
+.panneau {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: 1fr; row-gap: 6px;
+  position: relative;
+}
+.panneau::before {
+  content: ""; position: absolute; top: -6px; bottom: -6px; left: 0; width: 10px;
+  background:
+    radial-gradient(circle at 50% 50%, var(--plaque) 0 1.5px, transparent 2px) 0 0 / 10px 46px repeat-y,
+    var(--epine);
+  border-radius: 2px;
+}
+.circuit {
+  display: grid; align-items: start; column-gap: 10px;
+  grid-template-columns: 10px 58px 2.2em minmax(0, 1fr);
+  grid-template-areas: "epine disj num etiq" "epine cad cad cad";
+}
+.disjoncteur { grid-area: disj; }
+.numero { grid-area: num; }
+.etiquette { grid-area: etiq; min-width: 0; }
+.cadenas { grid-area: cad; }
+
+.numero {
+  padding-top: 11px; text-align: right;
+  font: 600 0.95rem/1 var(--etroit); font-variant-numeric: tabular-nums; color: var(--encre-2);
+}
+
+/* Disjoncteur : bouton-interrupteur, levier vers l'épine = sous tension */
+.disjoncteur {
+  position: relative; width: 58px; height: 38px; padding: 0; cursor: pointer;
+  background: var(--module); border: 1px solid rgb(255 255 255 / 0.06); border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.35);
+}
+.disjoncteur::before {
+  content: ""; position: absolute; left: 13px; right: 13px; top: 14px; height: 10px;
+  background: rgb(0 0 0 / 0.55); border-radius: 5px;
+}
+.levier {
+  position: absolute; top: 11px; left: 11px; width: 18px; height: 16px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--levier) 80%, white) 0%, var(--levier) 100%);
+  border-radius: 3px;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.5);
+  transition: transform 160ms cubic-bezier(.2, .9, .25, 1);
+}
+.moule {
+  position: absolute; bottom: 2px; font: 700 8px/1 var(--etroit); letter-spacing: 0.08em; color: var(--moule);
+}
+.moule.on { left: 6px; }
+.moule.off { right: 5px; }
+.circuit:not(.hors) .moule.on, .circuit.hors .moule.off { color: var(--ruban); }
+.circuit.hors .levier { transform: translateX(18px); }
+.disjoncteur:hover .levier { filter: brightness(1.15); }
+.disjoncteur:disabled { cursor: default; opacity: 0.6; }
+
+/* Étiquette en ruban */
+.etiquette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-top: 5px; }
+.ruban {
+  display: inline-block; max-width: 100%;
+  background: var(--ruban); color: var(--ruban-encre);
+  font: 600 1.02rem/1.15 var(--etroit); letter-spacing: 0.02em;
+  padding: 5px 9px 4px; border-radius: 1px;
+  box-shadow: 0 1px 1px rgb(0 0 0 / 0.18);
+  overflow-wrap: anywhere;
+}
+.circuit.hors .ruban { opacity: 0.62; }
+.neuf {
+  background: var(--module); color: var(--ruban);
+  font: 700 0.72rem/1 var(--etroit); letter-spacing: 0.12em; padding: 5px 7px 4px; border-radius: 1px;
+}
+
+/* Étiquette de cadenassage */
+.cadenas {
+  margin-top: 6px;
+  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 10px;
+  background: var(--cadenas); color: var(--cadenas-encre);
+  border-radius: 3px 3px 3px 12px;
+  padding: 7px 10px 8px 8px;
+  transform-origin: 6px 6px;
+  animation: pose 200ms cubic-bezier(.2, .9, .25, 1);
+}
+.oeillet {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--plaque); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cadenas-encre) 30%, var(--cadenas));
+  align-self: start; margin-top: 2px;
+}
+.cadenas-texte { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; min-width: 0; }
+.cadenas strong { font: 700 0.9rem/1.1 var(--etroit); letter-spacing: 0.1em; }
+.cadenas .consigne { font: 500 0.82rem/1.1 var(--etroit); letter-spacing: 0.02em; }
+.raisons { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; }
+.raisons button {
+  font: 600 0.85rem/1 var(--etroit); letter-spacing: 0.03em; cursor: pointer;
+  color: var(--cadenas-encre); background: transparent;
+  border: 1.5px solid var(--cadenas-encre); border-radius: 2px; padding: 8px 8px 7px;
+}
+.raisons button:hover { background: color-mix(in srgb, var(--cadenas-encre) 12%, transparent); }
+.raisons button[aria-pressed="true"] { background: var(--cadenas-encre); color: var(--cadenas); }
+.raisons button:disabled { cursor: default; opacity: 0.7; }
+.cadenas :focus-visible { outline-color: var(--cadenas-encre); }
+@keyframes pose { from { transform: rotate(-7deg); } to { transform: rotate(0); } }
+
+/* Squelette, panneau vide, pied */
+.circuit.attente .disjoncteur { opacity: 0.35; }
+.circuit.attente .ruban { width: 9em; color: transparent; opacity: 0.45; }
+.message { margin: 4px 0 4px 20px; max-width: 60ch; color: var(--encre-2); }
+.message strong { color: var(--encre); }
+.pied { margin: 18px 0 0; max-width: 70ch; color: var(--encre-2); font-size: 0.875rem; }
+
+@media (min-width: 760px) {
+  .porte { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+  .plaque { padding: 18px 16px; }
+  .panneau { grid-template-columns: 1fr 1fr; column-gap: 30px; grid-auto-flow: row; }
+  .panneau::before { left: calc(50% - 5px); }
+  .circuit.gauche { grid-column: 1; grid-template-columns: minmax(0, 1fr) 2.2em 58px; grid-template-areas: "etiq num disj" "cad cad cad"; }
+  .circuit.droite { grid-column: 2; grid-template-columns: 58px 2.2em minmax(0, 1fr); grid-template-areas: "disj num etiq" "cad cad cad"; }
+  .circuit.gauche .numero { text-align: left; }
+  .circuit.gauche .etiquette { justify-content: flex-end; }
+  .circuit.gauche .cadenas { border-radius: 3px 3px 12px 3px; }
+  /* à gauche de l'épine, le levier sous tension pointe vers la droite */
+  .circuit.gauche .levier { transform: translateX(18px); }
+  .circuit.gauche.hors .levier { transform: none; }
+  .circuit.gauche .moule.on { left: auto; right: 5px; }
+  .circuit.gauche .moule.off { right: auto; left: 6px; }
+  .message { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .levier { transition: none; }
+  .cadenas { animation: none; }
+}
+</style>
+
+<div class="cadre">
+  <header class="porte">
+    <div class="porte-haut">
+      <h1>Panneau d'audit</h1>
+      <p class="inventaire" id="inventaire">Dossier de travail</p>
+    </div>
+    <dl class="releve" aria-live="polite">
+      <div><dt>Sous tension</dt><dd id="n-on">–</dd></div>
+      <div class="hors"><dt>Hors audit</dt><dd id="n-off">–</dd></div>
+      <div><dt>Nouveaux</dt><dd id="n-neuf">–</dd></div>
+    </dl>
+    <div class="outils">
+      <label class="visuel-cache" for="recherche" hidden>Trouver un projet</label>
+      <input class="recherche" id="recherche" type="search" placeholder="Trouver un projet" aria-label="Trouver un projet" autocomplete="off">
+      <div class="filtres" role="group" aria-label="Afficher">
+        <button type="button" id="f-tous" data-filtre="tous" aria-pressed="true">Tous</button>
+        <button type="button" id="f-on" data-filtre="on" aria-pressed="false">Sous tension</button>
+        <button type="button" id="f-off" data-filtre="off" aria-pressed="false">Hors audit</button>
+        <button type="button" id="f-neuf" data-filtre="neuf" aria-pressed="false">Nouveaux</button>
+      </div>
+    </div>
+    <p class="enregistre" id="enregistre" aria-live="polite">Connexion au panneau…</p>
+  </header>
+
+  <main class="plaque">
+    <p class="message" id="message" hidden></p>
+    <ol class="panneau" id="panneau" aria-label="Circuits"></ol>
+  </main>
+  <p class="pied">Chaque circuit est un dossier du dossier de travail. Seuls les circuits sous tension
+    sont scannés. Le skill inscrit les nouveaux dossiers avant chaque passage, et lit ce panneau
+    avant de lancer l'audit.</p>
+</div>
+
+<script>
+(() => {
+  const RAISONS = [
+    ['abandonne', 'Abandonné'],
+    ['mandat', 'Pas de mandat'],
+    ['autre-dev', 'Autre développeur'],
+    ['suspendu', 'Suspendu'],
+  ];
+  const $ = (id) => document.getElementById(id);
+  const panneau = $('panneau');
+  const lignes = new Map();
+  let projets = [];
+  let filtre = 'tous';
+  let recherche = '';
+  let db = null;
+  let lectureSeule = false;
+  const files = new Map();
+
+  // Squelette tant que la base n'a pas répondu
+  for (let i = 0; i < 8; i++) {
+    const li = document.createElement('li');
+    li.className = 'circuit attente ' + (i % 2 ? 'droite' : 'gauche');
+    li.innerHTML = '<span class="disjoncteur" aria-hidden="true"></span><span class="numero"></span><span class="etiquette"><span class="ruban">·</span></span>';
+    panneau.append(li);
+  }
+
+  function message(html) {
+    const m = $('message');
+    m.hidden = !html;
+    m.innerHTML = html || '';
+  }
+
+  function statut(texte, etat) {
+    const s = $('enregistre');
+    s.textContent = texte;
+    s.dataset.etat = etat || '';
+  }
+
+  function heure() {
+    return new Date().toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ');
+  }
+
+  function ecrire(id, champs) {
+    if (!db || lectureSeule) return;
+    statut('Enregistrement…');
+    const essai = () => db.collection('projets').doc(id).update({ ...champs, modifie: new Date().toISOString() });
+    const prec = files.get(id) || Promise.resolve();
+    const suite = prec.then(() => essai().catch((e) => {
+      if (e && e.code === 'unavailable') {
+        return new Promise((r) => setTimeout(r, 400 + Math.random() * 600)).then(essai);
+      }
+      throw e;
+    })).then(() => {
+      statut('Enregistré à ' + heure());
+    }, (e) => {
+      if (e && (e.code === 'invalid_argument' || e.code === 'not_granted')) {
+        lectureSeule = true;
+        statut('Lecture seule : ce panneau ne peut pas être modifié depuis ce compte.', 'erreur');
+        rendre();
+      } else {
+        statut('Échec de l’enregistrement. Réessaie dans un instant.', 'erreur');
+      }
+    });
+    files.set(id, suite);
+  }
+
+  function ligne(p) {
+    let li = lignes.get(p.id);
+    if (li) return li;
+    li = document.createElement('li');
+    li.className = 'circuit';
+    li.dataset.id = p.id;
+    li.innerHTML =
+      '<button type="button" class="disjoncteur" role="switch"><span class="levier"></span>' +
+      '<span class="moule on" aria-hidden="true">ON</span><span class="moule off" aria-hidden="true">OFF</span></button>' +
+      '<span class="numero"></span>' +
+      '<div class="etiquette"><span class="ruban"></span><span class="neuf" hidden>NOUVEAU</span></div>' +
+      '<div class="cadenas" hidden><span class="oeillet" aria-hidden="true"></span>' +
+      '<div class="cadenas-texte"><strong>HORS AUDIT</strong><span class="consigne">Raison, si tu veux :</span></div>' +
+      '<div class="raisons" role="group" aria-label="Raison de l’exclusion">' +
+      RAISONS.map(([v, t]) => '<button type="button" data-raison="' + v + '" aria-pressed="false">' + t + '</button>').join('') +
+      '</div></div>';
+    li.querySelector('.disjoncteur').addEventListener('click', () => {
+      const q = projets.find((x) => x.id === p.id);
+      if (!q) return;
+      ecrire(q.id, q.scanner ? { scanner: false } : { scanner: true, raison: null });
+    });
+    li.querySelectorAll('.raisons button').forEach((b) => b.addEventListener('click', () => {
+      const q = projets.find((x) => x.id === p.id);
+      if (!q) return;
+      ecrire(q.id, { raison: q.raison === b.dataset.raison ? null : b.dataset.raison });
+    }));
+    lignes.set(p.id, li);
+    return li;
+  }
+
+  function rendre() {
+    const on = projets.filter((p) => p.scanner).length;
+    $('n-on').textContent = on;
+    $('n-off').textContent = projets.length - on;
+    $('n-neuf').textContent = projets.filter((p) => p.nouveau).length;
+
+    const terme = recherche.trim().toLocaleLowerCase('fr');
+    const visibles = projets.filter((p) =>
+      (filtre === 'tous' || (filtre === 'on' && p.scanner) || (filtre === 'off' && !p.scanner) || (filtre === 'neuf' && p.nouveau)) &&
+      (!terme || p.nom.toLocaleLowerCase('fr').includes(terme)));
+
+    panneau.querySelectorAll('.attente').forEach((n) => n.remove());
+    const garder = new Set(visibles.map((p) => p.id));
+    for (const [id, li] of lignes) if (!garder.has(id) && li.parentNode) li.remove();
+
+    visibles.forEach((p, i) => {
+      const li = ligne(p);
+      const hors = !p.scanner;
+      li.classList.toggle('hors', hors);
+      li.classList.toggle('gauche', p.numero % 2 === 1);
+      li.classList.toggle('droite', p.numero % 2 === 0);
+      li.querySelector('.numero').textContent = p.numero;
+      li.querySelector('.ruban').textContent = p.nom;
+      li.querySelector('.neuf').hidden = !p.nouveau;
+      const d = li.querySelector('.disjoncteur');
+      d.setAttribute('aria-checked', String(p.scanner));
+      d.setAttribute('aria-label', 'Scanner ' + p.nom);
+      d.disabled = lectureSeule;
+      const c = li.querySelector('.cadenas');
+      if (c.hidden !== !hors) c.hidden = !hors;
+      li.querySelectorAll('.raisons button').forEach((b) => {
+        b.setAttribute('aria-pressed', String(p.raison === b.dataset.raison));
+        b.disabled = lectureSeule;
+      });
+      if (panneau.children[i] !== li) panneau.insertBefore(li, panneau.children[i] || null);
+    });
+
+    if (!projets.length) {
+      message('<strong>Le panneau est vide.</strong> Lance <code>/audit-secu</code> : le skill y inscrit tes projets avant le passage.');
+    } else if (!visibles.length) {
+      message('Aucun circuit ne correspond. Efface la recherche ou choisis « Tous ».');
+    } else {
+      message('');
+    }
+  }
+
+  $('recherche').addEventListener('input', (e) => { recherche = e.target.value; rendre(); });
+  document.querySelectorAll('.filtres button').forEach((b) => b.addEventListener('click', () => {
+    filtre = b.dataset.filtre;
+    document.querySelectorAll('.filtres button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    rendre();
+  }));
+
+  async function demarrer() {
+    db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db) {
+      panneau.querySelectorAll('.attente').forEach((n) => n.remove());
+      statut('');
+      message('<strong>Panneau hors ligne.</strong> Ouvre cette page dans claude.ai pour voir et modifier la sélection.');
+      return;
+    }
+    const user = await window.claude.use('user');
+    if (user && (await user.can('data.write')) === false) lectureSeule = true;
+
+    db.doc('meta/panneau').onSnapshot((s) => {
+      const m = s.exists ? s.data() : null;
+      if (!m || !m.inventaire) return;
+      const d = new Date(m.inventaire);
+      $('inventaire').textContent = (m.base || 'Dossier de travail') + ' · inventaire du ' +
+        d.toLocaleDateString('fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+    }, () => {});
+
+    db.collection('projets').onSnapshot((snap) => {
+      projets = snap.docs.map((s) => ({ id: s.id, ...s.data() }))
+        .filter((p) => typeof p.nom === 'string')
+        .map((p) => ({ id: p.id, nom: p.nom, scanner: p.scanner !== false, raison: p.raison || null, nouveau: !!p.nouveau }))
+        .sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
+      projets.forEach((p, i) => { p.numero = i + 1; });
+      if ($('enregistre').dataset.etat !== 'erreur' && $('enregistre').textContent === 'Connexion au panneau…') {
+        statut(lectureSeule ? 'Lecture seule.' : 'Chaque bascule est enregistrée tout de suite.');
+      }
+      rendre();
+    }, (e) => {
+      statut(e && e.code === 'revoked' ? 'Accès au panneau retiré.' : 'Le panneau ne répond plus. Recharge la page.', 'erreur');
+    });
+  }
+  demarrer();
+})();
+</script>
