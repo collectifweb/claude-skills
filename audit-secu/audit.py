@@ -780,7 +780,8 @@ def ecrire_extraits(res, sortie):
     lots, modeles_ia = {'complet': [], 'dev_seulement': []}, []
     for p in res['projets']:
         modeles_ia += [m | {'projet': p['projet'], 'chemin': p['chemin']} for m in p['modeles']]
-        failles = [f for f in p['failles'] if f['niveau'] >= 2]
+        # gravité inconnue = non cotée par la source, pas « faible » : elle part au tri
+        failles = [f for f in p['failles'] if f['niveau'] >= 2 or (f['niveau'] == 0 and not f['dev'])]
         wp = [c | {'installation': i['chemin']} for i in p['wordpress']
               for c in ([i['coeur'] | {'type': 'core', 'slug': 'wordpress'}] if i['coeur'] else []) + i['composants']
               if (c['failles'] or {}).get('gravite_max', 0) >= 3]

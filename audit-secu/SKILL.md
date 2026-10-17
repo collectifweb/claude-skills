@@ -12,6 +12,10 @@ ce qui mérite de l'être et Codex donne un second avis sur les cas graves ou do
 
 - **Lecture seule.** Rien n'est modifié, installé ni commité dans les projets. Les correctifs se
   font ensuite, projet par projet, sur accord explicite.
+- **Aucun identifiant, aucune connexion à un serveur.** Ni Claude, ni les sous-agents, ni Codex
+  n'utilisent les accès d'un `.env`, une clé SSH, un compte FTP ou d'administration. Seules les
+  pages publiques se lisent, comme un visiteur anonyme. Le bac à sable `read-only` de Codex
+  n'empêche pas le réseau : la consigne doit figurer dans chaque prompt.
 - **Rapports confidentiels.** Ils listent des failles de sites clients : ils restent dans
   `<base>/.audit-secu-rapports/AAAA-MM-JJ/`, jamais dans un commit, jamais tels quels dans un
   message à un client.
@@ -89,8 +93,10 @@ Prompt du sous-agent projet (adapter les données, garder les consignes) :
 
 ```
 Tri de failles connues dans <chemin du projet>, en LECTURE SEULE : ne modifie rien, n'installe
-rien, ne lance ni build ni tests. Le relevé ci-dessous vient d'un script : il peut se tromper
-(version, portée dev/prod). Ne me fais pas confiance, vérifie dans les fichiers.
+rien, ne lance ni build ni tests. N'utilise aucun identifiant (.env, clé SSH, FTP, compte) et ne
+te connecte à aucun serveur : seules les pages publiques peuvent être lues, en visiteur anonyme.
+Le relevé ci-dessous vient d'un script : il peut se tromper (version, portée dev/prod). Ne me
+fais pas confiance, vérifie dans les fichiers.
 
 Contexte du projet : lis d'abord son CLAUDE.md ou son README (public ou interne ? en ligne ?).
 
@@ -128,6 +134,9 @@ timeout 30m codex exec \
 
 Le PROMPT donne les failles et les verdicts de Claude, et demande pour chacune `CONFIRME` ou
 `CONTESTE`, avec la raison et les preuves en fichier:ligne, sans se fier à l'analyse de Claude.
+Il reprend mot pour mot l'interdiction des identifiants et des connexions aux serveurs (voir
+Règles) : sans elle, Codex lit le `.env` et se connecte à la production par FTP ou SSH pour
+vérifier une version.
 Modèle refusé : citer l'erreur telle quelle, ne pas basculer seul vers un autre modèle.
 
 Un désaccord ne se tranche pas en silence : les deux avis figurent dans le rapport.
