@@ -1,0 +1,408 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-17T18:06:42+00:00",
+  "title": "Design System: Panneau d’audit",
+  "extensions": {
+    "colorMeta": {
+      "cadenas": {
+        "role": "primary",
+        "displayName": "Orange de cadenassage",
+        "canonical": "#e3540a",
+        "darkValue": "#f06a1f",
+        "tonalRamp": [
+          "#491b03",
+          "#7a2d05",
+          "#ab3f08",
+          "#dc510a",
+          "#f56b23",
+          "#f99c6c",
+          "#fcceb6",
+          "#feefe7"
+        ]
+      },
+      "fond": {
+        "role": "neutral",
+        "displayName": "Tôle émaillée",
+        "canonical": "#d3d0c7",
+        "darkValue": "#1a1a19",
+        "tonalRamp": [
+          "#2b2922",
+          "#474438",
+          "#645f4f",
+          "#817a65",
+          "#9a937e",
+          "#bcb7a9",
+          "#dddbd4",
+          "#f4f3f1"
+        ]
+      },
+      "plaque": {
+        "role": "neutral",
+        "displayName": "Plaque de façade",
+        "canonical": "#e5e2da",
+        "darkValue": "#262523",
+        "tonalRamp": [
+          "#2d2920",
+          "#4b4535",
+          "#69604a",
+          "#877c5f",
+          "#a09578",
+          "#c0b9a5",
+          "#dfdcd2",
+          "#f4f3f0"
+        ]
+      },
+      "arete": {
+        "role": "neutral",
+        "displayName": "Arête de tôle",
+        "canonical": "#b4b0a5",
+        "darkValue": "#3b3a37",
+        "tonalRamp": [
+          "#2a2823",
+          "#46423a",
+          "#615d51",
+          "#7d7868",
+          "#979182",
+          "#b9b6ac",
+          "#dcdad5",
+          "#f3f3f1"
+        ]
+      },
+      "encre": {
+        "role": "neutral",
+        "displayName": "Encre de sérigraphie",
+        "canonical": "#1c1e21",
+        "darkValue": "#e8e6e0",
+        "tonalRamp": [
+          "#232629",
+          "#3b3f45",
+          "#525861",
+          "#69717c",
+          "#838a96",
+          "#acb1b9",
+          "#d6d8dc",
+          "#f1f2f3"
+        ]
+      },
+      "encre-2": {
+        "role": "neutral",
+        "displayName": "Encre secondaire",
+        "canonical": "#4c4f54",
+        "darkValue": "#b0ada6",
+        "tonalRamp": [
+          "#242628",
+          "#3d3f43",
+          "#55585e",
+          "#6d7178",
+          "#878b92",
+          "#afb2b6",
+          "#d7d8db",
+          "#f2f2f3"
+        ]
+      },
+      "module": {
+        "role": "neutral",
+        "displayName": "Thermoplastique noir",
+        "canonical": "#222529",
+        "darkValue": "#0f0f0e",
+        "tonalRamp": [
+          "#23262a",
+          "#3a3f46",
+          "#515862",
+          "#68717d",
+          "#828b97",
+          "#abb1ba",
+          "#d5d8dc",
+          "#f1f2f3"
+        ]
+      },
+      "levier": {
+        "role": "neutral",
+        "displayName": "Levier",
+        "canonical": "#474c53",
+        "darkValue": "#575653",
+        "tonalRamp": [
+          "#232629",
+          "#3b3f45",
+          "#525860",
+          "#6a717c",
+          "#838b95",
+          "#adb2b8",
+          "#d6d8dc",
+          "#f1f2f3"
+        ]
+      },
+      "moule": {
+        "role": "neutral",
+        "displayName": "Moulage",
+        "canonical": "#9ca2a9",
+        "darkValue": "#8f8d88",
+        "tonalRamp": [
+          "#242629",
+          "#3b3f44",
+          "#535960",
+          "#6b727b",
+          "#848c94",
+          "#adb2b8",
+          "#d6d9db",
+          "#f1f2f3"
+        ]
+      },
+      "epine": {
+        "role": "neutral",
+        "displayName": "Acier de l’épine",
+        "canonical": "#8f9399",
+        "darkValue": "#64625e",
+        "tonalRamp": [
+          "#242628",
+          "#3d3f43",
+          "#55585d",
+          "#6d7278",
+          "#878b92",
+          "#afb2b6",
+          "#d7d8db",
+          "#f2f2f3"
+        ]
+      },
+      "ruban": {
+        "role": "neutral",
+        "displayName": "Ruban d’étiqueteuse",
+        "canonical": "#f6f5f1",
+        "darkValue": "#e2e0d8",
+        "tonalRamp": [
+          "#2f2b1e",
+          "#4e4832",
+          "#6d6546",
+          "#8c825a",
+          "#a59b73",
+          "#c3bca2",
+          "#e1ded0",
+          "#f5f4ef"
+        ]
+      },
+      "ruban-encre": {
+        "role": "neutral",
+        "displayName": "Encre du ruban",
+        "canonical": "#141516",
+        "darkValue": "#141516",
+        "tonalRamp": [
+          "#242628",
+          "#3d4043",
+          "#55595e",
+          "#6d7378",
+          "#878c92",
+          "#afb2b6",
+          "#d7d9db",
+          "#f2f2f3"
+        ]
+      },
+      "cadenas-encre": {
+        "role": "neutral",
+        "displayName": "Encre du cadenas",
+        "canonical": "#141516",
+        "darkValue": "#141516",
+        "tonalRamp": [
+          "#242628",
+          "#3d4043",
+          "#55595e",
+          "#6d7378",
+          "#878c92",
+          "#afb2b6",
+          "#d7d9db",
+          "#f2f2f3"
+        ]
+      },
+      "focus": {
+        "role": "neutral",
+        "displayName": "Contour de focus",
+        "canonical": "#1c1e21",
+        "darkValue": "#e8e6e0",
+        "tonalRamp": [
+          "#232629",
+          "#3b3f45",
+          "#525861",
+          "#69717c",
+          "#838a96",
+          "#acb1b9",
+          "#d6d8dc",
+          "#f1f2f3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Plaque",
+        "purpose": "Nom du panneau dans la porte, en capitales."
+      },
+      "headline": {
+        "displayName": "Ruban",
+        "purpose": "Nom du projet sur son ruban."
+      },
+      "title": {
+        "displayName": "Compteur",
+        "purpose": "Valeurs du relevé, chiffres tabulaires."
+      },
+      "numero": {
+        "displayName": "Numéro de circuit",
+        "purpose": "Numéro tabulaire en encre secondaire."
+      },
+      "body": {
+        "displayName": "Texte courant",
+        "purpose": "Messages et note de bas de page, 70ch au plus."
+      },
+      "label": {
+        "displayName": "Sérigraphie",
+        "purpose": "Filtres et petites capitales espacées."
+      },
+      "moule": {
+        "displayName": "Moulage",
+        "purpose": "ON et OFF moulés dans le disjoncteur."
+      }
+    },
+    "shadows": [
+      {
+        "name": "plaque-posee",
+        "value": "0 1px 2px rgb(0 0 0 / 0.14)",
+        "purpose": "Plaque de façade sur la tôle."
+      },
+      {
+        "name": "module-moule",
+        "value": "inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.35)",
+        "purpose": "Corps du disjoncteur."
+      },
+      {
+        "name": "levier",
+        "value": "0 1px 1px rgb(0 0 0 / 0.5)",
+        "purpose": "Manette du disjoncteur."
+      },
+      {
+        "name": "ruban-colle",
+        "value": "0 1px 1px rgb(0 0 0 / 0.18)",
+        "purpose": "Ruban de nom."
+      },
+      {
+        "name": "rivet",
+        "value": "inset 0 1px 0 rgb(0 0 0 / 0.3)",
+        "purpose": "Rivet de 4px sur l’épine."
+      }
+    ],
+    "motion": [
+      {
+        "name": "claquement-levier",
+        "value": "160ms cubic-bezier(.3, 1.45, .55, 1)",
+        "purpose": "Glissement de 18px du levier, léger dépassement. Coupé en mouvement réduit."
+      },
+      {
+        "name": "pose-cadenas",
+        "value": "200ms cubic-bezier(.2, .9, .25, 1)",
+        "purpose": "Rotation de 7° autour de l’œillet à la pose, sens inversé à gauche de l’épine. Coupée en mouvement réduit."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "panneau-double",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Disjoncteur (sous tension et hors audit)",
+      "kind": "custom",
+      "refersTo": "disjoncteur",
+      "description": "Action principale de chaque circuit ; le levier pointe vers l’épine (ici à gauche) quand le circuit est sous tension.",
+      "html": "<div class=\"ds-rang\"><span class=\"ds-epine\"></span><button type=\"button\" class=\"ds-disj\" role=\"switch\" aria-checked=\"true\" aria-label=\"Scanner le projet\"><span class=\"ds-levier\"></span><span class=\"ds-moule ds-on ds-actif\" aria-hidden=\"true\">ON</span><span class=\"ds-moule ds-off\" aria-hidden=\"true\">OFF</span></button><button type=\"button\" class=\"ds-disj ds-hors\" role=\"switch\" aria-checked=\"false\" aria-label=\"Scanner le projet\"><span class=\"ds-levier\"></span><span class=\"ds-moule ds-on\" aria-hidden=\"true\">ON</span><span class=\"ds-moule ds-off ds-actif\" aria-hidden=\"true\">OFF</span></button></div>",
+      "css": ".ds-rang { display: flex; gap: 12px; align-items: center; padding: 14px; background: #e5e2da; } .ds-epine { width: 10px; height: 44px; background: #8f9399; border-radius: 2px; } .ds-disj { position: relative; width: 58px; height: 38px; padding: 0; cursor: pointer; background: #222529; border: 1px solid rgb(255 255 255 / 0.06); border-radius: 3px; box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.35); } .ds-disj::before { content: \"\"; position: absolute; left: 13px; right: 13px; top: 11px; height: 10px; background: rgb(0 0 0 / 0.55); border-radius: 5px; } .ds-levier { position: absolute; top: 8px; left: 11px; width: 18px; height: 16px; background: linear-gradient(180deg, color-mix(in srgb, #474c53 80%, white) 0%, #474c53 100%); border-radius: 3px; box-shadow: 0 1px 1px rgb(0 0 0 / 0.5); transition: transform 160ms cubic-bezier(.3, 1.45, .55, 1); } .ds-hors .ds-levier { transform: translateX(18px); } .ds-moule { position: absolute; bottom: 2px; font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 700; font-size: 10px; line-height: 1; letter-spacing: 0.06em; color: #9ca2a9; } .ds-on { left: 6px; } .ds-off { right: 5px; } .ds-actif { color: #f6f5f1; } .ds-disj:hover .ds-levier { filter: brightness(1.15); } .ds-disj:focus-visible { outline: 2px solid #1c1e21; outline-offset: 2px; } @media (prefers-reduced-motion: reduce) { .ds-levier { transition: none; } }"
+    },
+    {
+      "name": "Ruban de nom",
+      "kind": "chip",
+      "refersTo": "ruban",
+      "description": "Nom du projet imprimé sur ruban, avec le ruban inversé « Nouveau » et la variante hors audit.",
+      "html": "<div class=\"ds-etiq\"><span class=\"ds-ruban\">projet-exemple</span><span class=\"ds-neuf\">NOUVEAU</span><span class=\"ds-ruban ds-pale\">projet-coupé</span></div>",
+      "css": ".ds-etiq { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 14px; background: #e5e2da; } .ds-ruban { background: #f6f5f1; color: #141516; font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 600; font-size: 1.02rem; line-height: 1.15; letter-spacing: 0.02em; padding: 5px 9px 4px; border-radius: 1px; box-shadow: 0 1px 1px rgb(0 0 0 / 0.18); } .ds-pale { opacity: 0.62; } .ds-neuf { background: #222529; color: #f6f5f1; font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 700; font-size: 0.72rem; line-height: 1; letter-spacing: 0.12em; padding: 5px 7px 4px; border-radius: 1px; }"
+    },
+    {
+      "name": "Étiquette de cadenassage",
+      "kind": "card",
+      "refersTo": "cadenas",
+      "description": "Seul usage de l’orange : pend sous un circuit coupé, avec la raison facultative.",
+      "html": "<div class=\"ds-cad\"><span class=\"ds-oeil\" aria-hidden=\"true\"></span><div class=\"ds-cad-t\"><strong>HORS AUDIT</strong><span>Raison, si tu veux :</span></div><div class=\"ds-raisons\" role=\"group\" aria-label=\"Raison de l’exclusion\"><button type=\"button\" aria-pressed=\"false\">Abandonné</button><button type=\"button\" aria-pressed=\"true\">Pas de mandat</button><button type=\"button\" aria-pressed=\"false\">Autre développeur</button><button type=\"button\" aria-pressed=\"false\">Suspendu</button></div></div>",
+      "css": ".ds-cad { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; align-items: center; width: fit-content; max-width: 16rem; background: #e3540a; color: #141516; border-radius: 3px 3px 3px 12px; padding: 7px 10px 8px 8px; transform-origin: 14px 13px; animation: ds-pose 200ms cubic-bezier(.2, .9, .25, 1); } .ds-oeil { width: 12px; height: 12px; border-radius: 50%; background: #e5e2da; box-shadow: inset 0 0 0 2px color-mix(in srgb, #141516 30%, #e3540a); align-self: start; margin-top: 2px; } .ds-cad-t { display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; } .ds-cad-t strong { font-weight: 700; font-size: 0.9rem; line-height: 1.1; letter-spacing: 0.1em; } .ds-cad-t span { font-weight: 500; font-size: 0.82rem; letter-spacing: 0.02em; } .ds-raisons { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; } .ds-raisons button { font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 600; font-size: 0.85rem; line-height: 1; letter-spacing: 0.03em; cursor: pointer; color: #141516; background: transparent; border: 1.5px solid #141516; border-radius: 2px; padding: 8px 8px 7px; } .ds-raisons button:hover { background: color-mix(in srgb, #141516 12%, transparent); } .ds-raisons button[aria-pressed=\"true\"] { background: #141516; color: #e3540a; } .ds-raisons button:focus-visible { outline: 2px solid #141516; outline-offset: 2px; } @keyframes ds-pose { from { transform: rotate(-7deg); } to { transform: rotate(0); } } @media (prefers-reduced-motion: reduce) { .ds-cad { animation: none; } }"
+    },
+    {
+      "name": "Filtres",
+      "kind": "nav",
+      "refersTo": "filtre",
+      "description": "Groupe de quatre filtres d’un seul tenant ; l’actif passe en thermoplastique noir.",
+      "html": "<div class=\"ds-filtres\" role=\"group\" aria-label=\"Afficher\"><button type=\"button\" aria-pressed=\"true\">Tous</button><button type=\"button\" aria-pressed=\"false\">Sous tension</button><button type=\"button\" aria-pressed=\"false\">Hors audit</button><button type=\"button\" aria-pressed=\"false\">Nouveaux</button></div>",
+      "css": ".ds-filtres { display: inline-flex; border: 1px solid #b4b0a5; border-radius: 3px; overflow: hidden; } .ds-filtres button { font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 600; font-size: 0.85rem; line-height: 1; letter-spacing: 0.05em; text-transform: uppercase; color: #4c4f54; background: #e5e2da; border: 0; border-left: 1px solid #b4b0a5; padding: 11px 12px; cursor: pointer; } .ds-filtres button:first-child { border-left: 0; } .ds-filtres button:hover { color: #1c1e21; } .ds-filtres button[aria-pressed=\"true\"] { background: #222529; color: #f6f5f1; } .ds-filtres button:focus-visible { outline: 2px solid #1c1e21; outline-offset: 2px; }"
+    },
+    {
+      "name": "Recherche",
+      "kind": "input",
+      "refersTo": "recherche",
+      "description": "Champ de recherche de la porte du panneau.",
+      "html": "<input class=\"ds-recherche\" type=\"search\" placeholder=\"Trouver un projet\" aria-label=\"Trouver un projet\">",
+      "css": ".ds-recherche { width: 260px; font: 500 1rem/1 'Barlow', 'Helvetica Neue', Arial, sans-serif; color: #1c1e21; background: #e5e2da; border: 1px solid #b4b0a5; border-radius: 3px; padding: 10px 12px; } .ds-recherche::placeholder { color: #4c4f54; } .ds-recherche:focus-visible { outline: 2px solid #1c1e21; outline-offset: 2px; }"
+    },
+    {
+      "name": "Relevé des compteurs",
+      "kind": "custom",
+      "description": "Compteurs de la porte ; la valeur « Hors audit » est soulignée à l’encre, pas en orange.",
+      "html": "<dl class=\"ds-releve\"><div><dt>Sous tension</dt><dd>78</dd></div><div class=\"ds-hors\"><dt>Hors audit</dt><dd>2</dd></div><div><dt>Nouveaux</dt><dd>1</dd></div></dl>",
+      "css": ".ds-releve { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 0; color: #1c1e21; font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif; font-weight: 500; letter-spacing: 0.02em; } .ds-releve div { display: flex; align-items: baseline; gap: 6px; } .ds-releve dt { color: #4c4f54; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; } .ds-releve dd { margin: 0; font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; } .ds-hors dd { box-shadow: inset 0 -3px 0 #1c1e21; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le tableau électrique",
+    "overview": "La sélection des projets est un panneau électrique. Chaque projet est un circuit qui a son disjoncteur, et l'audit n'alimente que les circuits sous tension. La page est faite des matériaux d'un vrai panneau : tôle émaillée gris chaud (graphite la nuit), plaque de façade un ton plus claire, épine centrale en acier avec ses rivets, disjoncteurs en thermoplastique noir avec ON et OFF moulés, étiquettes en ruban blanc. Une seule couleur dans tout le système : l'orange sécurité de l'étiquette de cadenassage.\n\nLa densité est celle d'un outil de travail : environ 80 circuits doivent se parcourir et se basculer en moins d'une minute, au pouce comme à la souris. Pas de cartes, pas d'illustration, pas de rangées identiques avec interrupteur générique. Le relief reste physique et court : un objet posé sur la tôle projette une ombre d'un ou deux pixels, rien de plus.\n\nLe mouvement est mécanique : le levier claque en 160 ms avec un léger dépassement, et l'étiquette orange pivote depuis son œillet en se posant. Avec le mouvement réduit, rien ne bouge.",
+    "keyCharacteristics": [
+      "Un circuit = un disjoncteur, un numéro tabulaire et un ruban étiqueté.",
+      "Épine centrale : impairs à gauche, pairs à droite sur grand écran ; une colonne avec l'épine à gauche au téléphone.",
+      "Le levier pointe vers l'épine quand le circuit est sous tension.",
+      "L'orange n'existe que sur l'étiquette « Hors audit ».",
+      "Tout le texte est en Barlow Condensed, sauf le texte courant en Barlow."
+    ],
+    "rules": [
+      {
+        "name": "La règle de l'orange unique",
+        "body": "L'orange sécurité est réservé à l'étiquette de cadenassage d'un circuit hors audit. Ni le compteur « Hors audit », ni les erreurs, ni le survol, ni le focus ne le prennent : le compteur se souligne à l'encre, l'erreur s'inverse en noir et blanc.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle de l'erreur en encre",
+        "body": "Un état d'erreur se signale par inversion ou par une pastille de l'encre courante, jamais par une couleur ajoutée.",
+        "section": "colors"
+      },
+      {
+        "name": "La règle des chiffres de compteur",
+        "body": "Tout nombre affiché (numéros de circuit, relevé) est en chiffres tabulaires, pour que les colonnes ne dansent pas.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle du ruban",
+        "body": "Un nom de projet ne s'écrit jamais en texte nu : il est toujours imprimé sur un ruban.",
+        "section": "typography"
+      },
+      {
+        "name": "La règle du relief de matière",
+        "body": "Une ombre ne sert qu'à dire qu'un objet est posé ou moulé : 2px de flou au plus, jamais de halo, jamais de décalage dur.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** faire pointer le levier vers l'épine pour « sous tension », en miroir de chaque côté.",
+      "**Do** garder l'orange (cadenas) pour la seule étiquette « Hors audit ».",
+      "**Do** imprimer chaque nom de projet sur un ruban, et chaque nombre en chiffres tabulaires.",
+      "**Do** garder ON et OFF moulés sur le disjoncteur : ce sont des marques du matériel, masquées aux lecteurs d'écran ; tout texte à lire reste en français.",
+      "**Do** couper le claquement du levier et la pose de l'étiquette quand le mouvement réduit est demandé."
+    ],
+    "donts": [
+      "**Don't** remplacer le disjoncteur par un interrupteur générique en pilule, ni aligner des rangées identiques de réglages.",
+      "**Don't** colorer une erreur, un compteur ou un survol en orange ou en rouge.",
+      "**Don't** utiliser d'ombre de plus de 2px de flou, de halo ni de décalage dur.",
+      "**Don't** arrondir au-delà de 4px, sauf le coin de queue de 12px de l'étiquette pendue."
+    ]
+  }
+}

@@ -22,7 +22,6 @@
   --focus: #1c1e21;
   --sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
   --etroit: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
-  --pas: 8px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -80,11 +79,11 @@ h1 {
 .recherche {
   flex: 1 1 200px; min-width: 0;
   font: 500 1rem/1 var(--sans); color: var(--encre);
-  background: var(--plaque); border: 1px solid var(--arete); border-radius: 3px;
+  background: var(--plaque); border: 1px solid var(--encre-2); border-radius: 3px;
   padding: 10px 12px;
 }
 .recherche::placeholder { color: var(--encre-2); }
-.filtres { display: flex; border: 1px solid var(--arete); border-radius: 3px; overflow: hidden; flex: 0 1 auto; }
+.filtres { display: flex; border: 1px solid var(--encre-2); border-radius: 3px; overflow: hidden; flex: 0 1 auto; }
 .filtres button {
   font: 600 0.85rem/1 var(--etroit); letter-spacing: 0.05em; text-transform: uppercase;
   color: var(--encre-2); background: var(--plaque); border: 0; padding: 11px 12px; cursor: pointer;
@@ -276,7 +275,6 @@ h1 {
       <div><dt>Nouveaux</dt><dd id="n-neuf">–</dd></div>
     </dl>
     <div class="outils">
-      <label class="visuel-cache" for="recherche" hidden>Trouver un projet</label>
       <input class="recherche" id="recherche" type="search" placeholder="Trouver un projet" aria-label="Trouver un projet" autocomplete="off">
       <div class="filtres" role="group" aria-label="Afficher">
         <button type="button" id="f-tous" data-filtre="tous" aria-pressed="true">Tous</button>
