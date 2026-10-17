@@ -1,6 +1,6 @@
 # claude-skills
 
-A collection of skills for power users of **Claude Code** and **Codex CLI**. Each skill is a self-contained folder you can install individually. All of them run in Claude Code; all but `rename-sessions` also run in Codex CLI (same folder, linked into `~/.codex/skills`).
+A collection of skills for power users of **Claude Code** and **Codex CLI**. Each skill is a self-contained folder you can install individually. All of them run in Claude Code; all but `audit-secu` and `rename-sessions` also run in Codex CLI (same folder, linked into `~/.codex/skills`).
 
 ## Skills at a glance
 
@@ -14,6 +14,7 @@ A collection of skills for power users of **Claude Code** and **Codex CLI**. Eac
 | [roast](#roast) | Convenes five contrarian personas to pressure-test an idea before you build it — verdict FONCE / REMANIE / ABANDONNE. | yes |
 | [save-state](#save-state) | Writes the session's truth to disk before a `/compact` (or at session end), then hands you the `/compact` line and the prompt to send right after. `--quick` and `--end` variants. | yes |
 | [impression](#impression) | Prepares and checks print-ready files for board games, booklets, leaflets and posters: exact trim size, bleed, fonts, resolution, before/after contact sheets, questions for the printer. | yes |
+| [audit-secu](#audit-secu) | Scans every project in a workspace for known vulnerable dependencies, GitHub Dependabot alerts, vulnerable WordPress plugins, end-of-life frameworks and outdated AI model IDs, then triages each finding with subagents and a Codex second opinion. Read-only. | no |
 | [rename-sessions](#rename-sessions) | Renames every session in a workspace to a status emoji plus three to six words, so the `/resume` list reads at a glance. | no |
 
 ---
@@ -180,6 +181,26 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\impressio
 
 ---
 
+## audit-secu
+
+Scans every project folder in a workspace (default `~/Apps-coding`, minus a trash folder) and reports what needs updating, without changing anything. A dependency-free Python script does the deterministic part in about a minute: `npm audit`, `pnpm audit`, `composer audit` (plus abandoned packages and major versions behind), pinned `requirements.txt` against OSV, WordPress core, plugins and themes by version against WPVulnerability (CC0 data), GitHub Dependabot, code scanning and secret scanning alerts, end-of-life dates from endoflife.date, and hard-coded AI model IDs checked against a model table. Lock files that belong to third-party WordPress plugins are skipped, along with the Dependabot alerts that point at them. The skill then has one subagent per affected project judge whether each vulnerability is reachable and in production code, sends severe or uncertain verdicts to Codex for a second opinion, and writes a single report ranked by urgency. Reports stay outside the repository. Written in French.
+
+**Requires:** Claude Code, Python 3, npm, composer, `gh` (logged in) for GitHub alerts, Codex CLI for the second opinion; pnpm if a project uses it. The model table is read from the `maj-modeles` skill (`~/.claude/skills/maj-modeles/model-map.json`); without it, every model ID is reported as unknown.
+
+**Linux / macOS**
+
+```bash
+ln -s "$(pwd)/claude-skills/audit-secu" ~/.claude/skills/audit-secu
+```
+
+**Windows** (PowerShell, admin / Developer Mode)
+
+```powershell
+New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\audit-secu" -Target "$PWD\claude-skills\audit-secu"
+```
+
+---
+
 ## rename-sessions
 
 Auto-generated session titles are long, English, and phrased alike — three "Review X for security vulnerabilities" in a row and the `/resume` list stops carrying information. This renames every session in a workspace to a status emoji plus three to six words (✅ done · ⏳ in progress · ⭐ worth a look · 🔒 security review), telling apart the families that dominate the list — automatic security reviews, skill invocations — by what each one actually covered. Titles you wrote by hand keep their text and only gain the emoji. Renaming is an append, so nothing is overwritten and a title you dislike is fixed with one more line; a coverage check aborts rather than renaming a workspace halfway. Ships the `CLAUDE.md` rule that names new sessions as they go, so the bulk pass only happens once.
@@ -207,11 +228,11 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\rename-se
 ```bash
 git clone https://github.com/collectifweb/claude-skills.git
 mkdir -p ~/.claude/skills
-for skill in humanize confront-codex timelog tidy doc-sync roast save-state impression rename-sessions; do
+for skill in humanize confront-codex timelog tidy doc-sync roast save-state impression audit-secu rename-sessions; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.claude/skills/$skill
 done
 
-# Codex CLI (every skill except rename-sessions)
+# Codex CLI (every skill except audit-secu and rename-sessions)
 mkdir -p ~/.codex/skills
 for skill in humanize confront-codex timelog tidy doc-sync roast save-state impression; do
   ln -s "$(pwd)/claude-skills/$skill" ~/.codex/skills/$skill
@@ -223,11 +244,11 @@ done
 ```powershell
 git clone https://github.com/collectifweb/claude-skills.git
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.claude\skills" | Out-Null
-foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','impression','rename-sessions') {
+foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','impression','audit-secu','rename-sessions') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\$skill" -Target "$PWD\claude-skills\$skill"
 }
 
-# Codex CLI (every skill except rename-sessions)
+# Codex CLI (every skill except audit-secu and rename-sessions)
 New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.codex\skills" | Out-Null
 foreach ($skill in 'humanize','confront-codex','timelog','tidy','doc-sync','roast','save-state','impression') {
   New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.codex\skills\$skill" -Target "$PWD\claude-skills\$skill"
