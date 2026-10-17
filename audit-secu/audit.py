@@ -657,6 +657,8 @@ def rapport_md(res, table_maj):
               *([f"Exclus par la sélection ({len(res['exclus'])}) : " + ', '.join(
                   f"{n} ({RAISONS.get(r, r)})" if r else n for n, r in sorted(res['exclus'].items())), '']
                 if res.get('exclus') else []),
+              *([f"En veille, scannés sans intervention ({len(res['veille'])}) : " + ', '.join(res['veille']), '']
+                if res.get('veille') else []),
               f"Table des modèles d'IA : `/maj-modeles`, mise à jour {table_maj or 'inconnue'}.", '',
               '## Vue d\'ensemble', '',
               '| Projet | 🔴 | 🟠 | 🟡 | ⚪ | Fin de support | Modèles | Angles morts |',
@@ -765,9 +767,12 @@ def main():
         print(json.dumps([nom(d) for d in tous], ensure_ascii=False))
         return
     # un projet nommé avec --projet passe même s'il est exclu par la sélection
-    exclus = {}
+    exclus, veille = {}, []
     if not a.projet and (base / FICHIER_SELECTION).is_file():
-        exclus = json.loads((base / FICHIER_SELECTION).read_text()).get('exclus', {})
+        selection = json.loads((base / FICHIER_SELECTION).read_text())
+        exclus, veille = selection.get('exclus', {}), selection.get('veille', [])
+    # en veille : hors audit (aucune intervention) mais scanné, pour repérer des ventes possibles
+    exclus = {n: r for n, r in exclus.items() if n not in veille}
     projets = [d for d in tous if (nom(d) in a.projet if a.projet else nom(d) not in exclus)]
     if exclus:
         print(f'{len(exclus)} projet(s) exclu(s) par la sélection : {", ".join(sorted(exclus))}', file=sys.stderr)
@@ -784,7 +789,7 @@ def main():
         for i, fut in enumerate(cf.as_completed(futurs), 1):
             p = futurs[fut]
             try:
-                resultats.append(fut.result())
+                resultats.append(fut.result() | {'veille': nom(p) in veille})
             except Exception as e:  # un projet en échec ne bloque pas les autres
                 resultats.append({'projet': nom(p), 'chemin': str(p), 'technos': [], 'failles': [], 'retards': [],
                                   'fins_support': [], 'wordpress': [], 'modeles': [], 'github': None,
@@ -792,6 +797,7 @@ def main():
             print(f'[{i}/{len(projets)}] {nom(p)}', file=sys.stderr)
 
     res = {'date': maintenant.strftime('%Y-%m-%d %H:%M'), 'base': str(base), 'ignores': ignores, 'exclus': exclus,
+           'veille': sorted(n for n in veille if n not in exclus),
            'table_modeles': table[2], 'projets': sorted(resultats, key=lambda r: r['projet'])}
     (sortie / 'brut.json').write_text(json.dumps(res, ensure_ascii=False, indent=1))
     (sortie / 'rapport-brut.md').write_text(rapport_md(res, table[2]))
@@ -800,10 +806,10 @@ def main():
 
 
 def ecrire_extraits(res, sortie):
-    """Un fichier par projet à trier (étape 3 du skill), et les modèles d'IA à classer (étape 2)."""
+    """Un fichier par projet à trier ou à surveiller (étapes 3 et 5 du skill), et les modèles d'IA à classer (étape 2)."""
     extraits = sortie / 'extraits'
     extraits.mkdir(exist_ok=True)
-    lots, modeles_ia = {'complet': [], 'dev_seulement': []}, []
+    lots, modeles_ia = {'complet': [], 'dev_seulement': [], 'veille': []}, []
     for p in res['projets']:
         modeles_ia += [m | {'projet': p['projet'], 'chemin': p['chemin']} for m in p['modeles']]
         # gravité inconnue = non cotée par la source, pas « faible » : elle part au tri
@@ -813,7 +819,14 @@ def ecrire_extraits(res, sortie):
               if (c['failles'] or {}).get('gravite_max', 0) >= 3]
         if not failles and not wp:
             continue
-        lots['complet' if wp or any(not f['dev'] for f in failles) else 'dev_seulement'].append(p['projet'])
+        if p.get('veille'):
+            # pas de tri : seulement les pistes de vente, élevées ou critiques
+            failles = [f for f in failles if f['niveau'] >= 3 and not f['dev']]
+            if not failles and not wp:
+                continue
+            lots['veille'].append(p['projet'])
+        else:
+            lots['complet' if wp or any(not f['dev'] for f in failles) else 'dev_seulement'].append(p['projet'])
         (extraits / f"{p['projet'].replace('/', '__')}.json").write_text(json.dumps(
             {'projet': p['projet'], 'chemin': p['chemin'], 'failles': failles, 'wordpress': wp},
             ensure_ascii=False, indent=1))

@@ -207,6 +207,12 @@ h1 {
 .raisons button:hover { background: color-mix(in srgb, var(--cadenas-encre) 12%, transparent); }
 .raisons button[aria-pressed="true"] { background: var(--cadenas-encre); color: var(--cadenas); }
 .raisons button:disabled { cursor: default; opacity: 0.7; }
+.veille {
+  grid-column: 2; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  font: 600 0.85rem/1.1 var(--etroit); letter-spacing: 0.03em;
+}
+.veille input { width: 18px; height: 18px; margin: 0; accent-color: var(--cadenas-encre); cursor: pointer; }
+.veille input:disabled { cursor: default; }
 .cadenas :focus-visible { outline-color: var(--cadenas-encre); }
 @keyframes pose { from { transform: rotate(-7deg); } to { transform: rotate(0); } }
 @keyframes pose-g { from { transform: rotate(7deg); } to { transform: rotate(0); } }
@@ -249,6 +255,7 @@ h1 {
   .circuit.gauche .oeillet { grid-column: 2; grid-row: 1; }
   .circuit.gauche .cadenas-texte { grid-column: 1; grid-row: 1; justify-content: flex-end; text-align: right; }
   .circuit.gauche .raisons { grid-column: 1; justify-content: flex-end; }
+  .circuit.gauche .veille { grid-column: 1; justify-content: flex-end; }
   .circuit.gauche .cadenas.pose { animation-name: pose-g; }
   /* à gauche de l'épine, le levier sous tension pointe vers la droite */
   .circuit.gauche .levier { transform: translateX(18px); }
@@ -272,6 +279,7 @@ h1 {
     <dl class="releve" aria-live="polite">
       <div><dt>Sous tension</dt><dd id="n-on">–</dd></div>
       <div class="hors"><dt>Hors audit</dt><dd id="n-off">–</dd></div>
+      <div><dt>En veille</dt><dd id="n-veille">–</dd></div>
       <div><dt>Nouveaux</dt><dd id="n-neuf">–</dd></div>
     </dl>
     <div class="outils">
@@ -291,7 +299,8 @@ h1 {
     <ol class="panneau" id="panneau" aria-label="Circuits"></ol>
   </main>
   <p class="pied">Chaque circuit est un dossier du dossier de travail. Seuls les circuits sous tension
-    sont scannés. Le skill inscrit les nouveaux dossiers avant chaque passage, et lit ce panneau
+    sont scannés, ainsi que les circuits hors audit « surveillés » : ceux-là sans intervention, leurs
+    failles servent de pistes de vente. Le skill inscrit les nouveaux dossiers avant chaque passage, et lit ce panneau
     avant de lancer l'audit.</p>
 </div>
 
@@ -376,13 +385,14 @@ h1 {
       '<div class="cadenas-texte"><strong>HORS AUDIT</strong><span class="consigne">Raison, si tu veux :</span></div>' +
       '<div class="raisons" role="group" aria-label="Raison de l’exclusion">' +
       RAISONS.map(([v, t]) => '<button type="button" data-raison="' + v + '" aria-pressed="false">' + t + '</button>').join('') +
-      '</div></div>';
+      '</div><label class="veille"><input type="checkbox"> Surveiller quand même</label></div>';
     li.querySelector('.disjoncteur').addEventListener('click', () => {
       const q = projets.find((x) => x.id === p.id);
       if (!q) return;
       if (q.scanner) li.dataset.pose = '1';
-      ecrire(q.id, q.scanner ? { scanner: false } : { scanner: true, raison: null });
+      ecrire(q.id, q.scanner ? { scanner: false } : { scanner: true, raison: null, veille: false });
     });
+    li.querySelector('.veille input').addEventListener('change', (e) => ecrire(p.id, { veille: e.target.checked }));
     li.querySelector('.cadenas').addEventListener('animationend', (e) => e.currentTarget.classList.remove('pose'));
     li.querySelectorAll('.raisons button').forEach((b) => b.addEventListener('click', () => {
       const q = projets.find((x) => x.id === p.id);
@@ -398,6 +408,7 @@ h1 {
     $('n-on').textContent = on;
     $('n-off').textContent = projets.length - on;
     $('n-neuf').textContent = projets.filter((p) => p.nouveau).length;
+    $('n-veille').textContent = projets.filter((p) => !p.scanner && p.veille).length;
 
     const terme = recherche.trim().toLocaleLowerCase('fr');
     const visibles = projets.filter((p) =>
@@ -427,6 +438,9 @@ h1 {
         if (hors && li.dataset.pose) c.classList.add('pose');
       }
       delete li.dataset.pose;
+      const v = li.querySelector('.veille input');
+      v.checked = hors && p.veille;
+      v.disabled = lectureSeule;
       li.querySelectorAll('.raisons button').forEach((b) => {
         b.setAttribute('aria-pressed', String(p.raison === b.dataset.raison));
         b.disabled = lectureSeule;
@@ -472,7 +486,7 @@ h1 {
     db.collection('projets').onSnapshot((snap) => {
       projets = snap.docs.map((s) => ({ id: s.id, ...s.data() }))
         .filter((p) => typeof p.nom === 'string')
-        .map((p) => ({ id: p.id, nom: p.nom, scanner: p.scanner !== false, raison: p.raison || null, nouveau: !!p.nouveau }))
+        .map((p) => ({ id: p.id, nom: p.nom, scanner: p.scanner !== false, raison: p.raison || null, nouveau: !!p.nouveau, veille: !!p.veille }))
         .sort((a, b) => a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' }));
       projets.forEach((p, i) => { p.numero = i + 1; });
       if ($('enregistre').dataset.etat !== 'erreur' && $('enregistre').textContent === 'Connexion au panneau…') {

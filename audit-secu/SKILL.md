@@ -48,7 +48,7 @@ Le panneau d'audit (`selection.html`, page claude.ai privée) liste les projets 
 `--reprendre`.
 
 Base de la page : collection `projets`, un document par dossier (`nom`, `scanner`, `raison` parmi
-`abandonne`, `mandat`, `autre-dev`, `suspendu` ou `null`, `nouveau`), et document `meta/panneau`
+`abandonne`, `mandat`, `autre-dev`, `suspendu` ou `null`, `nouveau`, `veille`), et document `meta/panneau`
 (`inventaire` : date ISO, `base`, `dossiers`). Identifiant d'un document : le nom du dossier sans
 accents, chaque caractère hors `A-Za-z0-9_.~:@+-` remplacé par `-` (`SPA Lévis` → `SPA-Levis`).
 
@@ -64,12 +64,14 @@ accents, chaque caractère hors `A-Za-z0-9_.~:@+-` remplacé par `-` (`SPA Lévi
    - `nouveau: true` laissé par le passage précédent : `update` à `false` ;
    - document dont le dossier n'existe plus : `delete` ;
    - `meta/panneau` : date et nombre de dossiers du jour.
-4. Donner le lien et le relevé (sous tension, hors audit, nouveaux), puis **attendre le feu vert**.
-   Rien n'est scanné avant.
+4. Donner le lien et le relevé (sous tension, hors audit, en veille, nouveaux), puis **attendre le
+   feu vert**. Rien n'est scanné avant.
 5. Relire `projets` et écrire `<base>/.audit-secu-projets.json` :
-   `{"page": "<adresse>", "date": "AAAA-MM-JJ", "exclus": {"<nom>": "<raison ou null>"}}`.
+   `{"page": "<adresse>", "date": "AAAA-MM-JJ", "exclus": {"<nom>": "<raison ou null>"},
+   "veille": ["<nom>"]}`. `veille` : les projets hors audit cochés « Surveiller quand même ». Ils
+   sont scannés sans intervention, pour repérer ce qui peut se proposer au client (étape 5).
    Le script lit ce fichier : lancé seul, il respecte la dernière sélection, et le rapport brut
-   nomme les projets exclus.
+   nomme les projets exclus et ceux en veille.
 
 ## Étape 1 — Relevé
 
@@ -80,9 +82,10 @@ python3 ~/.claude/skills/audit-secu/audit.py [--projet "<nom>" …]
 La dernière ligne donne le dossier du rapport. Lire `rapport-brut.md` pour la vue d'ensemble,
 `brut.json` pour le détail. Avec `--brut` : résumer la vue d'ensemble et s'arrêter.
 
-Le script prépare aussi le tri : `a-trier.json` (projets du lot `complet` et du lot
-`dev_seulement`), `extraits/<projet>.json` (failles moyennes ou plus, composants WordPress
-élevés ou plus) et `extraits/_modeles.json` (occurrences de modèles d'IA). Les sous-agents lisent
+Le script prépare aussi le tri : `a-trier.json` (projets des lots `complet`, `dev_seulement` et
+`veille`), `extraits/<projet>.json` (failles moyennes ou plus, composants WordPress élevés ou
+plus ; pour un projet en veille, seulement les failles élevées ou critiques hors développement) et
+`extraits/_modeles.json` (occurrences de modèles d'IA). Les sous-agents lisent
 ces fichiers eux-mêmes : ne pas recopier leur contenu dans les prompts.
 
 npm, pnpm et composer tournent sur une copie temporaire des seuls fichiers de dépendances, sans
@@ -117,7 +120,8 @@ Ce que le script couvre, et ce qu'il écarte exprès :
 ## Étape 3 — Tri par sous-agents
 
 Projets à trier (`a-trier.json`, lot `complet`) : au moins une faille de gravité moyenne ou plus
-**hors développement**, ou une extension WordPress de gravité élevée ou plus.
+**hors développement**, ou une extension WordPress de gravité élevée ou plus. Le lot `veille` ne
+passe ni au tri ni à Codex : il va directement à l'étape 5.
 
 - **Un sous-agent Opus par projet**, lancés en parallèle (par vagues de 8 au plus).
 - **Un seul sous-agent Sonnet pour le lot « développement seulement »** : les projets dont toutes
@@ -178,12 +182,33 @@ Modèle refusé : citer l'erreur telle quelle, ne pas basculer seul vers un autr
 
 Un désaccord ne se tranche pas en silence : les deux avis figurent dans le rapport.
 
-## Étape 5 — Rapport final
+## Étape 5 — Occasions (projets en veille)
+
+Les projets du lot `veille` sont hors mandat : pas de tri, pas de Codex, pas de correctif. Le but
+est de repérer ce qui peut se proposer au client. Un seul sous-agent Sonnet pour tout le lot, avec
+les interdits du tri (lecture seule, aucun identifiant, aucune connexion à un serveur, pages
+publiques en visiteur anonyme). Pour chaque paquet ou composant de `extraits/<projet>.json` :
+
+1. Adresse du site : CLAUDE.md, README ou configuration du projet. Sans adresse : « copie locale
+   seulement ».
+2. Version servie en production, lue par une requête publique : `?ver=` des scripts et styles
+   d'une extension WordPress, son `readme.txt` public, empreinte du script Livewire… Requêtes
+   `GET` seulement, sans formulaire ni connexion.
+3. Statut : *constaté en production* (la version servie est vulnérable), *corrigé en production*
+   (la copie locale est en retard, rien à proposer), *copie locale seulement* (version en ligne
+   illisible ou site introuvable).
+4. Le problème en une phrase qu'un client comprend, et l'offre possible (mise à jour, contrat de
+   maintenance…).
+
+Les appels réels à un modèle d'IA retiré ou déprécié (étape 2) dans ces projets sont aussi des
+occasions.
+
+## Étape 6 — Rapport final
 
 `<rapport>/rapport.md`, en français clair, dans cet ordre :
 
-1. **En-tête** : date, projets couverts, ce qui n'est pas couvert (production ; failles du code
-   maison), fraîcheur de la table des modèles.
+1. **En-tête** : date, projets couverts (dont ceux en veille), ce qui n'est pas couvert
+   (production ; failles du code maison), fraîcheur de la table des modèles.
 2. **🔴 À corriger maintenant** : projet, paquet, faille en une phrase, pourquoi (Claude), avis de
    Codex, correctif, risque de casse.
 3. **🟠 À planifier**, puis **🟡 À surveiller** (une ligne par paquet).
@@ -192,10 +217,14 @@ Un désaccord ne se tranche pas en silence : les deux avis figurent dans le rapp
 5. **Fins de support et retards de version majeure.**
 6. **Modèles d'IA** : appels réels à remplacer, renvoi vers `/maj-modeles`.
 7. **Désaccords Claude / Codex.**
-8. **Angles morts** : projets sans GitHub, Dependabot coupé, fichiers non analysables.
+8. **💡 Occasions (projets en veille)** : projet, problème en une phrase, statut, offre possible.
+   Ceux déjà corrigés en production n'y figurent pas. Rien ne part vers un client sans la
+   validation de l'utilisateur et un passage par `/humanize`.
+9. **Angles morts** : projets sans GitHub, Dependabot coupé, fichiers non analysables.
 
-## Étape 6 — Message à l'utilisateur
+## Étape 7 — Message à l'utilisateur
 
-Court : les urgences en tête (cinq au plus), le chemin complet du rapport, les statuts explicites
-(relevé constaté, verdicts jugés sans exécution, production non couverte). Proposer ensuite :
-corriger un projet (session à part, avec son accord), `/maj-modeles` pour les modèles.
+Court : les urgences en tête (cinq au plus), le nombre d'occasions, le chemin complet du rapport,
+les statuts explicites (relevé constaté, verdicts jugés sans exécution, production non couverte).
+Proposer ensuite : corriger un projet (session à part, avec son accord), `/maj-modeles` pour les
+modèles.
