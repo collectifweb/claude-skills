@@ -150,15 +150,16 @@ def audit_npm(dossier):
         vues[portee] = d.get('vulnerabilities', {})
     failles = []
     for nom, v in vues['tout'].items():
-        version = None
-        for noeud in v.get('nodes', []):
-            version = lock.get('packages', {}).get(noeud, {}).get('version') or version
-        correctif = v.get('fixAvailable')
-        if isinstance(correctif, bool):
-            correctif = 'oui (npm audit fix)' if correctif else None
-        elif isinstance(correctif, dict):
-            correctif = f"{correctif.get('name')} {correctif.get('version')}" + \
-                (' (version majeure)' if correctif.get('isSemVerMajor') else '')
+        # toutes les copies installées, pas seulement la dernière lue
+        version = ', '.join(sorted({lock.get('packages', {}).get(n, {}).get('version') for n in v.get('nodes', [])}
+                                   - {None}, key=num)) or None
+        # fixAvailable: true ne garantit pas que la branche installée ait un correctif : on ne le reprend pas
+        npm_propose = v.get('fixAvailable')
+        if isinstance(npm_propose, dict):
+            npm_propose = f"npm propose {npm_propose.get('name')} {npm_propose.get('version')}" + \
+                (' (version majeure)' if npm_propose.get('isSemVerMajor') else '')
+        else:
+            npm_propose = None
         for a in v.get('via', []):
             if not isinstance(a, dict):
                 continue  # faille héritée : elle est comptée sur le paquet d'origine
@@ -166,9 +167,16 @@ def audit_npm(dossier):
                 'source': 'npm audit', 'ecosysteme': 'npm', 'paquet': nom, 'version': version,
                 'gravite': a.get('severity'), 'titre': a.get('title'), 'id': ghsa(a.get('url')),
                 'lien': a.get('url'), 'plage': a.get('range'), 'direct': v.get('isDirect'),
-                'dev': nom not in vues['prod'], 'correctif': correctif,
+                'dev': nom not in vues['prod'],
+                'correctif': ' · '.join(filter(None, [borne_npm(a.get('range')), npm_propose])) or None,
             })
     return failles, None
+
+
+def borne_npm(plage):
+    """'<7.1.6' -> '≥ 7.1.6' : première version hors de la plage vulnérable, lue dans l'avis lui-même."""
+    bornes = re.findall(r'(?:^|\s)<([0-9][^\s|]*)', plage or '')
+    return ' ou '.join(f'≥ {b}' for b in bornes) or None
 
 
 def audit_pnpm(dossier):
@@ -604,8 +612,12 @@ def fusionner(failles):
         if GRAVITE.get(str(f.get('gravite')).lower(), 0) > GRAVITE.get(str(g.get('gravite')).lower(), 0):
             g['gravite'] = f.get('gravite')
         g['dev'] = bool(g.get('dev')) and bool(f.get('dev'))
-        for champ in ('version', 'correctif', 'cve'):
+        for champ in ('version', 'cve'):
             g[champ] = g.get(champ) or f.get(champ)
+        # une faille sur deux branches a deux correctifs (≥ 1.1.16 ou ≥ 5.0.7) : garder les deux
+        c = f.get('correctif')
+        if c and c.lstrip('≥ ') not in (g.get('correctif') or ''):
+            g['correctif'] = f"{g['correctif']} ou {c}" if g.get('correctif') else c
         if f.get('plage') and f['plage'] not in (g.get('plage') or ''):
             g['plage'] = f"{g['plage']} ; {f['plage']}" if g.get('plage') else f['plage']
     res = []
@@ -662,7 +674,7 @@ def rapport_md(res, table_maj):
             for f in p['failles'][:20]:
                 lignes.append(
                     f"- {PASTILLE[f['niveau']]} {f['gravite']} · {f['ecosysteme']} · `{f['paquet']}` "
-                    f"{f.get('version') or ''}{' · **dev seulement**' if f['dev'] else ''} · {f.get('titre') or ''} "
+                    f"{f.get('version') or ''}{' · **devDependencies seulement**' if f['dev'] else ''} · {f.get('titre') or ''} "
                     f"· {f.get('id') or ''} · corrigé : {f.get('correctif') or '?'} · {', '.join(f['sources'])} "
                     f"· {', '.join(f['fichiers'])}")
             if len(p['failles']) > 20:

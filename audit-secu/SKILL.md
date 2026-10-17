@@ -51,7 +51,9 @@ les jetons de l'environnement : aucune config ni aucun crochet du projet n'est c
 Ce que le script couvre, et ce qu'il écarte exprès :
 - npm (`npm audit --package-lock-only`), pnpm, composer (`audit`, `outdated --major-only`, paquets
   abandonnés), `requirements.txt` figés (OSV) ; chaque faille dit si elle ne touche que les
-  dépendances de développement ;
+  dépendances de développement (`devDependencies`, `require-dev`). Ça ne veut pas dire « non
+  déployé » : un paquet compilé dans le JavaScript du site (axios dans Laravel, par exemple) part
+  en production ;
 - extensions et thèmes WordPress par leur version (WPVulnerability, données CC0) ; les fichiers de
   dépendances internes aux extensions tierces sont écartés, ainsi que les alertes GitHub qui les
   visent ;
