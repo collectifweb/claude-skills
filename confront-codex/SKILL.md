@@ -53,6 +53,7 @@ L'autre met typiquement 3 à 15 minutes à répondre. Sa **réponse finale** est
 timeout 45m codex exec \
   --model gpt-5.6-sol \
   -c model_reasoning_effort="xhigh" \
+  -c approval_policy="never" \
   --sandbox read-only \
   --skip-git-repo-check \
   -o "$ARCHIVE_DIR/round-N-codex.md" \
@@ -72,8 +73,9 @@ timeout 45m claude -p "PROMPT" \
 
 Le prompt vient **juste après `-p`**, et `--allowedTools` s'écrit avec `=` : sous la forme `--allowedTools "Read,Grep,Glob" "PROMPT"`, l'option avale le prompt et la commande échoue (« Input must be provided »). Seuls ces trois outils de lecture sont permis : toute écriture reste en attente d'une approbation qui ne vient jamais, donc rien n'est modifié.
 
-Trois règles, chacune pour une panne déjà vécue :
+Quatre règles, chacune pour une panne déjà vécue :
 
+- **`approval_policy="never"` toujours.** Le bac à sable `read-only` bloque les écritures et le réseau, mais Codex peut demander à en sortir, et un relecteur automatique (`approvals_reviewer = "auto_review"` dans `~/.codex/config.toml`) peut le lui accorder. Constaté le 17 oct. 2026 : Codex est sorti du bac à sable ainsi pour se connecter à un serveur. Avec `never`, ses demandes sont refusées d'office.
 - **`< /dev/null` toujours.** Sans lui, `codex exec` attend une saisie qui ne vient jamais (`Reading additional input from stdin...`) et reste bloqué indéfiniment. Pas de `--json` non plus.
 - **`timeout 45m` toujours.** Quoi qu'il arrive (réussite, erreur, blocage), la commande finit par se terminer. Aucune attente sans fin. Sur macOS, `timeout` s'appelle `gtimeout` (paquet `coreutils` de Homebrew).
 - **En arrière-plan.** Dans Claude Code, lance la commande avec `run_in_background: true` : tu es relancé automatiquement quand elle se termine. En premier plan, l'outil coupe au bout de 10 minutes maximum, et tu croirais à un échec alors que l'autre travaille encore. Dans Codex, lance-la de la façon qui permet d'attendre 45 minutes, puis relis le fichier.

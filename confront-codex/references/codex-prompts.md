@@ -83,7 +83,7 @@ L'absence du token ou un token mal orthographié est traité comme une erreur et
 
 **Commande, modèle, attente** : tout est dans les sections « Choix du modèle » et « Lancer l'autre et attendre sa réponse » du SKILL.md. Rien à dupliquer ici.
 
-**Lecture seule** : l'autre tourne en lecture seule (`--sandbox read-only` pour Codex, `--allowedTools=Read,Grep,Glob` pour Claude et Fable). C'est voulu : il lit le plan et le code, sa réponse finale est enregistrée par la commande elle-même (`-o` pour Codex, redirection de la sortie pour Claude).
+**Lecture seule** : l'autre tourne en lecture seule (`--sandbox read-only` et `approval_policy="never"` pour Codex, `--allowedTools=Read,Grep,Glob` pour Claude et Fable). C'est voulu : il lit le plan et le code, sa réponse finale est enregistrée par la commande elle-même (`-o` pour Codex, redirection de la sortie pour Claude).
 
 **Vérification du token de consensus** : après chaque réponse de l'autre à partir du round 2 :
 
