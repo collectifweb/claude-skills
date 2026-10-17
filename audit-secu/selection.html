@@ -1,4 +1,4 @@
-<title>Panneau d'audit</title>
+<title>Panneau d’audit</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,15 +26,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --fond: #17191c; --plaque: #212428; --arete: #363a40; --encre: #e8e6e0; --encre-2: #a8acb2;
-    --module: #0d0e10; --levier: #50565e; --moule: #858b93; --epine: #5c6168; --ruban: #e2e0d8;
+    --fond: #1a1a19; --plaque: #262523; --arete: #3b3a37; --encre: #e8e6e0; --encre-2: #b0ada6;
+    --module: #0f0f0e; --levier: #575653; --moule: #8f8d88; --epine: #64625e; --ruban: #e2e0d8;
     --ruban-encre: #141516; --cadenas: #f06a1f; --cadenas-encre: #141516; --focus: #e8e6e0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --fond: #17191c; --plaque: #212428; --arete: #363a40; --encre: #e8e6e0; --encre-2: #a8acb2;
-  --module: #0d0e10; --levier: #50565e; --moule: #858b93; --epine: #5c6168; --ruban: #e2e0d8;
+  --fond: #1a1a19; --plaque: #262523; --arete: #3b3a37; --encre: #e8e6e0; --encre-2: #b0ada6;
+  --module: #0f0f0e; --levier: #575653; --moule: #8f8d88; --epine: #64625e; --ruban: #e2e0d8;
   --ruban-encre: #141516; --cadenas: #f06a1f; --cadenas-encre: #141516; --focus: #e8e6e0;
   color-scheme: dark;
 }
@@ -47,10 +47,10 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 40px;
-  caret-color: var(--cadenas);
+  caret-color: var(--encre);
   scrollbar-color: var(--arete) var(--fond);
 }
-::selection { background: var(--cadenas); color: var(--cadenas-encre); }
+::selection { background: var(--encre); color: var(--fond); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .cadre { max-width: 1080px; margin: 0 auto; }
 
@@ -75,7 +75,7 @@ h1 {
 .releve div { display: flex; align-items: baseline; gap: 6px; }
 .releve dt { color: var(--encre-2); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.06em; }
 .releve dd { margin: 0; font-weight: 700; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-.releve .hors dd { color: var(--encre); box-shadow: inset 0 -3px 0 var(--cadenas); }
+.releve .hors dd { color: var(--encre); box-shadow: inset 0 -3px 0 var(--encre); }
 .outils { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
 .recherche {
   flex: 1 1 200px; min-width: 0;
@@ -95,7 +95,7 @@ h1 {
 .filtres button[aria-pressed="true"] { background: var(--module); color: var(--ruban); }
 .enregistre { margin: 0; min-height: 1.2em; color: var(--encre-2); font: 500 0.85rem/1.2 var(--etroit); letter-spacing: 0.03em; }
 .enregistre[data-etat="erreur"] { color: var(--encre); }
-.enregistre[data-etat="erreur"]::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; background: var(--cadenas); border-radius: 50%; }
+.enregistre[data-etat="erreur"]::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 6px; background: currentColor; border-radius: 50%; }
 
 /* Plaque de façade et épine */
 .plaque {
@@ -113,17 +113,22 @@ h1 {
 }
 .panneau::before {
   content: ""; position: absolute; top: -6px; bottom: -6px; left: 0; width: 10px;
-  background:
-    radial-gradient(circle at 50% 50%, var(--plaque) 0 1.5px, transparent 2px) 0 0 / 10px 46px repeat-y,
-    var(--epine);
+  background: var(--epine);
   border-radius: 2px;
 }
+.circuit::before {
+  content: ""; position: absolute; top: 17px; left: 3px; width: 4px; height: 4px; border-radius: 50%;
+  background: var(--plaque); box-shadow: inset 0 1px 0 rgb(0 0 0 / 0.3);
+}
 .circuit {
+  position: relative;
   display: grid; align-items: start; column-gap: 10px;
   grid-template-columns: 10px 58px 2.2em minmax(0, 1fr);
   grid-template-areas: "epine disj num etiq" "epine cad cad cad";
+  /* le cadenas part de la colonne du disjoncteur */
 }
-.disjoncteur { grid-area: disj; }
+.disjoncteur { grid-area: disj; margin-left: -8px; }
+.circuit:not(.gauche):not(.droite) .cadenas, .circuit.droite .cadenas { margin-left: -8px; }
 .numero { grid-area: num; }
 .etiquette { grid-area: etiq; min-width: 0; }
 .cadenas { grid-area: cad; }
@@ -140,18 +145,18 @@ h1 {
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 1px 2px rgb(0 0 0 / 0.35);
 }
 .disjoncteur::before {
-  content: ""; position: absolute; left: 13px; right: 13px; top: 14px; height: 10px;
+  content: ""; position: absolute; left: 13px; right: 13px; top: 11px; height: 10px;
   background: rgb(0 0 0 / 0.55); border-radius: 5px;
 }
 .levier {
-  position: absolute; top: 11px; left: 11px; width: 18px; height: 16px;
+  position: absolute; top: 8px; left: 11px; width: 18px; height: 16px;
   background: linear-gradient(180deg, color-mix(in srgb, var(--levier) 80%, white) 0%, var(--levier) 100%);
   border-radius: 3px;
   box-shadow: 0 1px 1px rgb(0 0 0 / 0.5);
-  transition: transform 160ms cubic-bezier(.2, .9, .25, 1);
+  transition: transform 160ms cubic-bezier(.3, 1.45, .55, 1);
 }
 .moule {
-  position: absolute; bottom: 2px; font: 700 8px/1 var(--etroit); letter-spacing: 0.08em; color: var(--moule);
+  position: absolute; bottom: 2px; font: 700 10px/1 var(--etroit); letter-spacing: 0.06em; color: var(--moule);
 }
 .moule.on { left: 6px; }
 .moule.off { right: 5px; }
@@ -178,14 +183,14 @@ h1 {
 
 /* Étiquette de cadenassage */
 .cadenas {
-  margin-top: 6px;
+  margin-top: 4px; justify-self: start; width: fit-content; max-width: min(100%, 16rem);
   display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 10px;
   background: var(--cadenas); color: var(--cadenas-encre);
   border-radius: 3px 3px 3px 12px;
   padding: 7px 10px 8px 8px;
-  transform-origin: 6px 6px;
-  animation: pose 200ms cubic-bezier(.2, .9, .25, 1);
+  transform-origin: 14px 13px;
 }
+.cadenas.pose { animation: pose 200ms cubic-bezier(.2, .9, .25, 1); }
 .oeillet {
   width: 12px; height: 12px; border-radius: 50%;
   background: var(--plaque); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--cadenas-encre) 30%, var(--cadenas));
@@ -205,6 +210,7 @@ h1 {
 .raisons button:disabled { cursor: default; opacity: 0.7; }
 .cadenas :focus-visible { outline-color: var(--cadenas-encre); }
 @keyframes pose { from { transform: rotate(-7deg); } to { transform: rotate(0); } }
+@keyframes pose-g { from { transform: rotate(7deg); } to { transform: rotate(0); } }
 
 /* Squelette, panneau vide, pied */
 .circuit.attente .disjoncteur { opacity: 0.35; }
@@ -212,17 +218,39 @@ h1 {
 .message { margin: 4px 0 4px 20px; max-width: 60ch; color: var(--encre-2); }
 .message strong { color: var(--encre); }
 .pied { margin: 18px 0 0; max-width: 70ch; color: var(--encre-2); font-size: 0.875rem; }
+.enregistre:empty { display: none; }
+@media (max-width: 759px) {
+  body { padding-block: 0 72px; }
+  .numero { text-align: left; }
+  .enregistre {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 6;
+    background: var(--module); color: var(--ruban);
+    font-size: 0.95rem;
+    padding: 11px max(16px, env(safe-area-inset-right, 0px)) calc(11px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+  .enregistre[data-etat="erreur"] { background: var(--ruban); color: var(--ruban-encre); }
+}
 
 @media (min-width: 760px) {
   .porte { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
   .plaque { padding: 18px 16px; }
-  .panneau { grid-template-columns: 1fr 1fr; column-gap: 30px; grid-auto-flow: row; }
+  .panneau { grid-template-columns: 1fr 1fr; column-gap: 12px; grid-auto-flow: row; }
+  .disjoncteur, .circuit.droite .cadenas { margin-left: 0; }
+  .circuit.gauche::before { left: auto; right: -8px; }
+  .circuit.droite::before { left: -8px; }
   .panneau::before { left: calc(50% - 5px); }
   .circuit.gauche { grid-column: 1; grid-template-columns: minmax(0, 1fr) 2.2em 58px; grid-template-areas: "etiq num disj" "cad cad cad"; }
   .circuit.droite { grid-column: 2; grid-template-columns: 58px 2.2em minmax(0, 1fr); grid-template-areas: "disj num etiq" "cad cad cad"; }
   .circuit.gauche .numero { text-align: left; }
   .circuit.gauche .etiquette { justify-content: flex-end; }
-  .circuit.gauche .cadenas { border-radius: 3px 3px 12px 3px; }
+  .circuit.gauche .cadenas {
+    justify-self: end; grid-template-columns: 1fr auto; border-radius: 3px 3px 12px 3px;
+    padding: 7px 8px 8px 10px; transform-origin: calc(100% - 14px) 13px;
+  }
+  .circuit.gauche .oeillet { grid-column: 2; grid-row: 1; }
+  .circuit.gauche .cadenas-texte { grid-column: 1; grid-row: 1; justify-content: flex-end; text-align: right; }
+  .circuit.gauche .raisons { grid-column: 1; justify-content: flex-end; }
+  .circuit.gauche .cadenas.pose { animation-name: pose-g; }
   /* à gauche de l'épine, le levier sous tension pointe vers la droite */
   .circuit.gauche .levier { transform: translateX(18px); }
   .circuit.gauche.hors .levier { transform: none; }
@@ -232,14 +260,14 @@ h1 {
 }
 @media (prefers-reduced-motion: reduce) {
   .levier { transition: none; }
-  .cadenas { animation: none; }
+  .cadenas.pose, .circuit.gauche .cadenas.pose { animation: none; }
 }
 </style>
 
 <div class="cadre">
   <header class="porte">
     <div class="porte-haut">
-      <h1>Panneau d'audit</h1>
+      <h1>Panneau d’audit</h1>
       <p class="inventaire" id="inventaire">Dossier de travail</p>
     </div>
     <dl class="releve" aria-live="polite">
@@ -326,7 +354,7 @@ h1 {
     }, (e) => {
       if (e && (e.code === 'invalid_argument' || e.code === 'not_granted')) {
         lectureSeule = true;
-        statut('Lecture seule : ce panneau ne peut pas être modifié depuis ce compte.', 'erreur');
+        statut('Lecture seule : ce panneau ne peut pas être modifié depuis ce compte.', 'erreur');
         rendre();
       } else {
         statut('Échec de l’enregistrement. Réessaie dans un instant.', 'erreur');
@@ -347,15 +375,17 @@ h1 {
       '<span class="numero"></span>' +
       '<div class="etiquette"><span class="ruban"></span><span class="neuf" hidden>NOUVEAU</span></div>' +
       '<div class="cadenas" hidden><span class="oeillet" aria-hidden="true"></span>' +
-      '<div class="cadenas-texte"><strong>HORS AUDIT</strong><span class="consigne">Raison, si tu veux :</span></div>' +
+      '<div class="cadenas-texte"><strong>HORS AUDIT</strong><span class="consigne">Raison, si tu veux :</span></div>' +
       '<div class="raisons" role="group" aria-label="Raison de l’exclusion">' +
       RAISONS.map(([v, t]) => '<button type="button" data-raison="' + v + '" aria-pressed="false">' + t + '</button>').join('') +
       '</div></div>';
     li.querySelector('.disjoncteur').addEventListener('click', () => {
       const q = projets.find((x) => x.id === p.id);
       if (!q) return;
+      if (q.scanner) li.dataset.pose = '1';
       ecrire(q.id, q.scanner ? { scanner: false } : { scanner: true, raison: null });
     });
+    li.querySelector('.cadenas').addEventListener('animationend', (e) => e.currentTarget.classList.remove('pose'));
     li.querySelectorAll('.raisons button').forEach((b) => b.addEventListener('click', () => {
       const q = projets.find((x) => x.id === p.id);
       if (!q) return;
@@ -394,7 +424,11 @@ h1 {
       d.setAttribute('aria-label', 'Scanner ' + p.nom);
       d.disabled = lectureSeule;
       const c = li.querySelector('.cadenas');
-      if (c.hidden !== !hors) c.hidden = !hors;
+      if (c.hidden !== !hors) {
+        c.hidden = !hors;
+        if (hors && li.dataset.pose) c.classList.add('pose');
+      }
+      delete li.dataset.pose;
       li.querySelectorAll('.raisons button').forEach((b) => {
         b.setAttribute('aria-pressed', String(p.raison === b.dataset.raison));
         b.disabled = lectureSeule;
@@ -403,9 +437,9 @@ h1 {
     });
 
     if (!projets.length) {
-      message('<strong>Le panneau est vide.</strong> Lance <code>/audit-secu</code> : le skill y inscrit tes projets avant le passage.');
+      message('<strong>Le panneau est vide.</strong> Lance <code>/audit-secu</code> : le skill y inscrit tes projets avant le passage.');
     } else if (!visibles.length) {
-      message('Aucun circuit ne correspond. Efface la recherche ou choisis « Tous ».');
+      message('Aucun circuit ne correspond. Efface la recherche ou choisis « Tous ».');
     } else {
       message('');
     }
