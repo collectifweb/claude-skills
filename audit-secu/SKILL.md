@@ -40,6 +40,14 @@ python3 ~/.claude/skills/audit-secu/audit.py [--projet "<nom>" …]
 La dernière ligne donne le dossier du rapport. Lire `rapport-brut.md` pour la vue d'ensemble,
 `brut.json` pour le détail. Avec `--brut` : résumer la vue d'ensemble et s'arrêter.
 
+Le script prépare aussi le tri : `a-trier.json` (projets du lot `complet` et du lot
+`dev_seulement`), `extraits/<projet>.json` (failles moyennes ou plus, composants WordPress
+élevés ou plus) et `extraits/_modeles.json` (occurrences de modèles d'IA). Les sous-agents lisent
+ces fichiers eux-mêmes : ne pas recopier leur contenu dans les prompts.
+
+npm, pnpm et composer tournent sur une copie temporaire des seuls fichiers de dépendances, sans
+les jetons de l'environnement : aucune config ni aucun crochet du projet n'est chargé.
+
 Ce que le script couvre, et ce qu'il écarte exprès :
 - npm (`npm audit --package-lock-only`), pnpm, composer (`audit`, `outdated --major-only`, paquets
   abandonnés), `requirements.txt` figés (OSV) ; chaque faille dit si elle ne touche que les
@@ -66,8 +74,8 @@ Ce que le script couvre, et ce qu'il écarte exprès :
 
 ## Étape 3 — Tri par sous-agents
 
-Projets à trier : au moins une faille de gravité moyenne ou plus **hors développement**, ou une
-extension WordPress de gravité élevée ou plus.
+Projets à trier (`a-trier.json`, lot `complet`) : au moins une faille de gravité moyenne ou plus
+**hors développement**, ou une extension WordPress de gravité élevée ou plus.
 
 - **Un sous-agent Opus par projet**, lancés en parallèle (par vagues de 8 au plus).
 - **Un seul sous-agent Sonnet pour le lot « développement seulement »** : les projets dont toutes
@@ -84,7 +92,7 @@ rien, ne lance ni build ni tests. Le relevé ci-dessous vient d'un script : il p
 
 Contexte du projet : lis d'abord son CLAUDE.md ou son README (public ou interne ? en ligne ?).
 
-Relevé (JSON) : <failles ≥ moyenne du projet, et composants WordPress ≥ élevée>
+Relevé : lis <rapport>/extraits/<projet>.json (failles ≥ moyenne, composants WordPress ≥ élevée).
 
 Regroupe par paquet (plusieurs avis sur un même paquet = un seul verdict). Pour chaque paquet :
 1. Portée : dépendance de production, ou outil de build / test seulement ? Preuve : fichier:ligne.

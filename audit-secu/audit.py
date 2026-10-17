@@ -14,12 +14,15 @@ import datetime as dt
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import urllib.error
 import urllib.parse
 import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
 
 POUBELLE = 'ZZ-POUBELLE'
@@ -74,7 +77,11 @@ def http_json(url):
 
 
 def lancer(cmd, cwd=None, timeout=180):
-    env = dict(os.environ, COMPOSER_NO_INTERACTION='1', NO_COLOR='1')
+    env = dict(os.environ)
+    if cmd[0] != 'gh':  # les outils de paquets n'ont pas à voir les jetons et les clés
+        env = {k: v for k, v in env.items() if not re.search(r'TOKEN|SECRET|PASSWORD|_KEY', k, re.I)}
+    env |= {'COMPOSER_NO_INTERACTION': '1', 'NO_COLOR': '1', 'COREPACK_ENABLE_STRICT': '0',
+            'npm_config_manage_package_manager_versions': 'false'}
     try:
         p = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=env)
         return p.returncode, p.stdout, p.stderr
@@ -82,6 +89,16 @@ def lancer(cmd, cwd=None, timeout=180):
         return -1, '', 'délai dépassé'
     except FileNotFoundError:
         return -1, '', f'{cmd[0]} absent de la machine'
+
+
+@contextmanager
+def copie(dossier, fichiers):
+    """Les audits tournent sur une copie des seuls manifestes : aucune config ni crochet du projet n'est chargé."""
+    with tempfile.TemporaryDirectory(prefix='audit-secu-') as tmp:
+        for f in fichiers:
+            if (dossier / f).is_file():
+                shutil.copy2(dossier / f, tmp)
+        yield Path(tmp)
 
 
 def num(v):
@@ -122,7 +139,8 @@ def audit_npm(dossier):
     lock = lire_json(dossier / 'package-lock.json')
     vues = {}
     for portee, extra in (('tout', []), ('prod', ['--omit=dev'])):
-        _, out, err = lancer(['npm', 'audit', '--json', '--package-lock-only', *extra], dossier)
+        with copie(dossier, ['package.json', 'package-lock.json']) as tmp:
+            _, out, err = lancer(['npm', 'audit', '--json', '--package-lock-only', *extra], tmp)
         try:
             d = json.loads(out)
         except ValueError:
@@ -156,7 +174,8 @@ def audit_npm(dossier):
 def audit_pnpm(dossier):
     vues = {}
     for portee, extra in (('tout', []), ('prod', ['--prod'])):
-        _, out, err = lancer(['pnpm', 'audit', '--json', *extra], dossier)
+        with copie(dossier, ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']) as tmp:
+            _, out, err = lancer(['pnpm', 'audit', '--json', *extra], tmp)
         try:
             vues[portee] = json.loads(out).get('advisories', {})
         except ValueError:
@@ -175,7 +194,8 @@ def audit_pnpm(dossier):
 
 
 def _composer(dossier, *args):
-    _, out, err = lancer(['composer', *args, '--locked', '--format=json', '--no-plugins'], dossier)
+    with copie(dossier, ['composer.json', 'composer.lock']) as tmp:
+        _, out, err = lancer(['composer', *args, '--locked', '--format=json', '--no-plugins', '--no-scripts'], tmp)
     try:
         return json.loads(out), None
     except ValueError:
@@ -732,7 +752,28 @@ def main():
            'table_modeles': table[2], 'projets': sorted(resultats, key=lambda r: r['projet'])}
     (sortie / 'brut.json').write_text(json.dumps(res, ensure_ascii=False, indent=1))
     (sortie / 'rapport-brut.md').write_text(rapport_md(res, table[2]))
+    ecrire_extraits(res, sortie)
     print(sortie)
+
+
+def ecrire_extraits(res, sortie):
+    """Un fichier par projet à trier (étape 3 du skill), et les modèles d'IA à classer (étape 2)."""
+    extraits = sortie / 'extraits'
+    extraits.mkdir(exist_ok=True)
+    lots, modeles_ia = {'complet': [], 'dev_seulement': []}, []
+    for p in res['projets']:
+        modeles_ia += [m | {'projet': p['projet'], 'chemin': p['chemin']} for m in p['modeles']]
+        failles = [f for f in p['failles'] if f['niveau'] >= 2]
+        wp = [c | {'installation': i['chemin']} for i in p['wordpress'] for c in i['composants']
+              if (c['failles'] or {}).get('gravite_max', 0) >= 3]
+        if not failles and not wp:
+            continue
+        lots['complet' if wp or any(not f['dev'] for f in failles) else 'dev_seulement'].append(p['projet'])
+        (extraits / f"{p['projet']}.json").write_text(json.dumps(
+            {'projet': p['projet'], 'chemin': p['chemin'], 'failles': failles, 'wordpress': wp},
+            ensure_ascii=False, indent=1))
+    (extraits / '_modeles.json').write_text(json.dumps(modeles_ia, ensure_ascii=False, indent=1))
+    (sortie / 'a-trier.json').write_text(json.dumps(lots, ensure_ascii=False, indent=1))
 
 
 if __name__ == '__main__':
