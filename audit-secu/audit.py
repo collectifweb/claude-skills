@@ -492,8 +492,8 @@ def modeles(projet, exclus, ignores, table):
 
 # --- Un projet ------------------------------------------------------------------------------
 
-def auditer(projet, ignores, table):
-    r = {'projet': projet.name, 'chemin': str(projet), 'technos': set(), 'failles': [], 'retards': [],
+def auditer(projet, ignores, table, nom=None):
+    r = {'projet': nom or projet.name, 'chemin': str(projet), 'technos': set(), 'failles': [], 'retards': [],
          'fins_support': [], 'wordpress': [], 'modeles': [], 'angles_morts': [], 'github': None}
     tiers_wp = set()
     verrous = {}  # dossier -> fichiers présents
@@ -736,6 +736,11 @@ def rapport_md(res, table_maj):
     return '\n'.join(lignes) + '\n'
 
 
+def est_groupe(d):
+    """Dossier sans dépôt git qui en regroupe au moins deux : chaque sous-dossier est un projet (« PF/PF_SEO »)."""
+    return not (d / '.git').exists() and sum((s / '.git').exists() for s in d.iterdir() if s.is_dir()) >= 2
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--base', default=str(Path.home() / 'Apps-coding'))
@@ -749,16 +754,21 @@ def main():
         for ligne in (base / FICHIER_IGNORER).read_text().splitlines():
             if ligne.strip() and not ligne.startswith('#'):
                 ignores.append(str(base / ligne.strip().rstrip('/')))
-    tous = [d for d in sorted(base.iterdir())
-            if d.is_dir() and not d.name.startswith('.') and d.name != POUBELLE and str(d) not in ignores]
+    tous = []
+    for d in sorted(base.iterdir()):
+        if not d.is_dir() or d.name.startswith('.') or d.name == POUBELLE or str(d) in ignores:
+            continue
+        tous += [s for s in sorted(d.iterdir()) if s.is_dir() and not s.name.startswith('.') and str(s) not in ignores] \
+            if est_groupe(d) else [d]
+    nom = lambda d: d.relative_to(base).as_posix()
     if a.lister:
-        print(json.dumps([d.name for d in tous], ensure_ascii=False))
+        print(json.dumps([nom(d) for d in tous], ensure_ascii=False))
         return
     # un projet nommé avec --projet passe même s'il est exclu par la sélection
     exclus = {}
     if not a.projet and (base / FICHIER_SELECTION).is_file():
         exclus = json.loads((base / FICHIER_SELECTION).read_text()).get('exclus', {})
-    projets = [d for d in tous if (d.name in a.projet if a.projet else d.name not in exclus)]
+    projets = [d for d in tous if (nom(d) in a.projet if a.projet else nom(d) not in exclus)]
     if exclus:
         print(f'{len(exclus)} projet(s) exclu(s) par la sélection : {", ".join(sorted(exclus))}', file=sys.stderr)
     if a.projet and len(projets) != len(set(a.projet)):
@@ -770,16 +780,16 @@ def main():
 
     resultats = []
     with cf.ThreadPoolExecutor(max_workers=6) as pool:
-        futurs = {pool.submit(auditer, p, ignores, table): p for p in projets}
+        futurs = {pool.submit(auditer, p, ignores, table, nom(p)): p for p in projets}
         for i, fut in enumerate(cf.as_completed(futurs), 1):
             p = futurs[fut]
             try:
                 resultats.append(fut.result())
             except Exception as e:  # un projet en échec ne bloque pas les autres
-                resultats.append({'projet': p.name, 'chemin': str(p), 'technos': [], 'failles': [], 'retards': [],
+                resultats.append({'projet': nom(p), 'chemin': str(p), 'technos': [], 'failles': [], 'retards': [],
                                   'fins_support': [], 'wordpress': [], 'modeles': [], 'github': None,
                                   'angles_morts': [f'audit interrompu : {type(e).__name__}: {e}']})
-            print(f'[{i}/{len(projets)}] {p.name}', file=sys.stderr)
+            print(f'[{i}/{len(projets)}] {nom(p)}', file=sys.stderr)
 
     res = {'date': maintenant.strftime('%Y-%m-%d %H:%M'), 'base': str(base), 'ignores': ignores, 'exclus': exclus,
            'table_modeles': table[2], 'projets': sorted(resultats, key=lambda r: r['projet'])}
@@ -804,7 +814,7 @@ def ecrire_extraits(res, sortie):
         if not failles and not wp:
             continue
         lots['complet' if wp or any(not f['dev'] for f in failles) else 'dev_seulement'].append(p['projet'])
-        (extraits / f"{p['projet']}.json").write_text(json.dumps(
+        (extraits / f"{p['projet'].replace('/', '__')}.json").write_text(json.dumps(
             {'projet': p['projet'], 'chemin': p['chemin'], 'failles': failles, 'wordpress': wp},
             ensure_ascii=False, indent=1))
     (extraits / '_modeles.json').write_text(json.dumps(modeles_ia, ensure_ascii=False, indent=1))

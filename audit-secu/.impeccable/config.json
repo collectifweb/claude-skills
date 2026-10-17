@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "audit-secu/selection.html"
+        ],
+        "createdAt": "2026-10-17T18:17:46.118Z",
+        "reason": "Alexandre a accepté (17/10) : faux positif, #b0ada6 est le gris secondaire du thème sombre mesuré sur blanc"
+      }
+    ]
+  }
+}

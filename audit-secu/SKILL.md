@@ -37,6 +37,10 @@ ce qui mérite de l'être et Codex donne un second avis sur les cas graves ou do
 
 Chemins à ignorer (copies, preuves…) : un par ligne dans `<base>/.audit-secu-ignorer`.
 
+Un dossier sans dépôt git qui en regroupe au moins deux est un **regroupement** : chacun de ses
+sous-dossiers devient un projet, nommé `<dossier>/<sous-dossier>` (`PF/PF_SEO`). Dans les noms de
+fichiers du rapport (`extraits/`, `tri/`, `codex/`), le `/` devient `__`.
+
 ## Étape 0 — Panneau de sélection
 
 Le panneau d'audit (`selection.html`, page claude.ai privée) liste les projets : seuls les circuits
