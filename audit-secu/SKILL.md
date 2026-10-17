@@ -14,8 +14,10 @@ ce qui mérite de l'être et Codex donne un second avis sur les cas graves ou do
   font ensuite, projet par projet, sur accord explicite.
 - **Aucun identifiant, aucune connexion à un serveur.** Ni Claude, ni les sous-agents, ni Codex
   n'utilisent les accès d'un `.env`, une clé SSH, un compte FTP ou d'administration. Seules les
-  pages publiques se lisent, comme un visiteur anonyme. Le bac à sable `read-only` de Codex
-  n'empêche pas le réseau : la consigne doit figurer dans chaque prompt.
+  pages publiques se lisent, comme un visiteur anonyme. Le bac à sable `read-only` de Codex coupe
+  le réseau, mais Codex peut demander une permission, et un relecteur automatique
+  (`approvals_reviewer = "auto_review"`) la lui accorde : la commande ci-dessous coupe ces demandes
+  (`approval_policy="never"`), et la consigne figure en plus dans chaque prompt.
 - **Rapports confidentiels.** Ils listent des failles de sites clients : ils restent dans
   `<base>/.audit-secu-rapports/AAAA-MM-JJ/`, jamais dans un commit, jamais tels quels dans un
   message à un client.
@@ -125,6 +127,7 @@ deux sens). Un seul appel par projet, plusieurs projets en parallèle (4 au plus
 timeout 30m codex exec \
   --model gpt-6-astra \
   -c model_reasoning_effort="high" \
+  -c approval_policy="never" \
   --sandbox read-only \
   --skip-git-repo-check \
   -C "<chemin du projet>" \
@@ -135,8 +138,8 @@ timeout 30m codex exec \
 Le PROMPT donne les failles et les verdicts de Claude, et demande pour chacune `CONFIRME` ou
 `CONTESTE`, avec la raison et les preuves en fichier:ligne, sans se fier à l'analyse de Claude.
 Il reprend mot pour mot l'interdiction des identifiants et des connexions aux serveurs (voir
-Règles) : sans elle, Codex lit le `.env` et se connecte à la production par FTP ou SSH pour
-vérifier une version.
+Règles) : sans elle et sans `approval_policy="never"`, Codex lit le `.env` et se connecte à la
+production par FTP ou SSH pour vérifier une version.
 Modèle refusé : citer l'erreur telle quelle, ne pas basculer seul vers un autre modèle.
 
 Un désaccord ne se tranche pas en silence : les deux avis figurent dans le rapport.
