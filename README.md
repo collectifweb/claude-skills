@@ -2,6 +2,8 @@
 
 A collection of skills for power users of **Claude Code** and **Codex CLI**. Each skill is a self-contained folder you can install individually. All of them run in Claude Code; all but `audit-secu` and `rename-sessions` also run in Codex CLI (same folder, linked into `~/.codex/skills`).
 
+**Easiest install:** give your agent this repository's URL and ask it to install the skill you want. Codex even ships a built-in `skill-installer` skill for that.
+
 ## Skills at a glance
 
 | Skill | In one sentence | Codex CLI |
