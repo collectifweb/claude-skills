@@ -123,9 +123,9 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\doc-sync"
 
 ## roast
 
-Convenes a five-persona council to pressure-test an idea before you build it. Five agents run in parallel — Contrarian, Expansionist, Logician, Researcher, Buyer — each locked in character and forbidden to hedge, then a Judge weighs the tension and returns one verdict (FONCE / REMANIE / ABANDONNE) with the cheapest 48-hour test to de-risk the riskiest assumption. Written in French. Works on business ideas and on product, project, or feature calls.
+Composes a jury of personas fit to whatever you are judging, runs them in parallel to tear it apart, then a Judge returns one verdict (FONCE / AJUSTE / LAISSE TOMBER) with the first thing to do to de-risk it. The casting adapts to the subject — a business idea, a project you are about to build, or a finished artifact like a live site or mockup — but three guarantees never move: a front-line demolisher, a real outside voice, and a Judge who decides. For visual subjects the jury judges an actual screenshot, not a description. Written in French.
 
-**Requires:** Claude Code or Codex CLI (the Researcher persona uses web search)
+**Requires:** Claude Code or Codex CLI
 
 **Linux / macOS**
 
