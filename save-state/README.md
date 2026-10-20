@@ -52,6 +52,7 @@ Manual only. Nothing invokes it automatically, and it never blocks a `/compact`.
 - **Never invents state.** Empty section → "none", never omitted. The fixed shape is what makes it readable in five seconds.
 - **Absolute paths** in the state file and in the resume prompt — the working directory after compaction isn't guaranteed.
 - **No commit without `--commit`**, no push ever, no `.env` or credentials staged, no AI-attribution footer.
+- **The `/compact` line stays a command** — one line, 600 characters at most, measured before it's printed. Claude Code turns a paste over 800 characters (or with more than two line breaks) into a "pasted text" attachment, and the line then reaches the model as plain text instead of compacting.
 - **Nothing after the resume prompt** — no comment, no follow-up question. A copy grabs it clean.
 
 ## How it differs from the neighbours

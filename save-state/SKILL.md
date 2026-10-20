@@ -32,6 +32,7 @@ This skill **cannot run `/compact`**: slash commands are executed by the CLI (Cl
 4. **No commit without `--commit`.** With it: stage by explicit path (never `git add -A`), only files this session touched, never `.env`, credentials or keys, never unrelated pre-existing changes (leave them, mention them). Never push. No `Co-Authored-By`, no AI-attribution footer. Check with `git show --stat HEAD` and report hash + subject.
 5. **The last block ends the turn.** Nothing after it, no framing line before it. A copy has to grab it clean.
 6. No emojis, no retrospective. Terse, concrete, paths and commands.
+7. **Block A must stay a command: one line, 600 characters at most, `/compact ` included.** Claude Code turns a paste longer than 800 characters, or holding more than two line breaks, into a "pasted text" attachment: the message no longer starts with `/`, so it reaches the model as plain text and nothing gets compacted (read in the code of Claude Code 2.1.304, same rule in the terminal and the VS Code extension). 600 leaves a margin, because length guessed by eye is unreliable. Measure before printing it: `wc -m <<'EOF'`, the block, `EOF` (the count includes one trailing newline). Over 600: shorten the task description and the trap names first. The state file already holds the details.
 
 ## `--quick` — the complete procedure
 
@@ -70,7 +71,7 @@ Only a few thousand tokens are left. Every tool call counts, and auto-compaction
    ```
 
    "Docs to update" lists the docs you know describe what the session changed. Don't search for them. If a durable fact for Claude memory emerged, add it under "Decisions + why" so it survives.
-3. One command: the `.gitignore` line from rule 1, plus the commit if `--commit` (rule 4).
+3. Draft Block A, then one command: the `.gitignore` line from rule 1, the Block A measurement from rule 7, plus the commit if `--commit` (rule 4).
 4. End with the two blocks, in the user's language:
 
    **Block A**

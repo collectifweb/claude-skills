@@ -138,7 +138,7 @@ End the turn in the language the user is working in.
 
 ### Default mode — the two blocks
 
-**Block A — the compaction command.** `/compact` accepts free-form instructions; use them to steer the summary toward this specific task instead of a generic recap.
+**Block A — the compaction command.** `/compact` accepts free-form instructions; use them to steer the summary toward this specific task instead of a generic recap. Rule 7 of `SKILL.md` applies: one line, 600 characters at most, measured with `wc -m` before printing. Past 800, the paste stops being a command.
 
 ```
 /compact Focus on: <current task>. Keep: the decisions and their reasons, the uncommitted files and their state, the traps (<name them>), the open questions. Drop: exploration that led nowhere, the full contents of files already edited, tool output already acted on.
