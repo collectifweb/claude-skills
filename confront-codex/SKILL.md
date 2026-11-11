@@ -29,8 +29,8 @@ Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou 
 
 ## Choix du modèle (second avis = Codex)
 
-- **Défaut** : `gpt-5.6-sol` avec `model_reasoning_effort="xhigh"`.
-- **Secours**, seulement si le modèle est refusé : `gpt-5.6-terra`, puis `gpt-5.6-luna`. Ne jamais basculer tout seul vers un modèle plus cher (`gpt-6-astra`, `gpt-5.5`) : ça reste le choix explicite de l'utilisateur. Signale chaque bascule.
+- **Défaut** : `gpt-6-astra` avec `model_reasoning_effort="xhigh"`.
+- **Secours**, seulement si le modèle est refusé : `gpt-6.1-sol`, puis `gpt-6.1-terra`. Ne jamais basculer tout seul vers un modèle plus cher : ça reste le choix explicite de l'utilisateur. Signale chaque bascule.
 - **Modèle refusé** : une CLI Codex trop ancienne refuse les modèles récents, parfois avec un message trompeur. Constaté le 23 sept. 2026 : la 0.148.0 répondait « not supported when using Codex with a ChatGPT account » pour `gpt-6-sol`, que la 0.156.1 accepte sur le même compte. Avant de basculer sur un secours, vérifie `codex --version` et signale une éventuelle mise à jour ; cite toujours le message d'erreur tel quel.
 - **Choix de l'utilisateur** : `/confront-codex --model <nom>`, ou le modèle cité en langage naturel (« avec astra », « en 5.6 sol »). L'utilisateur écrit souvent le nom approximativement (`gpt6astra`, `6 astra`, `5,6-sol`). Retrouve le vrai identifiant dans la liste des modèles de Codex :
 
@@ -38,7 +38,7 @@ Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou 
   python3 -c 'import json,os;[print(m["slug"],"-",m["description"]) for m in json.load(open(os.path.expanduser("~/.codex/models_cache.json")))["models"] if m.get("visibility")=="list"]'
   ```
 
-  Compare sans tenir compte des tirets, points, espaces et majuscules. Une seule correspondance : annonce-la en une ligne (« Modèle retenu : gpt-6-astra ») et lance. Plusieurs (« sol » vise `gpt-6-sol` et `gpt-5.6-sol`) : demande laquelle. Aucune, ou fichier absent : dis-le et propose la liste.
+  Compare sans tenir compte des tirets, points, espaces et majuscules. Une seule correspondance : annonce-la en une ligne (« Modèle retenu : gpt-6.1-terra ») et lance. Plusieurs (« sol » vise `gpt-6.1-sol`, `gpt-6-sol` et `gpt-5.6-sol`) : demande laquelle. Aucune, ou fichier absent : dis-le et propose la liste.
 - **Raisonnement** : « sans xhigh » ou « reasoning normal » retire `-c model_reasoning_effort="xhigh"`. « reasoning high » le remplace par `high`.
 
 Quand l'autre est Claude, n'impose pas de modèle : `claude -p` prend celui configuré, sauf si l'utilisateur en demande un (`--model <nom>` : `opus`, `sonnet`, `haiku`, `fable` ou un identifiant complet). Avec `--fable`, c'est `--model fable`.
@@ -51,7 +51,7 @@ L'autre met typiquement 3 à 15 minutes à répondre. Sa **réponse finale** est
 
 ```bash
 timeout 45m codex exec \
-  --model gpt-5.6-sol \
+  --model gpt-6-astra \
   -c model_reasoning_effort="xhigh" \
   -c approval_policy="never" \
   --sandbox read-only \
