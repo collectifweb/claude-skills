@@ -30,7 +30,7 @@ Plans made with Claude share Claude's blind spots. Bringing in a second model wi
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Run from Codex CLI, the roles swap (Codex proposes, Claude critiques); with `--fable`, Fable takes the critic's seat.
+Run from Codex CLI, the roles swap: Codex proposes, Claude's Fable model critiques. From Claude Code, `--fable` puts Fable in the critic's seat instead of Codex.
 
 Capped at 5 rounds. If consensus isn't reached, Claude surfaces the sticking points and asks you to arbitrate.
 
@@ -39,11 +39,11 @@ Capped at 5 rounds. If consensus isn't reached, Claude surfaces the sticking poi
 - **Claude Code** and **Codex CLI** — install Codex from https://developers.openai.com/codex/cli (the VSCode extension alone is not enough)
 - `timeout` (GNU coreutils; `gtimeout` on macOS via Homebrew)
 
-The skill works from either side. Run from Claude Code, the second opinion is Codex; run from Codex CLI, the second opinion is Claude (`claude -p`). With `--fable`, it is Fable from either side. The second agent runs read-only and its final answer is saved as the round file, so it can never modify your project. Codex also runs with `approval_policy="never"`: without it, Codex can ask to leave its read-only sandbox, and an automatic approvals reviewer may grant the request.
+The skill works from either side. Run from Claude Code, the second opinion is Codex; run from Codex CLI, the second opinion is Fable (`claude -p --model fable`). From Claude Code, `--fable` swaps Codex for Fable. The second agent runs read-only and its final answer is saved as the round file, so it can never modify your project. Codex also runs with `approval_policy="never"`: without it, Codex can ask to leave its read-only sandbox, and an automatic approvals reviewer may grant the request.
 
 With Codex as the second opinion, the default model is `gpt-6-astra` with `model_reasoning_effort="xhigh"`. If that model is refused, it falls back to `gpt-6.1-sol`, then `gpt-6.1-terra` — never to a more expensive model on its own. An outdated Codex CLI refuses recent models, sometimes with a misleading message (0.148.0 said `gpt-6-sol` was "not supported when using Codex with a ChatGPT account"; 0.156.1 accepts it on the same account). The skill checks `codex --version` before falling back.
 
-Add `--fable` (or say "avec Fable") to get the second opinion from Claude's Fable model instead, via `claude -p --model fable`, read-only as well.
+With Claude as the second opinion, the default is Fable via `claude -p --model fable` (the alias always points to the latest Fable), read-only as well. Pass `--model opus`, `sonnet` or `haiku` to use the latest model of another line instead. From Claude Code, add `--fable` (or say "avec Fable") to get Fable instead of Codex.
 
 ## Installation
 

@@ -9,7 +9,7 @@ A collection of skills for power users of **Claude Code** and **Codex CLI**. Eac
 | Skill | In one sentence | Codex CLI |
 | --- | --- | --- |
 | [humanize](#humanize) | Rewrites French text to strip LLM writing tics, without touching the ideas or the voice. | yes |
-| [confront-codex](#confront-codex) | Runs an iterative debate on a technical plan between the agent you're in and a second, independent one (Codex from Claude, Claude from Codex, or Fable with `--fable`) until they converge — before a single line of code is written. | yes |
+| [confront-codex](#confront-codex) | Runs an iterative debate on a technical plan between the agent you're in and a second, independent one (Codex from Claude, Fable from Codex or with `--fable`) until they converge — before a single line of code is written. | yes |
 | [timelog](#timelog) | Generates a paste-ready time log for a client project day, split by git commits and Claude/Codex sessions. `quick` variant: multi-day, multi-project overview with no hours. | yes |
 | [tidy](#tidy) | Reorganizes docs, archives stale plans, audits exposed secrets — so a fresh agent session finds its bearings fast. | yes |
 | [doc-sync](#doc-sync) | Cross-checks every documentation claim against the actual code, file by file, with a final audit report. | yes |
@@ -43,7 +43,7 @@ New-Item -ItemType SymbolicLink -Path "$env:USERPROFILE\.claude\skills\humanize"
 
 ## confront-codex
 
-Validates a technical plan by running an iterative debate before any implementation starts. The agent you're in proposes, a second, read-only agent critiques (Codex when run from Claude Code, Claude when run from Codex, Fable with `--fable`), and the debate goes on until both converge or surface a real disagreement for you to resolve. `--model` picks the Codex model, even from an approximate name.
+Validates a technical plan by running an iterative debate before any implementation starts. The agent you're in proposes, a second, read-only agent critiques (Codex when run from Claude Code, Fable when run from Codex or with `--fable`), and the debate goes on until both converge or surface a real disagreement for you to resolve. `--model` picks the second agent's model; Codex model names can be approximate.
 
 **Requires:** Claude Code and Codex CLI (either one can host the debate)
 

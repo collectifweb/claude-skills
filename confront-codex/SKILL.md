@@ -1,11 +1,11 @@
 ---
 name: confront-codex
-description: Confronte un plan technique avec un second agent indépendant (Codex depuis Claude, Claude depuis Codex, ou Fable avec --fable) par débats itératifs jusqu'au consensus. Plan final dans docs/, rounds archivés. Option --model pour choisir le modèle. Trigger /confront-codex, "confronter codex", "valider le plan avec codex", "challenger l'approche", "second avis sur le plan".
+description: Confronte un plan technique avec un second agent indépendant (Codex depuis Claude, Fable depuis Codex ou avec --fable) par débats itératifs jusqu'au consensus. Plan final dans docs/, rounds archivés. Option --model pour choisir le modèle. Trigger /confront-codex, "confronter codex", "valider le plan avec codex", "challenger l'approche", "second avis sur le plan".
 ---
 
 # Confront-Codex
 
-Ce skill orchestre un débat structuré entre toi et un second agent indépendant (Codex si tu es Claude, Claude si tu es Codex, Fable sur demande) sur un plan technique, jusqu'à consensus. L'utilisateur arbitre les cas où le débat s'enlise.
+Ce skill orchestre un débat structuré entre toi et un second agent indépendant (Codex si tu es Claude, Fable si tu es Codex ou sur demande) sur un plan technique, jusqu'à consensus. L'utilisateur arbitre les cas où le débat s'enlise.
 
 ## Principe général
 
@@ -20,8 +20,8 @@ Le skill oppose l'agent qui le lance à un second agent, indépendant :
 | Le skill tourne dans | Second avis | Commande |
 |---|---|---|
 | Claude Code | Codex | `codex exec` |
-| Codex CLI | Claude | `claude -p` |
-| l'un ou l'autre, avec `--fable` (ou « avec Fable ») | Fable | `claude -p --model fable` |
+| Codex CLI | Fable | `claude -p --model fable` |
+| Claude Code, avec `--fable` (ou « avec Fable ») | Fable | `claude -p --model fable` |
 
 Dans ce document, **toi** désigne l'agent qui lance le skill et **l'autre** le second avis. Chaque fichier de round porte le nom de l'agent qui l'a écrit (`round-N-claude.md`, `round-N-codex.md`, `round-N-fable.md`).
 
@@ -41,7 +41,7 @@ Au démarrage, vérifie que la commande de l'autre existe (`codex --version` ou 
   Compare sans tenir compte des tirets, points, espaces et majuscules. Une seule correspondance : annonce-la en une ligne (« Modèle retenu : gpt-6.1-terra ») et lance. Plusieurs (« sol » vise `gpt-6.1-sol`, `gpt-6-sol` et `gpt-5.6-sol`) : demande laquelle. Aucune, ou fichier absent : dis-le et propose la liste.
 - **Raisonnement** : « sans xhigh » ou « reasoning normal » retire `-c model_reasoning_effort="xhigh"`. « reasoning high » le remplace par `high`.
 
-Quand l'autre est Claude, n'impose pas de modèle : `claude -p` prend celui configuré, sauf si l'utilisateur en demande un (`--model <nom>` : `opus`, `sonnet`, `haiku`, `fable` ou un identifiant complet). Avec `--fable`, c'est `--model fable`.
+Quand l'autre est Claude, c'est Fable par défaut : `--model fable`, un alias qui vise toujours le Fable le plus récent. L'utilisateur peut en demander un autre avec `--model <nom>` : `opus`, `sonnet` ou `haiku` (alias du modèle le plus récent de chaque gamme), ou un identifiant complet.
 
 ## Lancer l'autre et attendre sa réponse
 
@@ -60,11 +60,11 @@ timeout 45m codex exec \
   "PROMPT" > /tmp/confront-{slug}-rN.log 2>&1 < /dev/null
 ```
 
-**Second avis = Claude ou Fable** (`round-N-claude.md` ou `round-N-fable.md`) :
+**Second avis = Fable, ou un autre modèle Claude demandé** (`round-N-fable.md` ou `round-N-claude.md`) :
 
 ```bash
-# Fable : garder --model fable et écrire round-N-fable.md
-# Claude : retirer la ligne --model (ou mettre le modèle demandé) et écrire round-N-claude.md
+# Par défaut : --model fable, réponse dans round-N-fable.md
+# Autre modèle demandé (opus, sonnet…) : remplacer fable par ce nom et écrire round-N-claude.md
 timeout 45m claude -p "PROMPT" \
   --allowedTools=Read,Grep,Glob \
   --model fable \
