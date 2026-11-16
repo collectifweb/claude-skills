@@ -190,8 +190,9 @@ Ajouté le 15 novembre 2026, à la demande d'Alexandre. Outil et règles : `~/Ap
   (Carange…), rien à proposer.
 - **Proposer** : après les blocs, une ligne, avec le projet Toggl lu dans la ligne `Toggl :` du CLAUDE.md du
   projet. Par exemple : « Je les saisis dans Toggl (projet DJ MTL, sans étiquette) ? Réponds oui pour ces
-  blocs. » Sans ligne `Toggl :`, demander quel projet prendre (`toggl projets` donne la liste), et proposer de
-  l'écrire dans le CLAUDE.md du projet.
+  blocs. » Sans ligne `Toggl :`, proposer dans la même ligne le projet Toggl au nom évident (`toggl projets` ; pour PF,
+  « PF Communications » et l'étiquette du projet) ; une fois confirmé par Alexandre, écrire la ligne dans le
+  CLAUDE.md du projet.
 - **Saisir, sur le « oui » d'Alexandre pour ces blocs-là**, et seulement ceux-là : un `toggl ajouter` par bloc,
   l'un après l'autre. Date du jour analysé ; `--debut` et `--fin` : les heures du bloc données par le script
   (« 9h43-12h » → `--debut 9:43 --fin 12:00`) ; `--description` : le texte du bloc sans ses heures ; `--projet`
