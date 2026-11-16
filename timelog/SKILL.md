@@ -198,9 +198,12 @@ Ajouté le 15 novembre 2026, à la demande d'Alexandre. Outil et règles : `~/Ap
   (« 9h43-12h » → `--debut 9:43 --fin 12:00`) ; `--description` : le texte du bloc sans ses heures ; `--projet`
   le n°, `--etiquette` et `--facturable` d'après la ligne `Toggl :`. Un « oui » ne vaut pas pour d'autres blocs ni
   pour un autre jour.
-- **Chevauchement** : l'outil refuse un bloc qui recoupe une entrée déjà dans Toggl (code de sortie 3) et la
-  montre. Le dire à Alexandre et passer au bloc suivant ; ne pas décaler la plage, ne pas modifier l'entrée en
-  place (une modification demande son accord pour cette entrée-là).
+- **Chevauchement** : un bloc qui recoupe une entrée d'un autre projet, ou avec d'autres étiquettes, est ajouté
+  quand même (Alexandre travaille souvent avec plusieurs sessions en parallèle) ; l'outil affiche ce qu'il recoupe,
+  à mentionner en une ligne. Seule une vraie double saisie est refusée : la plage recoupe une entrée du même projet
+  avec les mêmes étiquettes (code de sortie 3, entrée en place montrée). La dire à Alexandre et passer au bloc
+  suivant ; ne pas décaler la plage, ne pas modifier l'entrée en place (une modification demande son accord pour
+  cette entrée-là).
 - **Ensuite** : dire ce qui a été ajouté (n° de chaque entrée) et ce qui a été refusé. Toggl n'accorde que 30
   appels à l'heure : pas de relecture inutile.
 
