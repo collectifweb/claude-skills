@@ -294,9 +294,16 @@ def audit_python(fichier):
 # --- GitHub ---------------------------------------------------------------------------------
 
 def depot_github(projet):
-    _, out, _ = lancer(['git', '-C', str(projet), 'remote', 'get-url', 'origin'])
-    m = re.search(r'github\.com[:/](.+?)(?:\.git)?/?$', out.strip())
-    return m.group(1) if m else None
+    # Le distant ne s'appelle pas toujours `origin` (Génie : `Genie-loi-25`, ronde du 16 nov. 2026) :
+    # `origin` d'abord, sinon le premier distant qui pointe vers GitHub.
+    _, out, _ = lancer(['git', '-C', str(projet), 'remote', '-v'])
+    depots = {}
+    for ligne in out.splitlines():
+        champs = ligne.split()
+        m = re.search(r'github\.com[:/](.+?)(?:\.git)?/?$', champs[1]) if len(champs) >= 2 else None
+        if m:
+            depots.setdefault(champs[0], m.group(1))
+    return depots.get('origin') or next(iter(depots.values()), None)
 
 
 def erreur_gh(out, err):
