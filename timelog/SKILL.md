@@ -179,6 +179,29 @@ Pourquoi c'est mauvais : IDs et numéros partout ("Phase 4-4", "C4", "C5", "Q1",
 4. **Pour chaque bloc**, lire les messages et les commits qu'il contient, en déduire ce qui a été fait (ce que l'utilisateur a demandé, pas ce que le modèle a répondu), puis **reformuler en langage client** (voir Style général). Ne pas distinguer les agents : Claude et Codex sur le même sujet, c'est une seule tâche.
 5. **Filtrer** selon la plage horaire demandée, le cas échéant.
 6. **Présenter** la synthèse dans le chat, prête à copier-coller. Pas de fichier créé.
+7. **Proposer la saisie dans Toggl**, seulement dans `Le Caribou/`, `Perso/` et `PF/` (voir « Saisie dans Toggl »).
+
+## Saisie dans Toggl (Le Caribou, Perso, PF)
+
+Ajouté le 15 novembre 2026, à la demande d'Alexandre. Outil et règles : `~/Apps-coding/.claude/toggl.md`.
+
+- **Où** : seulement quand le dossier du projet est sous `Apps-coding/Le Caribou/`, `Apps-coding/Perso/` ou
+  `Apps-coding/PF/`. Dans `CW/`, le temps va dans ActiveCollab (règle de `CW/CLAUDE.md`, inchangée). Ailleurs
+  (Carange…), rien à proposer.
+- **Proposer** : après les blocs, une ligne, avec le projet Toggl lu dans la ligne `Toggl :` du CLAUDE.md du
+  projet. Par exemple : « Je les saisis dans Toggl (projet DJ MTL, sans étiquette) ? Réponds oui pour ces
+  blocs. » Sans ligne `Toggl :`, demander quel projet prendre (`toggl projets` donne la liste), et proposer de
+  l'écrire dans le CLAUDE.md du projet.
+- **Saisir, sur le « oui » d'Alexandre pour ces blocs-là**, et seulement ceux-là : un `toggl ajouter` par bloc,
+  l'un après l'autre. Date du jour analysé ; `--debut` et `--fin` : les heures du bloc données par le script
+  (« 9h43-12h » → `--debut 9:43 --fin 12:00`) ; `--description` : le texte du bloc sans ses heures ; `--projet`
+  le n°, `--etiquette` et `--facturable` d'après la ligne `Toggl :`. Un « oui » ne vaut pas pour d'autres blocs ni
+  pour un autre jour.
+- **Chevauchement** : l'outil refuse un bloc qui recoupe une entrée déjà dans Toggl (code de sortie 3) et la
+  montre. Le dire à Alexandre et passer au bloc suivant ; ne pas décaler la plage, ne pas modifier l'entrée en
+  place (une modification demande son accord pour cette entrée-là).
+- **Ensuite** : dire ce qui a été ajouté (n° de chaque entrée) et ce qui a été refusé. Toggl n'accorde que 30
+  appels à l'heure : pas de relecture inutile.
 
 ## Règles importantes
 
